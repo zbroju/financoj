@@ -1,0 +1,26 @@
+# TO BE DONE
+- set string length for all object (account name, main category, category, description etc.), 
+- truncate all the strings before inserting to DB according to the set string lengths
+- adjust reports so that respect string lengths and be more compact
+- add condition that an account cannot be closed if its balance is <> 0
+- make comparison for currencies insensitive to case letters
+- overview report (balances of all operational accounts, summaries of other accounts, current net value, summary of budget)
+- tutorial step by step how to work (for the part that is done)
+- package it as deb & tar
+- add the app to my portfolio on my webpage
+- put all the code on github
+- deleting budget for the whole month/year
+- copy budget to new month (?)
+
+
+# COMPLETED
+- create applicatoin
+- report with account balance in one currency (assets)
+- secure the license is attached
+- report: net value
+- check if showing account balance excludes closed accounts
+- check if showing assets balance excludes closed accounts
+- check if getID account excludes closed items
+- check if getID category excludes closed items
+- check if getID main category excludes closed items
+
