@@ -67,6 +67,7 @@ OPTIONS:
         -o, --main-category-type	main category type. Allowed values are: c/cost, t/transfer, i/income.        
         -d, --date	date. Required format is YYYY (for year), YYYY-MM (for year-month) and YYYY-MM-DD (for full date). Today by default.        
         --verbose	make the program verbose.
+```
 
 ## License
 GNU General Public License
