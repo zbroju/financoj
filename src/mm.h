@@ -26,6 +26,5 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-
 /* END OF INCLUDE GUARD */
 #endif
