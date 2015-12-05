@@ -1,9 +1,8 @@
 /*
- * File:   mm.c
- * Author: marcin
- *
- * Created on 22 marzec 2015, 18:38
- */
+  Written 2015 by Marcin 'Zbroju' Zbroinski.
+  Use of this source code is governed by a GNU General Public License
+  that can be found in the LICENSE file.
+*/
 
 /* INCLUDES */
 #include "mm.h"

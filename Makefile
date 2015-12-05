@@ -16,10 +16,10 @@ all: pre_compile $(EXECUTABLE)
 
 $(EXECUTABLE):$(OBJECTS)
 	$(CC) $(CFLAGS) -o $(TARGET_DIR)/$@ $(OBJECTS) $(LIBRARIES)
-	
+
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(SRC_DIR)/%.h
 	$(CC) $(CFLAGS) -c $< -o $@
-	
+
 clean:
 	rm -r $(BUILD_DIR) $(TARGET_DIR)
 

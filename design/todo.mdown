@@ -1,7 +1,9 @@
 # TO BE DONE
-- set string length for all object (account name, main category, category, description etc.), 
+- round values inserted/edited to db up to 2 digits after comma
+- round exchange rate iserted/edited to db up to 4 digits after comma
 - truncate all the strings before inserting to DB according to the set string lengths
 - adjust reports so that respect string lengths and be more compact
+- set string length for all object (account name, main category, category, description etc.), 
 - add condition that an account cannot be closed if its balance is <> 0
 - make comparison for currencies insensitive to case letters
 - overview report (balances of all operational accounts, summaries of other accounts, current net value, summary of budget)
@@ -23,4 +25,4 @@
 - check if getID account excludes closed items
 - check if getID category excludes closed items
 - check if getID main category excludes closed items
-
+- change comments in all files to be consistent and aligned with license
