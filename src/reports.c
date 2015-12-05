@@ -16,6 +16,9 @@
 #define REP_BUF_SIZE 200
 #define REP_TITLE_SIZE 100
 
+#define EMP_ON "\x1b[1m"
+#define EMP_OFF "\x1b[0m"
+
 /**
  * The function returns true if currencies for all transactions have their
  * exchange rates towards reporting currency and false otherwise.
@@ -98,15 +101,15 @@ int accounts_balance(PARAMETERS parameters)
         return 1;
     }
 
-    printf("Accounts balance on %4d-%02d-%02d\n", year, month, day);
+    printf("Accounts balance on " FS_DATE  "\n", year, month, day);
 
     // Print transactions on standard output
     while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
         if (current_type != sqlite3_column_int(sqlStmt, 0)) {
             current_type = sqlite3_column_int(sqlStmt, 0);
-            printf("\n%s\n", account_type_text(current_type));
+            printf("\n" FS_ATYPE "\n", account_type_text(current_type));
         }
-        printf("  %-20s  %10.2f %3s\n"
+        printf(FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR "\n"
                 , sqlite3_column_text(sqlStmt, 1)
                 , sqlite3_column_double(sqlStmt, 2)
                 , sqlite3_column_text(sqlStmt, 3));
@@ -151,7 +154,7 @@ int assets_summary(PARAMETERS parameters)
     } else if (parameters.currency[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -215,35 +218,36 @@ int assets_summary(PARAMETERS parameters)
             return 1;
         }
 
-        printf("Assets summary on %4d-%02d-%02d:\n", year, month, day);
+        printf("Assets summary on " FS_DATE  ":\n", year, month, day);
 
         // Print data on standard output
         while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
             if (current_type != sqlite3_column_int(sqlStmt, 0)) {
                 if (current_type != ACC_TYPE_UNSET) {
-                    printf("\x1b[1mSubtotal %-14s %10.2f %3s\x1b[0m\n"
+                    printf(EMP_ON FS_ATYPE "  " FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF"\n"
                             , account_type_text(current_type)
                             , subtotal
                             , parameters.currency);
                 }
                 current_type = sqlite3_column_int(sqlStmt, 0);
-                printf("\n%s\n", account_type_text(current_type));
+                printf("\n" FS_ATYPE  "\n", account_type_text(current_type));
                 total += subtotal;
                 subtotal = 0;
             }
-            printf("  %-20s  %10.2f %3s\n"
+            printf(FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR "\n"
                     , sqlite3_column_text(sqlStmt, 1)
                     , sqlite3_column_double(sqlStmt, 2)
                     , parameters.currency);
             subtotal += sqlite3_column_double(sqlStmt, 2);
         }
-        printf("\x1b[1mSubtotal %-14s %10.2f %3s\x1b[0m\n"
+        printf(EMP_ON FS_ATYPE "  " FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
                 , account_type_text(current_type)
                 , subtotal
                 , parameters.currency);
         total += subtotal;
 
-        printf("\n\x1b[1mTotal assets: %20.2f %3s\x1b[0m\n"
+        printf("\n" EMP_ON FS_NAME "  " FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
+               , "Total:"
                 , total
                 , parameters.currency);
 
@@ -298,7 +302,7 @@ int budget_report_categories(PARAMETERS parameters)
     } else if (parameters.currency[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -456,8 +460,9 @@ int budget_report_categories(PARAMETERS parameters)
                     if (subtotal_flag == 0) {
                         subtotal_flag = 1;
                     } else {
-                        printf("\x1b[1mSubtotal %-35s  %10.2f %3s  %10.2f %3s  %10.2f %3s\x1b[0m\n",
-                                maincategory_type_text(prev_maincategory_type)
+                        printf(EMP_ON FS_MTYPE "    " FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
+                               , maincategory_type_text(prev_maincategory_type)
+                               , ""
                                 , subtotal_budget
                                 , parameters.currency
                                 , subtotal_actual
@@ -472,20 +477,20 @@ int budget_report_categories(PARAMETERS parameters)
                     subtotal_actual = 0.0;
                     prev_maincategory_type = cur_maincategory_type;
 
-                    printf("\n%s:\n", maincategory_type_text(cur_maincategory_type));
-                    printf("  %-20s  %-20s  %14s  %14s  %14s\n",
-                            "MAIN CATEGORY", "CATEGORY", "BUDGET LIMIT", "ACTUAL VALUE", "DIFFERENCE");
+                    printf("\n" FS_MTYPE "\n", maincategory_type_text(cur_maincategory_type));
+                    printf(FS_GAP FS_NAME_T FS_GAP FS_NAME_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T"\n",
+                           "MAIN CAT.", "CATEGORY", "LIMIT", "CUR", "ACTUAL", "CUR", "DIFFERENCE", "CUR");
                 }
-                printf("  %-20s", sqlite3_column_text(sqlStmt, 1));
-                printf("  %-20s", sqlite3_column_text(sqlStmt, 2));
+                printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 1));
+                printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 2));
                 value_budget = sqlite3_column_double(sqlStmt, 3);
-                printf("  %10.2f", value_budget);
-                printf(" %3s", parameters.currency);
+                printf(FS_GAP FS_VALUE, value_budget);
+                printf(FS_GAPS FS_CUR, parameters.currency);
                 value_actual = sqlite3_column_double(sqlStmt, 4);
-                printf("  %10.2f", value_actual);
-                printf(" %3s", parameters.currency);
-                printf("  %10.2f", value_actual - value_budget);
-                printf(" %3s", parameters.currency);
+                printf(FS_GAP FS_VALUE, value_actual);
+                printf(FS_GAPS FS_CUR, parameters.currency);
+                printf(FS_GAP FS_VALUE, value_actual - value_budget);
+                printf(FS_GAPS FS_CUR, parameters.currency);
                 printf("\n");
 
                 subtotal_budget += value_budget;
@@ -495,8 +500,9 @@ int budget_report_categories(PARAMETERS parameters)
 
         total_budget += subtotal_budget;
         total_actual += subtotal_actual;
-        printf("\x1b[1mSubtotal %-35s  %10.2f %3s  %10.2f %3s  %10.2f %3s\x1b[0m\n",
-                maincategory_type_text(prev_maincategory_type)
+        printf(EMP_ON FS_MTYPE "    " FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF"\n"
+                , maincategory_type_text(prev_maincategory_type)
+                , ""
                 , subtotal_budget
                 , parameters.currency
                 , subtotal_actual
@@ -504,8 +510,9 @@ int budget_report_categories(PARAMETERS parameters)
                 , subtotal_actual - subtotal_budget
                 , parameters.currency
                 );
-        printf("\n\x1b[1m%-44s  %10.2f %3s  %10.2f %3s  %10.2f %3s\x1b[0m\n"
+        printf("\n" EMP_ON FS_MTYPE "    " FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF"\n"
                 , "Total"
+                , ""
                 , total_budget
                 , parameters.currency
                 , total_actual
@@ -568,7 +575,7 @@ int budget_report_maincategories(PARAMETERS parameters)
     } else if (parameters.currency[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -716,7 +723,6 @@ int budget_report_maincategories(PARAMETERS parameters)
 
     // Are all the currencies exchange rates available?
     if (all_currencies_available(db, parameters.currency, &list_of_missing_currencies) == true) {
-
         if (sqlite3_prepare_v2(db, sql_final, REP_SQL_SIZE, &sqlStmt, NULL) != SQLITE_OK) {
             fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
             return 1;
@@ -733,8 +739,8 @@ int budget_report_maincategories(PARAMETERS parameters)
                     if (subtotal_flag == 0) {
                         subtotal_flag = 1;
                     } else {
-                        printf("\x1b[1mSubtotal %-13s  %10.2f %3s  %10.2f %3s  %10.2f %3s\x1b[0m\n",
-                                maincategory_type_text(prev_maincategory_type)
+                        printf(EMP_ON FS_MTYPE "    " FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
+                                , maincategory_type_text(prev_maincategory_type)
                                 , subtotal_budget
                                 , parameters.currency
                                 , subtotal_actual
@@ -749,19 +755,19 @@ int budget_report_maincategories(PARAMETERS parameters)
                     subtotal_actual = 0.0;
                     prev_maincategory_type = cur_maincategory_type;
 
-                    printf("\n%s:\n", maincategory_type_text(cur_maincategory_type));
-                    printf("  %-20s  %14s  %14s  %14s\n",
-                            "MAIN CATEGORY", "BUDGET LIMIT", "ACTUAL VALUE", "DIFFERENCE");
+                    printf("\n" FS_MTYPE "\n", maincategory_type_text(cur_maincategory_type));
+                    printf(FS_GAP FS_NAME_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T"\n",
+                           "MAIN CAT.", "LIMIT", "CUR", "ACTUAL", "CUR", "DIFFERENCE", "CUR");
                 }
-                printf("  %-20s", sqlite3_column_text(sqlStmt, 1));
+                printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 1));
                 value_budget = sqlite3_column_double(sqlStmt, 2);
-                printf("  %10.2f", value_budget);
-                printf(" %3s", parameters.currency);
+                printf(FS_GAP FS_VALUE, value_budget);
+                printf(FS_GAPS FS_CUR, parameters.currency);
                 value_actual = sqlite3_column_double(sqlStmt, 3);
-                printf("  %10.2f", value_actual);
-                printf(" %3s", parameters.currency);
-                printf("  %10.2f", value_actual - value_budget);
-                printf(" %3s", parameters.currency);
+                printf(FS_GAP FS_VALUE, value_actual);
+                printf(FS_GAPS FS_CUR, parameters.currency);
+                printf(FS_GAP FS_VALUE, value_actual - value_budget);
+                printf(FS_GAPS FS_CUR, parameters.currency);
                 printf("\n");
 
                 subtotal_budget += value_budget;
@@ -771,8 +777,8 @@ int budget_report_maincategories(PARAMETERS parameters)
 
         total_budget += subtotal_budget;
         total_actual += subtotal_actual;
-        printf("\x1b[1mSubtotal %-13s  %10.2f %3s  %10.2f %3s  %10.2f %3s\x1b[0m\n",
-                maincategory_type_text(prev_maincategory_type)
+        printf(EMP_ON FS_MTYPE "    " FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
+                , maincategory_type_text(prev_maincategory_type)
                 , subtotal_budget
                 , parameters.currency
                 , subtotal_actual
@@ -780,7 +786,7 @@ int budget_report_maincategories(PARAMETERS parameters)
                 , subtotal_actual - subtotal_budget
                 , parameters.currency
                 );
-        printf("\n\x1b[1m%-22s  %10.2f %3s  %10.2f %3s  %10.2f %3s\x1b[0m\n"
+        printf("\n" EMP_ON FS_MTYPE "    " FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
                 , "Total"
                 , total_budget
                 , parameters.currency
@@ -840,7 +846,7 @@ int categories_balance(PARAMETERS parameters)
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
                     , parameters.default_currency
-                    , PAR_CURRENCY_LEN);
+                    , PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -934,7 +940,6 @@ int categories_balance(PARAMETERS parameters)
 
     // Are all the currency exchange rates available?
     if (all_currencies_available(db, parameters.currency, &list_of_missing_currencies) == true) {
-
         if (sqlite3_prepare_v2(db, sql_categories_balance, REP_SQL_SIZE, &sqlStmt, NULL) != SQLITE_OK) {
             fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
             return 1;
@@ -948,37 +953,40 @@ int categories_balance(PARAMETERS parameters)
                 if (subtotal_flag == 0) {
                     subtotal_flag = 1;
                 } else {
-                    printf("\x1b[1mSubtotal %-35s  %10.2f %3s\x1b[0m\n"
+                    printf(EMP_ON FS_MTYPE "    " FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
                             , maincategory_type_text(maincategory_type)
+                           , ""
                             , maincategory_balance
                             , parameters.currency
                             );
                 }
                 maincategory_balance = 0.0;
                 maincategory_type = sqlite3_column_int(sqlStmt, 0);
-                printf("\n%s:\n", maincategory_type_text(maincategory_type));
-                printf("  %-20s  %-20s  %10s %3s\n"
-                        , "MAIN CATEGORY"
+                printf("\n" FS_MTYPE "\n", maincategory_type_text(maincategory_type));
+                printf(FS_GAP FS_NAME_T FS_GAP FS_NAME_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T "\n"
+                        , "MAIN CAT."
                         , "CATEGORY"
                         , "VALUE"
                         , "CUR");
             }
-            printf("  %-20s", sqlite3_column_text(sqlStmt, 1));
-            printf("  %-20s", sqlite3_column_text(sqlStmt, 2));
-            printf("  %10.2f", sqlite3_column_double(sqlStmt, 3));
-            printf(" %3s", parameters.currency);
+            printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 1));
+            printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 2));
+            printf(FS_GAP FS_VALUE, sqlite3_column_double(sqlStmt, 3));
+            printf(FS_GAPS FS_CUR, parameters.currency);
             printf("\n");
 
             maincategory_balance += sqlite3_column_double(sqlStmt, 3);
             total_balance += sqlite3_column_double(sqlStmt, 3);
         }
-        printf("\x1b[1mSubtotal %-35s  %10.2f %3s\x1b[0m\n"
+        printf(EMP_ON FS_MTYPE "    " FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
                 , maincategory_type_text(maincategory_type)
+               , ""
                 , maincategory_balance
                 , parameters.currency
                 );
-        printf("\n\x1b[1m%-44s  %10.2f %3s\x1b[0m\n"
-                , "Total balance"
+        printf("\n" EMP_ON FS_MTYPE "    " FS_GAP FS_NAME FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
+                , "Total"
+               , ""
                 , total_balance
                 , parameters.currency
                 );
@@ -1030,7 +1038,7 @@ int maincategories_balance(PARAMETERS parameters)
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
                     , parameters.default_currency
-                    , PAR_CURRENCY_LEN);
+                    , PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -1137,7 +1145,7 @@ int maincategories_balance(PARAMETERS parameters)
                 if (subtotal_flag == 0) {
                     subtotal_flag = 1;
                 } else {
-                    printf("\x1b[1mSubtotal %-13s  %10.2f %3s\x1b[0m\n"
+                    printf(EMP_ON FS_MTYPE "    " FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
                             , maincategory_type_text(maincategory_type)
                             , maincategory_balance
                             , parameters.currency
@@ -1145,27 +1153,27 @@ int maincategories_balance(PARAMETERS parameters)
                 }
                 maincategory_balance = 0.0;
                 maincategory_type = sqlite3_column_int(sqlStmt, 0);
-                printf("\n%s:\n", maincategory_type_text(maincategory_type));
-                printf("  %-20s  %10s %3s\n"
-                        , "MAIN CATEGORY"
+                printf("\n" FS_MTYPE  "\n", maincategory_type_text(maincategory_type));
+                printf(FS_GAP FS_NAME_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T "\n"
+                        , "MAIN CAT."
                         , "VALUE"
                         , "CUR");
             }
-            printf("  %-20s", sqlite3_column_text(sqlStmt, 1));
-            printf("  %10.2f", sqlite3_column_double(sqlStmt, 2));
-            printf(" %3s", parameters.currency);
+            printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 1));
+            printf(FS_GAP FS_VALUE, sqlite3_column_double(sqlStmt, 2));
+            printf(FS_GAPS FS_CUR, parameters.currency);
             printf("\n");
 
             maincategory_balance += sqlite3_column_double(sqlStmt, 2);
             total_balance += sqlite3_column_double(sqlStmt, 2);
         }
-        printf("\x1b[1mSubtotal %-13s  %10.2f %3s\x1b[0m\n"
+        printf(EMP_ON FS_MTYPE "    " FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
                 , maincategory_type_text(maincategory_type)
                 , maincategory_balance
                 , parameters.currency
                 );
-        printf("\n\x1b[1m%-22s  %10.2f %3s\x1b[0m\n"
-                , "Total balance"
+        printf("\n" EMP_ON FS_MTYPE "    " FS_GAP FS_VALUE FS_GAPS FS_CUR EMP_OFF "\n"
+                , "Total"
                 , total_balance
                 , parameters.currency
                 );
@@ -1219,7 +1227,7 @@ int transactions_balance(PARAMETERS parameters)
     } else if (parameters.currency[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -1386,22 +1394,22 @@ int transactions_balance(PARAMETERS parameters)
 
         // Print transactions on standard output
         printf("%s\n", balance_title);
-        printf("%-10s  %-20s  %-20s  %-20s  %10s %3s  %s\n", "DATE", "MAIN CATEGORY", "CATEGORY", "ACCOUNT", "VALUE", "CUR", "DESCRIPTION");
+        printf("\n" FS_DATE_T FS_GAP FS_NAME_T FS_GAP FS_NAME_T FS_GAP FS_NAME_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T FS_GAP FS_DESC_T "\n", "DATE", "MAIN CAT.", "CATEGORY", "ACCOUNT", "VALUE", "CUR", "DESCRIPTION");
         while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
-            printf("%d-%02d-%02d", sqlite3_column_int(sqlStmt, 4)
+            printf(FS_DATE, sqlite3_column_int(sqlStmt, 4)
                     , sqlite3_column_int(sqlStmt, 5)
                     , sqlite3_column_int(sqlStmt, 6));
-            printf("  %-20s", sqlite3_column_text(sqlStmt, 0));
-            printf("  %-20s", sqlite3_column_text(sqlStmt, 1));
-            printf("  %-20s", sqlite3_column_text(sqlStmt, 2));
-            printf("  %10.2f", sqlite3_column_double(sqlStmt, 8));
-            printf(" %-3s", parameters.currency);
-            printf("  %s", sqlite3_column_text(sqlStmt, 7));
+            printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 0));
+            printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 1));
+            printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 2));
+            printf(FS_GAP FS_VALUE, sqlite3_column_double(sqlStmt, 8));
+            printf(FS_GAPS FS_CUR, parameters.currency);
+            printf(FS_GAP FS_DESC, sqlite3_column_text(sqlStmt, 7));
             printf("\n");
 
             balance_value += sqlite3_column_double(sqlStmt, 8);
         }
-        printf("\nTotal sum: %12.2f %s\n", balance_value, parameters.currency);
+        printf("\nTotal: " FS_VALUE FS_GAPS FS_CUR "\n", balance_value, parameters.currency);
 
         if (rc != SQLITE_DONE) {
             fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
@@ -1444,7 +1452,7 @@ int net_value(PARAMETERS parameters)
     } else if (parameters.currency[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -1483,10 +1491,10 @@ int net_value(PARAMETERS parameters)
         }
 
         // Print report on standard output
-        printf("%-7s  %10s %-3s\n", "PERIOD", "NET VALUE", "CUR");
+        printf(FS_MONTH_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T "\n", "PERIOD", "NET VALUE", "CUR");
         while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
             net_value += sqlite3_column_double(sqlStmt, 2);
-            printf("%d-%02d  %10.2f %-3s\n"
+            printf(FS_MONTH FS_GAP FS_VALUE FS_GAPS FS_CUR "\n"
                     , sqlite3_column_int(sqlStmt, 0)
                     , sqlite3_column_int(sqlStmt, 1)
                     , net_value

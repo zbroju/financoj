@@ -38,9 +38,9 @@
 #define DATE_FULL_LEN 11
 
 #define PAR_PROGNAME_LEN 11
-#define PAR_NAME_LEN 16
-#define PAR_DESCRIPTION_LEN 1000
-#define PAR_INSTITUTION_LEN 31
+#define PAR_NAME_LEN 11
+#define PAR_DESCRIPTION_LEN 31
+#define PAR_INSTITUTION_LEN 21
 #define PAR_CURRENCY_LEN 4
 #define PAR_VALUE_LEN 11
 #define PAR_ID_NOT_SET -1
@@ -48,6 +48,36 @@
 #define OBJ_OR_TYPE_LEN 20
 
 #define NULL_STRING '\0'
+
+/* FORMATTING STRINGS */
+#define FS_GAP "  "
+#define FS_GAPS " "
+#define FS_ID "%5d"
+#define FS_ID_T "%5s"
+#define FS_NAME "%-10.10s"
+#define FS_NAME_T "%-10s"
+#define FS_ATYPE "%-10.10s"
+#define FS_ATYPE_T "%-10s"
+#define FS_CUR "%-3.3s"
+#define FS_CUR_T "%-3s"
+#define FS_CURL "%-13s"
+#define FS_EXCHRT "%13.4f"
+#define FS_EXCHRT_T "%-13s"
+#define FS_INST "%-20.20s"
+#define FS_INST_T "%-20s"
+#define FS_DESC "%-30.30s"
+#define FS_DESC_T "%-30s"
+#define FS_CTYPE "%-11.11s"
+#define FS_CTYPE_T "%-11s"
+#define FS_MTYPE "%-8.8s"
+#define FS_MTYPE_T "%-8s"
+#define FS_DATE "%4d-%02d-%02d"
+#define FS_DATE_T "%-10s"
+#define FS_VALUE "%10.2f"
+#define FS_VALUE_T "%10s"
+#define FS_MONTH "%4d-%02d"
+#define FS_MONTH_T "%-7s"
+
 
 /* COMMANDS AND PARAMETERS */
 #define OPTION_CMND_INIT_LONG "init"

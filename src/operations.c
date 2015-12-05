@@ -93,7 +93,7 @@ int account_add(PARAMETERS parameters)
         return 1;
     } else if (parameters.currency[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
-            strncpy(parameters.currency, parameters.default_currency, PAR_CURRENCY_LEN);
+            strncpy(parameters.currency, parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name
@@ -376,17 +376,17 @@ int account_list(PARAMETERS parameters)
         return 1;
     }
 
-    printf("%4s  %-20s  %-15s  %-4s  %-20s  %-20s\n"
-            , "ID", "NAME", "TYPE", "CURR", "BANK", "DESCRIPTION");
+    printf(FS_ID_T FS_GAP FS_NAME_T FS_GAP FS_ATYPE_T FS_GAP FS_CUR_T FS_GAP FS_INST_T FS_GAP FS_DESC_T "\n"
+            , "ID", "NAME", "TYPE", "CUR", "BANK", "DESCRIPTION");
 
     // Print accounts on standard output
     while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
-        printf("%4d", sqlite3_column_int(sqlStmt, 0));
-        printf("  %-20.20s", sqlite3_column_text(sqlStmt, 1));
-        printf("  %-15.15s", account_type_text(sqlite3_column_int(sqlStmt, 2)));
-        printf("  %-4.4s", sqlite3_column_text(sqlStmt, 3));
-        printf("  %-20.20s", sqlite3_column_text(sqlStmt, 4));
-        printf("  %-20.20s", sqlite3_column_text(sqlStmt, 5));
+        printf(FS_ID, sqlite3_column_int(sqlStmt, 0));
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 1));
+        printf(FS_GAP FS_ATYPE, account_type_text(sqlite3_column_int(sqlStmt, 2)));
+        printf(FS_GAP FS_CUR, sqlite3_column_text(sqlStmt, 3));
+        printf(FS_GAP FS_INST, sqlite3_column_text(sqlStmt, 4));
+        printf(FS_GAP FS_DESC, sqlite3_column_text(sqlStmt, 5));
         printf("\n");
     }
 
@@ -690,14 +690,14 @@ int category_list(PARAMETERS parameters)
         return 1;
     }
 
-    printf("%4s  %-10s  %-20s  %-20s\n", "ID", "TYPE", "MAIN", "CATEGORY");
+    printf(FS_ID_T FS_GAP FS_CTYPE_T FS_GAP FS_NAME_T FS_GAP FS_NAME_T "\n", "ID", "TYPE", "MAIN", "CATEGORY");
 
     // Print transactions on standard output
     while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
-        printf("%4d", sqlite3_column_int(sqlStmt, 0)); // id
-        printf("  %-10s", maincategory_type_text(sqlite3_column_int(sqlStmt, 1))); // type
-        printf("  %-20s", sqlite3_column_text(sqlStmt, 2)); // main category
-        printf("  %-20s", sqlite3_column_text(sqlStmt, 3)); // category
+        printf(FS_ID, sqlite3_column_int(sqlStmt, 0)); // id
+        printf(FS_GAP FS_CTYPE, maincategory_type_text(sqlite3_column_int(sqlStmt, 1))); // type
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 2)); // main category
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 3)); // category
         printf("\n");
     }
 
@@ -739,7 +739,7 @@ int currency_add(PARAMETERS parameters)
     } else if (parameters.currency_to[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency_to
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY_TO
                     , parameters.prog_name, OPTION_CURRENCY_TO_SHORT, OPTION_CURRENCY_TO_LONG);
@@ -815,7 +815,7 @@ int currency_edit(PARAMETERS parameters)
     } else if (parameters.currency_to[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency_to
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY_TO
                     , parameters.prog_name
@@ -910,7 +910,7 @@ int currency_remove(PARAMETERS parameters)
     } else if (parameters.currency_to[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency_to
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY_TO
                     , parameters.prog_name
@@ -997,13 +997,13 @@ int currency_list(PARAMETERS parameters)
         return 1;
     }
 
-    printf("%-13s  %-13s  %-13s\n", "CURRENCY FROM", "CURRENCY TO", "EXCHANGE RATE");
+    printf(FS_CURL FS_GAP FS_CURL FS_GAP FS_EXCHRT_T "\n", "CURRENCY FROM", "CURRENCY TO", "EXCHANGE RATE");
 
     // Print accounts on standard output
     while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
-        printf("%-13s", sqlite3_column_text(sqlStmt, 0));
-        printf("  %-13s", sqlite3_column_text(sqlStmt, 1));
-        printf("  %13.4f", sqlite3_column_double(sqlStmt, 2));
+        printf(FS_CURL, sqlite3_column_text(sqlStmt, 0));
+        printf(FS_GAP FS_CURL, sqlite3_column_text(sqlStmt, 1));
+        printf(FS_GAP FS_EXCHRT, sqlite3_column_double(sqlStmt, 2));
         printf("\n");
     }
 
@@ -1371,13 +1371,13 @@ int maincategory_list(PARAMETERS parameters)
         return 1;
     }
 
-    printf("%4s  %-10s  %-20s\n", "ID", "TYPE", "NAME");
+    printf(FS_ID_T FS_GAP FS_MTYPE_T FS_GAP FS_NAME_T "\n", "ID", "TYPE", "NAME");
 
     // Print accounts on standard output
     while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
-        printf("%4d", sqlite3_column_int(sqlStmt, 0));
-        printf("  %-10.10s", maincategory_type_text(sqlite3_column_int(sqlStmt, 1)));
-        printf("  %-20.20s", sqlite3_column_text(sqlStmt, 2));
+        printf(FS_ID, sqlite3_column_int(sqlStmt, 0));
+        printf(FS_GAP FS_MTYPE, maincategory_type_text(sqlite3_column_int(sqlStmt, 1)));
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 2));
         printf("\n");
     }
 
@@ -1832,20 +1832,19 @@ int transaction_list(PARAMETERS parameters)
         return 1;
     }
 
-    printf("%4s  %-10s  %-20s  %-8s  %-20s  %-20s  %10s  %3s  %s\n",
-            "ID", "DATE", "ACCOUNT", "TYPE", "MAIN CATEGORY", "CATEGORY", "VALUE", "CUR", "DESCRIPTION");
+    printf(FS_ID_T FS_GAP FS_DATE_T FS_GAP FS_NAME_T FS_GAP FS_MTYPE_T FS_GAP FS_NAME_T FS_GAP FS_NAME_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T FS_GAP FS_DESC_T "\n","ID", "DATE", "ACCOUNT", "TYPE", "MAIN CAT.", "CATEGORY", "VALUE", "CUR", "DESCRIPTION");
 
     // Print transactions on standard output
     while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
-        printf("%4d", sqlite3_column_int(sqlStmt, 0)); // id
-        printf("  %4d-%02d-%02d", sqlite3_column_int(sqlStmt, 1), sqlite3_column_int(sqlStmt, 2), sqlite3_column_int(sqlStmt, 3)); // date
-        printf("  %-20s", sqlite3_column_text(sqlStmt, 6)); // account
-        printf("  %-8s", maincategory_type_text(sqlite3_column_int(sqlStmt, 10)));
-        printf("  %-20s", sqlite3_column_text(sqlStmt, 9)); // main category
-        printf("  %-20s", sqlite3_column_text(sqlStmt, 8)); // category
-        printf("  %10.2f", sqlite3_column_double(sqlStmt, 5)); // value
-        printf("  %3s", sqlite3_column_text(sqlStmt, 7)); // currency
-        printf("  %.20s", sqlite3_column_text(sqlStmt, 4)); // description
+        printf(FS_ID, sqlite3_column_int(sqlStmt, 0)); // id
+        printf(FS_GAP FS_DATE, sqlite3_column_int(sqlStmt, 1), sqlite3_column_int(sqlStmt, 2), sqlite3_column_int(sqlStmt, 3)); // date
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 6)); // account
+        printf(FS_GAP FS_MTYPE, maincategory_type_text(sqlite3_column_int(sqlStmt, 10)));
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 9)); // main category
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 8)); // category
+        printf(FS_GAP FS_VALUE, sqlite3_column_double(sqlStmt, 5)); // value
+        printf(FS_GAPS FS_CUR, sqlite3_column_text(sqlStmt, 7)); // currency
+        printf(FS_GAP FS_DESC, sqlite3_column_text(sqlStmt, 4)); // description
         printf("\n");
     }
 
@@ -1898,7 +1897,7 @@ int budget_add(PARAMETERS parameters)
     } else if (parameters.currency[0] == NULL_STRING) {
         if (parameters.default_currency[0] != NULL_STRING) {
             strncpy(parameters.currency
-                    , parameters.default_currency, PAR_CURRENCY_LEN);
+                    , parameters.default_currency, PAR_CURRENCY_LEN - 1);
         } else {
             fprintf(stderr, MSG_MISSING_PAR_CURRENCY
                     , parameters.prog_name, OPTION_CURRENCY_SHORT, OPTION_CURRENCY_LONG);
@@ -2047,17 +2046,17 @@ int budget_list(PARAMETERS parameters)
         return 1;
     }
 
-    printf("%-7s  %-8s  %-20s  %-20s  %10s %3s\n",
-            "MONTH", "TYPE", "MAIN CATEGORY", "CATEGORY", "LIMIT", "CUR");
+    printf(FS_MONTH_T FS_GAP FS_MTYPE_T FS_GAP FS_NAME_T FS_GAP FS_NAME_T FS_GAP FS_VALUE_T FS_GAPS FS_CUR_T "\n",
+            "MONTH", "TYPE", "MAIN CAT.", "CATEGORY", "LIMIT", "CUR");
 
     // Print transactions on standard output
     while ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
-        printf("%4d-%02d", sqlite3_column_int(sqlStmt, 0), sqlite3_column_int(sqlStmt, 1)); // month
-        printf("  %-8s", maincategory_type_text(sqlite3_column_int(sqlStmt, 2)));
-        printf("  %-20s", sqlite3_column_text(sqlStmt, 3)); // main category
-        printf("  %-20s", sqlite3_column_text(sqlStmt, 4)); // category
-        printf("  %10.2f", sqlite3_column_double(sqlStmt, 5)); // value
-        printf(" %3s", sqlite3_column_text(sqlStmt, 6)); // currency
+        printf(FS_MONTH, sqlite3_column_int(sqlStmt, 0), sqlite3_column_int(sqlStmt, 1)); // month
+        printf(FS_GAP FS_MTYPE, maincategory_type_text(sqlite3_column_int(sqlStmt, 2)));
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 3)); // main category
+        printf(FS_GAP FS_NAME, sqlite3_column_text(sqlStmt, 4)); // category
+        printf(FS_GAP FS_VALUE, sqlite3_column_double(sqlStmt, 5)); // value
+        printf(FS_GAPS FS_CUR, sqlite3_column_text(sqlStmt, 6)); // currency
         printf("\n");
     }
 

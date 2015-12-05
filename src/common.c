@@ -77,7 +77,7 @@ char* account_type_text(ACCOUNT_TYPE acc_type)
     case ACC_TYPE_UNSET:
         return "unset";
     case ACC_TRANSACTIONAL:
-        return "Transactional";
+        return "Operations";
     case ACC_SAVING:
         return "Savings";
     case ACC_PROPERTY:
@@ -292,7 +292,7 @@ char* maincategory_type_text(MAINCATEGORY_TYPE maincategory_type)
     case CAT_INCOME:
         return "Income";
     default:
-        return "Unspecified";
+        return "unset";
     }
 }
 

@@ -127,6 +127,7 @@ static void setDefaultParameters(PARAMETERS* parameters, char* app_name);
 /* MAIN FUNCTION */
 int main(int argc, char* const argv[])
 {
+
     PARAMETERS parameters;
     COMMAND command = NO_COMMAND;
     OBJECT object = NO_OBJECT;
@@ -226,37 +227,37 @@ int main(int argc, char* const argv[])
             break;
         case OPTION_FILE_SHORT:
             printf("%s\n", optarg);
-            strncpy(parameters.dataFilePath, optarg, FILE_PATH_MAX);
+            strncpy(parameters.dataFilePath, optarg, FILE_PATH_MAX - 1);
             break;
         case OPTION_ID_SHORT:
             parameters.id = atoi(optarg);
             break;
         case OPTION_NAME_SHORT:
-            strncpy(parameters.name, optarg, PAR_NAME_LEN);
+            strncpy(parameters.name, optarg, PAR_NAME_LEN - 1);
             break;
         case OPTION_DESCRIPTION_SHORT:
-            strncpy(parameters.description, optarg, PAR_DESCRIPTION_LEN);
+            strncpy(parameters.description, optarg, PAR_DESCRIPTION_LEN - 1);
             break;
         case OPTION_BANK_SHORT:
-            strncpy(parameters.institution, optarg, PAR_INSTITUTION_LEN);
+            strncpy(parameters.institution, optarg, PAR_INSTITUTION_LEN - 1);
             break;
         case OPTION_CURRENCY_SHORT:
-            strncpy(parameters.currency, optarg, PAR_CURRENCY_LEN);
+            strncpy(parameters.currency, optarg, PAR_CURRENCY_LEN - 1);
             break;
         case OPTION_CURRENCY_TO_SHORT:
-            strncpy(parameters.currency_to, optarg, PAR_CURRENCY_LEN);
+            strncpy(parameters.currency_to, optarg, PAR_CURRENCY_LEN - 1);
             break;
         case OPTION_ACCOUNT_SHORT:
-            strncpy(parameters.acc_name, optarg, PAR_NAME_LEN);
+            strncpy(parameters.acc_name, optarg, PAR_NAME_LEN - 1);
             break;
         case OPTION_CATEGORY_SHORT:
-            strncpy(parameters.cat_name, optarg, PAR_NAME_LEN);
+            strncpy(parameters.cat_name, optarg, PAR_NAME_LEN - 1);
             break;
         case OPTION_MAINCATEGORY_SHORT:
-            strncpy(parameters.maincat_name, optarg, PAR_NAME_LEN);
+            strncpy(parameters.maincat_name, optarg, PAR_NAME_LEN - 1);
             break;
         case OPTION_VALUE_SHORT:
-            strncpy(parameters.value, optarg, PAR_VALUE_LEN);
+            strncpy(parameters.value, optarg, PAR_VALUE_LEN - 1);
             break;
         case OPTION_ACCOUNTTYPE_SHORT:
             if ((parameters.account_type = account_type_id(optarg)) == ACC_TYPE_UNKNOWN) {
@@ -275,7 +276,7 @@ int main(int argc, char* const argv[])
             }
             break;
         case OPTION_DATE_SHORT:
-            strncpy(parameters.date, optarg, DATE_FULL_LEN);
+            strncpy(parameters.date, optarg, DATE_FULL_LEN - 1);
             break;
         case OPTION_VERBOSE_SHORT:
             parameters.verbose = 1;
@@ -514,12 +515,12 @@ static int getParametersFromConfFile(PARAMETERS *parameters)
 
     // Get the DATA_FILE
     if (config_lookup_string(&cfg, "DATA_FILE", &str)) {
-        strncpy(parameters->dataFilePath, str, FILE_PATH_MAX);
+        strncpy(parameters->dataFilePath, str, FILE_PATH_MAX - 1);
     }
 
     // Get the DEFAULT_CURRENCY
     if (config_lookup_string(&cfg, "DEFAULT_CURRENCY", &str)) {
-        strncpy(parameters->default_currency, str, PAR_CURRENCY_LEN);
+        strncpy(parameters->default_currency, str, PAR_CURRENCY_LEN - 1);
     }
 
     // Get the VERBOSE flague
@@ -712,22 +713,25 @@ static void print_usage(void)
 
 static void setDefaultParameters(PARAMETERS* parameters, char* app_name)
 {
-    strncpy(parameters->prog_name, app_name, PAR_PROGNAME_LEN);
-    parameters->dataFilePath[0] = NULL_STRING;
-    parameters->name[0] = NULL_STRING;
-    parameters->description[0] = NULL_STRING;
-    parameters->institution[0] = NULL_STRING;
+     memset(parameters->prog_name, NULL_STRING, PAR_PROGNAME_LEN);
+     memset(parameters->dataFilePath, NULL_STRING, FILE_PATH_MAX);
+     memset(parameters->name, NULL_STRING, PAR_NAME_LEN);
+     memset(parameters->description, NULL_STRING, PAR_DESCRIPTION_LEN);
+     memset(parameters->institution, NULL_STRING, PAR_INSTITUTION_LEN);
+     memset(parameters->currency, NULL_STRING, PAR_CURRENCY_LEN);
+     memset(parameters->currency_to, NULL_STRING, PAR_CURRENCY_LEN);
+     memset(parameters->default_currency, NULL_STRING, PAR_CURRENCY_LEN);
+     memset(parameters->acc_name, NULL_STRING, PAR_NAME_LEN);
+     memset(parameters->cat_name, NULL_STRING, PAR_NAME_LEN);
+     memset(parameters->maincat_name, NULL_STRING, PAR_NAME_LEN);
+     memset(parameters->value, NULL_STRING, PAR_VALUE_LEN);
+     memset(parameters->date, NULL_STRING, DATE_FULL_LEN);
+     memset(parameters->date_default, NULL_STRING, DATE_FULL_LEN);
+
     parameters->account_type = ACC_TYPE_UNSET;
-    parameters->currency[0] = NULL_STRING;
-    parameters->currency_to[0] = NULL_STRING;
-    parameters->default_currency[0] = NULL_STRING;
-    parameters->acc_name[0] = NULL_STRING;
-    parameters->value[0] = NULL_STRING;
-    parameters->cat_name[0] = NULL_STRING;
-    parameters->maincat_name[0] = NULL_STRING;
     parameters->maincategory_type = CAT_TYPE_NOTSET;
-    parameters->date[0] = NULL_STRING;
     get_today(parameters->date_default);
     parameters->id = PAR_ID_NOT_SET;
     parameters->verbose = 0;
+    strncpy(parameters->prog_name, app_name, PAR_PROGNAME_LEN - 1);
 }

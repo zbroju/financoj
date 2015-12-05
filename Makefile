@@ -24,5 +24,5 @@ clean:
 	rm -r $(BUILD_DIR) $(TARGET_DIR)
 
 pre_compile:
-	[ ! -d $(BUILD_DIR) ] && mkdir -p $(BUILD_DIR)
-	[ ! -d $(TARGET_DIR) ] && mkdir -p $(TARGET_DIR)
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(TARGET_DIR)
