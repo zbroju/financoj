@@ -763,7 +763,7 @@ int currency_add(PARAMETERS parameters)
             "INSERT INTO CURRENCIES VALUES ("
             "'%s'" // currency from
             ",'%s'" // currency to
-            ",%f);", // echange rate
+            ",round(%f,4));", // echange rate
             parameters.currency,
             parameters.currency_to,
             atof(parameters.value));
@@ -841,7 +841,7 @@ int currency_edit(PARAMETERS parameters)
 
         // Prepare SQL query and perform database actions
         sprintf(sql_edit_currency,
-                "UPDATE CURRENCIES SET EXCHANGE_RATE=%f"
+                "UPDATE CURRENCIES SET EXCHANGE_RATE=round(%f,4)"
                 " WHERE"
                 " CURRENCY_FROM='%s'"
                 " AND CURRENCY_TO='%s';",
