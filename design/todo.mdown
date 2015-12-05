@@ -1,5 +1,4 @@
 # TO BE DONE
-- round values inserted/edited to db up to 2 digits after comma
 - round exchange rate iserted/edited to db up to 4 digits after comma
 - truncate all the strings before inserting to DB according to the set string lengths
 - adjust reports so that respect string lengths and be more compact
@@ -26,3 +25,4 @@
 - check if getID category excludes closed items
 - check if getID main category excludes closed items
 - change comments in all files to be consistent and aligned with license
+- round values inserted/edited to db up to 2 digits after comma

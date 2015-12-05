@@ -2135,7 +2135,7 @@ int budget_edit(PARAMETERS parameters)
 
         if (parameters.value[0] != NULL_STRING) {
             budget_value = category_factor_for_id(db, category_id) * atof(parameters.value);
-            sprintf(buf, "UPDATE BUDGETS SET VALUE=%f"
+            sprintf(buf, "UPDATE BUDGETS SET VALUE=round(%f,2)"
                     " WHERE YEAR=%d AND MONTH=%d AND CATEGORY_ID=%d;",
                     budget_value,
                     year, month, category_id);
