@@ -195,7 +195,7 @@ typedef struct parametersT {
     char value[PAR_VALUE_LEN];
     char date[DATE_FULL_LEN];
     char date_default[DATE_FULL_LEN];
-    unsigned long id; // if negative then it's not set
+    unsigned long id;           // if negative then it's not set
     int verbose;
 } PARAMETERS;
 
@@ -209,21 +209,21 @@ typedef struct parametersT {
  * @param acc_name char* with (part of) account name.
  * @return long id for found account.
  */
-long account_id_for_name(sqlite3* db, char* acc_name);
+long account_id_for_name(sqlite3 * db, char *acc_name);
 
 /**
  * Function returns ACCOUNT_TYPE number for given text.
  * @param account_type *char with account type
  * @return ACCOUNT_TYPE number.
  */
-ACCOUNT_TYPE account_type_id(char* account_type);
+ACCOUNT_TYPE account_type_id(char *account_type);
 
 /**
  * Function returns text description for account type.
  * @param acc_type ACC_TYPE enum value for which the text should be evaluated.
  * @return char* with text represenation of account type.
  */
-char* account_type_text(ACCOUNT_TYPE acc_type);
+char *account_type_text(ACCOUNT_TYPE acc_type);
 
 /**
  * This function returns multiplicator for transaction value depending on category id.
@@ -231,7 +231,7 @@ char* account_type_text(ACCOUNT_TYPE acc_type);
  * @param cat_id INT with category ID
  * @return INT: -1 for cost, 1 for income, 0 for transfer
  */
-int category_factor_for_id(sqlite3* db, int cat_id);
+int category_factor_for_id(sqlite3 * db, int cat_id);
 
 
 /**
@@ -240,7 +240,7 @@ int category_factor_for_id(sqlite3* db, int cat_id);
  * @param cat_name char* with (part of) category name.
  * @return long id for found category.
  */
-long category_id_for_name(sqlite3* db, char* cat_name);
+long category_id_for_name(sqlite3 * db, char *cat_name);
 
 /**
  * Parses string with date (format: YYYY-MM-DD) and writes the values
@@ -252,20 +252,21 @@ long category_id_for_name(sqlite3* db, char* cat_name);
  * @return DATA_TYPE with information about returned date
  * (0 - no date, 1 - only year, 2 - year-month, 3 - full date.
  */
-DATE_TYPE date_from_string(char* date_string, int *year_holder, int *month_holder, int *day_holder);
+DATE_TYPE date_from_string(char *date_string, int *year_holder,
+                           int *month_holder, int *day_holder);
 
 /**
  * Gets today date into date_holder.
  * @param date_holder char* to store the today date.
  */
-void get_today(char* date_holder);
+void get_today(char *date_holder);
 
 /**
  * Function returns text description for status of an item.
  * @param item_status ITEM_STATUS enum value for which the text should be evaluated.
  * @return char* with text representation of item status.
  */
-char* item_status_text(ITEM_STATUS item_status);
+char *item_status_text(ITEM_STATUS item_status);
 
 /**
  * This function returns main category id for given (part of) its name.
@@ -273,7 +274,7 @@ char* item_status_text(ITEM_STATUS item_status);
  * @param main_category_name char* with (part of) main category name.
  * @return long id for found main category.
  */
-long maincategory_id_for_name(sqlite3* db, char* maincategory_name);
+long maincategory_id_for_name(sqlite3 * db, char *maincategory_name);
 
 /**
  * Function returns multiplicator for given type.
@@ -288,14 +289,14 @@ int maincategory_type_factor(MAINCATEGORY_TYPE maincategory_type);
  * @param category_type *char with category type
  * @return CATEGORY_TYPE number.
  */
-MAINCATEGORY_TYPE maincategory_type_id(char* maincategory_type);
+MAINCATEGORY_TYPE maincategory_type_id(char *maincategory_type);
 
 /**
  * Function returns text description for category type
  * @param category_type CATEGORY_TYPE enum value for which the text should be evaluated.
  * @return char* with text representation of category type.
  */
-char* maincategory_type_text(MAINCATEGORY_TYPE maincategory_type);
+char *maincategory_type_text(MAINCATEGORY_TYPE maincategory_type);
 
 /**
  * Returns category id for given transaction
@@ -303,7 +304,8 @@ char* maincategory_type_text(MAINCATEGORY_TYPE maincategory_type);
  * @param transaction_id unsigned long with id of the transaction
  * @return
  */
-unsigned long transaction_category_id(sqlite3* db, unsigned long transaction_id);
+unsigned long transaction_category_id(sqlite3 * db,
+                                      unsigned long transaction_id);
 
 
 /* END OF INCLUDE GUARD */

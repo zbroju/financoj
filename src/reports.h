@@ -67,5 +67,4 @@ int budget_report_maincategories(PARAMETERS parameters);
 int net_value(PARAMETERS parameters);
 
 
-#endif	/* REPORTS_H */
-
+#endif                          /* REPORTS_H */

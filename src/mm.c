@@ -92,19 +92,19 @@ typedef enum objectT {
  * @param app_name char* this program name.
  * @return int with error code.
  */
-static int getObject(char* arg, OBJECT* obj, char* app_name);
+static int getObject(char *arg, OBJECT * obj, char *app_name);
 
 /**
  * Reads config file and assigns config values to respective parameters.
  * @param parameters PARAMETERS to be set.
  * @return int with error code.
  */
-static int getParametersFromConfFile(PARAMETERS* parameters);
+static int getParametersFromConfFile(PARAMETERS * parameters);
 
 /**
  * Prints errer message if there are too many commands given.
  */
-static int perrorTooManyCmnds(char* app_name);
+static int perrorTooManyCmnds(char *app_name);
 
 /**
  * Prints full help on standard output.
@@ -121,11 +121,11 @@ static void print_usage(void);
  * @param parameters PARAMETERS to be set.
  * @param app_name string with the application name.
  */
-static void setDefaultParameters(PARAMETERS* parameters, char* app_name);
+static void setDefaultParameters(PARAMETERS * parameters, char *app_name);
 
 
 /* MAIN FUNCTION */
-int main(int argc, char* const argv[])
+int main(int argc, char *const argv[])
 {
 
     PARAMETERS parameters;
@@ -138,30 +138,40 @@ int main(int argc, char* const argv[])
     if (getParametersFromConfFile(&parameters) != 0) {
         exit(EXIT_FAILURE);
     }
-
-
     // Define and parse user commands, objects and options
     static struct option cmdl_options[] = {
         {OPTION_CMND_INIT_LONG, no_argument, 0, OPTION_CMND_INIT_SHORT},
-        {OPTION_CMND_ADD_LONG, required_argument, 0, OPTION_CMND_ADD_SHORT},
-        {OPTION_CMND_EDIT_LONG, required_argument, 0, OPTION_CMND_EDIT_SHORT},
-        {OPTION_CMND_DELETE_LONG, required_argument, 0, OPTION_CMND_DELETE_SHORT},
-        {OPTION_CMND_LIST_LONG, required_argument, 0, OPTION_CMND_LIST_SHORT},
-        {OPTION_CMND_REPORT_LONG, required_argument, 0, OPTION_CMND_REPORT_SHORT},
+        {OPTION_CMND_ADD_LONG, required_argument, 0,
+         OPTION_CMND_ADD_SHORT},
+        {OPTION_CMND_EDIT_LONG, required_argument, 0,
+         OPTION_CMND_EDIT_SHORT},
+        {OPTION_CMND_DELETE_LONG, required_argument, 0,
+         OPTION_CMND_DELETE_SHORT},
+        {OPTION_CMND_LIST_LONG, required_argument, 0,
+         OPTION_CMND_LIST_SHORT},
+        {OPTION_CMND_REPORT_LONG, required_argument, 0,
+         OPTION_CMND_REPORT_SHORT},
         {OPTION_CMND_HELP_LONG, no_argument, 0, OPTION_CMND_HELP_SHORT},
         {OPTION_FILE_LONG, required_argument, 0, OPTION_FILE_SHORT},
         {OPTION_ID_LONG, required_argument, 0, OPTION_ID_SHORT},
         {OPTION_NAME_LONG, required_argument, 0, OPTION_NAME_SHORT},
-        {OPTION_DESCRIPTION_LONG, required_argument, 0, OPTION_DESCRIPTION_SHORT},
+        {OPTION_DESCRIPTION_LONG, required_argument, 0,
+         OPTION_DESCRIPTION_SHORT},
         {OPTION_BANK_LONG, required_argument, 0, OPTION_BANK_SHORT},
-        {OPTION_CURRENCY_LONG, required_argument, 0, OPTION_CURRENCY_SHORT},
-        {OPTION_CURRENCY_TO_LONG, required_argument, 0, OPTION_CURRENCY_TO_SHORT},
+        {OPTION_CURRENCY_LONG, required_argument, 0,
+         OPTION_CURRENCY_SHORT},
+        {OPTION_CURRENCY_TO_LONG, required_argument, 0,
+         OPTION_CURRENCY_TO_SHORT},
         {OPTION_ACCOUNT_LONG, required_argument, 0, OPTION_ACCOUNT_SHORT},
-        {OPTION_CATEGORY_LONG, required_argument, 0, OPTION_CATEGORY_SHORT},
-        {OPTION_MAINCATEGORY_LONG, required_argument, 0, OPTION_MAINCATEGORY_SHORT},
+        {OPTION_CATEGORY_LONG, required_argument, 0,
+         OPTION_CATEGORY_SHORT},
+        {OPTION_MAINCATEGORY_LONG, required_argument, 0,
+         OPTION_MAINCATEGORY_SHORT},
         {OPTION_VALUE_LONG, required_argument, 0, OPTION_VALUE_SHORT},
-        {OPTION_ACCOUNTTYPE_LONG, required_argument, 0, OPTION_ACCOUNTTYPE_SHORT},
-        {OPTION_MAINCATEGORYTYPE_LONG, required_argument, 0, OPTION_MAINCATEGORYTYPE_SHORT},
+        {OPTION_ACCOUNTTYPE_LONG, required_argument, 0,
+         OPTION_ACCOUNTTYPE_SHORT},
+        {OPTION_MAINCATEGORYTYPE_LONG, required_argument, 0,
+         OPTION_MAINCATEGORYTYPE_SHORT},
         {OPTION_DATE_LONG, required_argument, 0, OPTION_DATE_SHORT},
         {OPTION_VERBOSE_LONG, no_argument, 0, OPTION_VERBOSE_SHORT},
         {0, 0, 0, 0}
@@ -169,7 +179,9 @@ int main(int argc, char* const argv[])
 
     int opt = 0, long_index = 0;
 
-    while ((opt = getopt_long(argc, argv, OPTIONS_LIST, cmdl_options, &long_index)) != -1) {
+    while ((opt =
+            getopt_long(argc, argv, OPTIONS_LIST, cmdl_options,
+                        &long_index)) != -1) {
         switch (opt) {
         case OPTION_CMND_INIT_SHORT:
             if (command == NO_COMMAND) {
@@ -235,10 +247,12 @@ int main(int argc, char* const argv[])
             strncpy(parameters.name, optarg, PAR_NAME_LEN - 1);
             break;
         case OPTION_DESCRIPTION_SHORT:
-            strncpy(parameters.description, optarg, PAR_DESCRIPTION_LEN - 1);
+            strncpy(parameters.description, optarg,
+                    PAR_DESCRIPTION_LEN - 1);
             break;
         case OPTION_BANK_SHORT:
-            strncpy(parameters.institution, optarg, PAR_INSTITUTION_LEN - 1);
+            strncpy(parameters.institution, optarg,
+                    PAR_INSTITUTION_LEN - 1);
             break;
         case OPTION_CURRENCY_SHORT:
             strncpy(parameters.currency, optarg, PAR_CURRENCY_LEN - 1);
@@ -259,18 +273,18 @@ int main(int argc, char* const argv[])
             strncpy(parameters.value, optarg, PAR_VALUE_LEN - 1);
             break;
         case OPTION_ACCOUNTTYPE_SHORT:
-            if ((parameters.account_type = account_type_id(optarg)) == ACC_TYPE_UNKNOWN) {
-                fprintf(stderr, "%s: uknown account type: %s.\n"
-                        , parameters.prog_name
-                        , optarg);
+            if ((parameters.account_type =
+                 account_type_id(optarg)) == ACC_TYPE_UNKNOWN) {
+                fprintf(stderr, "%s: uknown account type: %s.\n",
+                        parameters.prog_name, optarg);
                 result = 1;
             }
             break;
         case OPTION_MAINCATEGORYTYPE_SHORT:
-            if ((parameters.maincategory_type = maincategory_type_id(optarg)) == CAT_TYPE_UNKNOWN) {
-                fprintf(stderr, "%s: unknown main category type: %s.\n"
-                        , parameters.prog_name
-                        , optarg);
+            if ((parameters.maincategory_type =
+                 maincategory_type_id(optarg)) == CAT_TYPE_UNKNOWN) {
+                fprintf(stderr, "%s: unknown main category type: %s.\n",
+                        parameters.prog_name, optarg);
                 result = 1;
             }
             break;
@@ -284,7 +298,8 @@ int main(int argc, char* const argv[])
             result = 1;
             break;
         default:
-             fprintf(stderr, "%s: unknown option %c.\n", parameters.prog_name, (char) opt);
+            fprintf(stderr, "%s: unknown option %c.\n",
+                    parameters.prog_name, (char) opt);
             result = 1;
         }
     }
@@ -292,8 +307,6 @@ int main(int argc, char* const argv[])
     if (result) {
         exit(EXIT_FAILURE);
     }
-
-
     // Display unknown options
     if (optind < argc) {
         fprintf(stderr, "%s: unknown options:", parameters.prog_name);
@@ -302,8 +315,6 @@ int main(int argc, char* const argv[])
         }
         fprintf(stderr, ": Skipped.\n");
     }
-
-
     // Assign a function to respective command and its argument (object)
     if (command == NO_COMMAND) {
         print_usage();
@@ -331,8 +342,8 @@ int main(int argc, char* const argv[])
             result = budget_add(parameters);
             break;
         default:
-             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
-             result = EXIT_FAILURE;
+            fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+            result = EXIT_FAILURE;
         }
     } else if (command == EDIT) {
         switch (object) {
@@ -355,8 +366,8 @@ int main(int argc, char* const argv[])
             result = budget_edit(parameters);
             break;
         default:
-             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
-             result = EXIT_FAILURE;
+            fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+            result = EXIT_FAILURE;
         }
     } else if (command == DELETE) {
         switch (object) {
@@ -379,8 +390,8 @@ int main(int argc, char* const argv[])
             result = budget_remove(parameters);
             break;
         default:
-             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
-             result = EXIT_FAILURE;
+            fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+            result = EXIT_FAILURE;
         }
     } else if (command == LIST) {
         switch (object) {
@@ -403,8 +414,8 @@ int main(int argc, char* const argv[])
             result = budget_list(parameters);
             break;
         default:
-             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
-             result = EXIT_FAILURE;
+            fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+            result = EXIT_FAILURE;
         }
     } else if (command == REPORT) {
         switch (object) {
@@ -433,8 +444,8 @@ int main(int argc, char* const argv[])
             result = net_value(parameters);
             break;
         default:
-             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
-             result = EXIT_FAILURE;
+            fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+            result = EXIT_FAILURE;
         }
     } else if (command == HELP) {
         print_help();
@@ -446,67 +457,97 @@ int main(int argc, char* const argv[])
 
 /* SUPPORTIVE FUNCTIONS */
 
-static int getObject(char* arg, OBJECT* obj, char* app_name)
+static int getObject(char *arg, OBJECT * obj, char *app_name)
 {
     int result = 0;
 
     if (*obj == NO_OBJECT) {
         if (strncmp(arg, OBJECT_ACCOUNT_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_ACCOUNT_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+            || strncmp(arg, OBJECT_ACCOUNT_SHORT, OBJ_OR_TYPE_LEN) == 0) {
             *obj = ACCOUNT;
-        } else if (strncmp(arg, OBJECT_TRANSACTION_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_TRANSACTION_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else if (strncmp(arg, OBJECT_TRANSACTION_LONG, OBJ_OR_TYPE_LEN)
+                   == 0
+                   || strncmp(arg, OBJECT_TRANSACTION_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = TRANSACTION;
-        } else if (strncmp(arg, OBJECT_MAINCATEGORY_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_MAINCATEGORY_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else if (strncmp(arg, OBJECT_MAINCATEGORY_LONG, OBJ_OR_TYPE_LEN)
+                   == 0
+                   || strncmp(arg, OBJECT_MAINCATEGORY_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = MAIN_CATEGORY;
         } else if (strncmp(arg, OBJECT_CATEGORY_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_CATEGORY_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+                   || strncmp(arg, OBJECT_CATEGORY_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = CATEGORY;
         } else if (strncmp(arg, OBJECT_CURRENCY_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_CURRENCY_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+                   || strncmp(arg, OBJECT_CURRENCY_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = CURRENCY;
         } else if (strncmp(arg, OBJECT_BUDGET_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_BUDGET_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+                   || strncmp(arg, OBJECT_BUDGET_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = BUDGET;
-        } else if (strncmp(arg, OBJECT_ACCOUNTSBALANCE_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_ACCOUNTSBALANCE_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else
+            if (strncmp(arg, OBJECT_ACCOUNTSBALANCE_LONG, OBJ_OR_TYPE_LEN)
+                == 0
+                || strncmp(arg, OBJECT_ACCOUNTSBALANCE_SHORT,
+                           OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_ACCOUNTS_BALANCE;
-        } else if (strncmp(arg, OBJECT_TRANSACTIONSBALANCE_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_TRANSACTIONSBALANCE_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else
+            if (strncmp
+                (arg, OBJECT_TRANSACTIONSBALANCE_LONG, OBJ_OR_TYPE_LEN)
+                == 0
+                || strncmp(arg, OBJECT_TRANSACTIONSBALANCE_SHORT,
+                           OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_TRANSACTIONS_BALANCE;
-        } else if (strncmp(arg, OBJECT_ASSETSSUMMARY_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_ASSETSSUMMARY_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else if (strncmp(arg, OBJECT_ASSETSSUMMARY_LONG, OBJ_OR_TYPE_LEN)
+                   == 0
+                   || strncmp(arg, OBJECT_ASSETSSUMMARY_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_ASSETS_SUMMARY;
-        } else if (strncmp(arg, OBJECT_CATEGORIESBALANCE_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_CATEGORIESBALANCE_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else
+            if (strncmp
+                (arg, OBJECT_CATEGORIESBALANCE_LONG, OBJ_OR_TYPE_LEN)
+                == 0
+                || strncmp(arg, OBJECT_CATEGORIESBALANCE_SHORT,
+                           OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_CATEGORIES_BALANCE;
-        } else if (strncmp(arg, OBJECT_MAINCATSBALANCE_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_MAINCATSBALANCE_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else
+            if (strncmp(arg, OBJECT_MAINCATSBALANCE_LONG, OBJ_OR_TYPE_LEN)
+                == 0
+                || strncmp(arg, OBJECT_MAINCATSBALANCE_SHORT,
+                           OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_MAINCATS_BALANCE;
-        } else if (strncmp(arg, OBJECT_BUDGETCATS_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_BUDGETCATS_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else if (strncmp(arg, OBJECT_BUDGETCATS_LONG, OBJ_OR_TYPE_LEN) ==
+                   0
+                   || strncmp(arg, OBJECT_BUDGETCATS_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_BUDGET_CATS;
-        } else if (strncmp(arg, OBJECT_BUDGETMAINCATS_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_BUDGETMAINCATS_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+        } else
+            if (strncmp(arg, OBJECT_BUDGETMAINCATS_LONG, OBJ_OR_TYPE_LEN)
+                == 0
+                || strncmp(arg, OBJECT_BUDGETMAINCATS_SHORT,
+                           OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_BUDGET_MAINCATS;
         } else if (strncmp(arg, OBJECT_NETVALUE_LONG, OBJ_OR_TYPE_LEN) == 0
-                || strncmp(arg, OBJECT_NETVALUE_SHORT, OBJ_OR_TYPE_LEN) == 0) {
+                   || strncmp(arg, OBJECT_NETVALUE_SHORT,
+                              OBJ_OR_TYPE_LEN) == 0) {
             *obj = REP_NETVALUE;
         } else {
             fprintf(stderr, "%s: unknown <object> - %s.\n", app_name, arg);
             result = 1;
         }
     } else {
-        fprintf(stderr, "%s: more than one object given - %s. Stop.\n", app_name, arg);
+        fprintf(stderr, "%s: more than one object given - %s. Stop.\n",
+                app_name, arg);
         result = 1;
     }
     return result;
 }
 
-static int getParametersFromConfFile(PARAMETERS *parameters)
+static int getParametersFromConfFile(PARAMETERS * parameters)
 {
-    char conf_file_path[FILE_PATH_MAX] = {NULL_STRING};
+    char conf_file_path[FILE_PATH_MAX] = { NULL_STRING };
     config_t cfg;
     const char *str;
 
@@ -516,27 +557,20 @@ static int getParametersFromConfFile(PARAMETERS *parameters)
     // Read the file. If failure - report & exit.
     config_init(&cfg);
     if (!config_read_file(&cfg, conf_file_path)) {
-        fprintf(stderr, "%s: %s in file %s (line: %d)\n"
-                , parameters->prog_name
-                , config_error_text(&cfg)
-                , config_error_file(&cfg)
-                , config_error_line(&cfg)
-
-                );
+        fprintf(stderr, "%s: %s in file %s (line: %d)\n",
+                parameters->prog_name, config_error_text(&cfg),
+                config_error_file(&cfg), config_error_line(&cfg));
         config_destroy(&cfg);
         return (EXIT_FAILURE);
     }
-
     // Get the DATA_FILE
     if (config_lookup_string(&cfg, "DATA_FILE", &str)) {
         strncpy(parameters->dataFilePath, str, FILE_PATH_MAX - 1);
     }
-
     // Get the DEFAULT_CURRENCY
     if (config_lookup_string(&cfg, "DEFAULT_CURRENCY", &str)) {
         strncpy(parameters->default_currency, str, PAR_CURRENCY_LEN - 1);
     }
-
     // Get the VERBOSE flague
     int verbose_flague;
     if (config_lookup_bool(&cfg, "VERBOSE", &verbose_flague)) {
@@ -547,7 +581,7 @@ static int getParametersFromConfFile(PARAMETERS *parameters)
     return (EXIT_SUCCESS);
 }
 
-static int perrorTooManyCmnds(char* app_name)
+static int perrorTooManyCmnds(char *app_name)
 {
     fprintf(stderr, "%s: more than one command given. Stop.\n", app_name);
     return 1;
@@ -558,189 +592,144 @@ static void print_help(void)
     printf("Usage:\n");
     printf("\tmm COMMAND [object | reports] [OPTIONS]\n");
     printf("\nCOMMANDS:\n");
-    printf("\t-%c, --%s\tinit a new file. Requires -%c (--%s) option.\n"
-            , OPTION_CMND_INIT_SHORT
-            , OPTION_CMND_INIT_LONG
-            , OPTION_FILE_SHORT
-            , OPTION_FILE_LONG);
-    printf("\t-%c, --%s\tadd new <object> to file.\n"
-            , OPTION_CMND_ADD_SHORT
-            , OPTION_CMND_ADD_LONG);
-    printf("\t-%c, --%s\tedit existing <object>. Requires -%c (--%s) option to indicate the object.\n"
-            , OPTION_CMND_EDIT_SHORT
-            , OPTION_CMND_EDIT_LONG
-            , OPTION_ID_SHORT
-            , OPTION_ID_LONG);
-    printf("\t-%c, --%s\tdelete existing <object>. Requires -%c (--%s) option to indicate the object.\n"
-            , OPTION_CMND_DELETE_SHORT
-            , OPTION_CMND_DELETE_LONG
-            , OPTION_ID_SHORT
-            , OPTION_ID_LONG);
-    printf("\t-%c, --%s\tlist <objects>. You can apply filters for the <objects>.\n"
-            , OPTION_CMND_LIST_SHORT
-            , OPTION_CMND_LIST_LONG);
-    printf("\t-%c, --%s\tshow <report>. You can apply filters for the <report>.\n"
-            , OPTION_CMND_REPORT_SHORT
-            , OPTION_CMND_REPORT_LONG);
-    printf("\t-%c, --%s\tshow this help information.\n"
-            , OPTION_CMND_HELP_SHORT
-            , OPTION_CMND_HELP_LONG);
+    printf("\t-%c, --%s\tinit a new file. Requires -%c (--%s) option.\n",
+           OPTION_CMND_INIT_SHORT, OPTION_CMND_INIT_LONG,
+           OPTION_FILE_SHORT, OPTION_FILE_LONG);
+    printf("\t-%c, --%s\tadd new <object> to file.\n",
+           OPTION_CMND_ADD_SHORT, OPTION_CMND_ADD_LONG);
+    printf
+        ("\t-%c, --%s\tedit existing <object>. Requires -%c (--%s) option to indicate the object.\n",
+         OPTION_CMND_EDIT_SHORT, OPTION_CMND_EDIT_LONG, OPTION_ID_SHORT,
+         OPTION_ID_LONG);
+    printf
+        ("\t-%c, --%s\tdelete existing <object>. Requires -%c (--%s) option to indicate the object.\n",
+         OPTION_CMND_DELETE_SHORT, OPTION_CMND_DELETE_LONG,
+         OPTION_ID_SHORT, OPTION_ID_LONG);
+    printf
+        ("\t-%c, --%s\tlist <objects>. You can apply filters for the <objects>.\n",
+         OPTION_CMND_LIST_SHORT, OPTION_CMND_LIST_LONG);
+    printf
+        ("\t-%c, --%s\tshow <report>. You can apply filters for the <report>.\n",
+         OPTION_CMND_REPORT_SHORT, OPTION_CMND_REPORT_LONG);
+    printf("\t-%c, --%s\tshow this help information.\n",
+           OPTION_CMND_HELP_SHORT, OPTION_CMND_HELP_LONG);
     printf("\nOBJECTS:\n");
-    printf("\t%s, %s\tobject to manipulate accounts.\n"
-            , OBJECT_ACCOUNT_SHORT
-            , OBJECT_ACCOUNT_LONG);
-    printf("\t%s, %s\tobject to manipulate transactions.\n"
-            , OBJECT_TRANSACTION_SHORT
-            , OBJECT_TRANSACTION_LONG);
-    printf("\t%s, %s\tobject to manipulate main categories.\n"
-            , OBJECT_MAINCATEGORY_SHORT
-            , OBJECT_MAINCATEGORY_LONG);
-    printf("\t%s, %s\tobject to manipulate currencies.\n"
-            , OBJECT_CURRENCY_SHORT
-            , OBJECT_CURRENCY_LONG);
-    printf("\t%s, %s\tobject to manipulate categories.\n"
-            , OBJECT_CATEGORY_SHORT
-            , OBJECT_CATEGORY_LONG);
-    printf("\t%s, %s\tobject to manipulate budgets.\n"
-            , OBJECT_BUDGET_SHORT
-            , OBJECT_BUDGET_LONG);
+    printf("\t%s, %s\tobject to manipulate accounts.\n",
+           OBJECT_ACCOUNT_SHORT, OBJECT_ACCOUNT_LONG);
+    printf("\t%s, %s\tobject to manipulate transactions.\n",
+           OBJECT_TRANSACTION_SHORT, OBJECT_TRANSACTION_LONG);
+    printf("\t%s, %s\tobject to manipulate main categories.\n",
+           OBJECT_MAINCATEGORY_SHORT, OBJECT_MAINCATEGORY_LONG);
+    printf("\t%s, %s\tobject to manipulate currencies.\n",
+           OBJECT_CURRENCY_SHORT, OBJECT_CURRENCY_LONG);
+    printf("\t%s, %s\tobject to manipulate categories.\n",
+           OBJECT_CATEGORY_SHORT, OBJECT_CATEGORY_LONG);
+    printf("\t%s, %s\tobject to manipulate budgets.\n",
+           OBJECT_BUDGET_SHORT, OBJECT_BUDGET_LONG);
     printf("\nREPORTS:\n");
-    printf("\t%s, %s\tobject to show report of accounts balances.\n"
-            , OBJECT_ACCOUNTSBALANCE_SHORT
-            , OBJECT_ACCOUNTSBALANCE_LONG);
-    printf("\t%s, %s\tobject to show report of assets summary.\n"
-            , OBJECT_ASSETSSUMMARY_SHORT
-            , OBJECT_ASSETSSUMMARY_LONG);
-    printf("\t%s, %s\tobject to show report of transactions balances.\n"
-            , OBJECT_TRANSACTIONSBALANCE_SHORT
-            , OBJECT_TRANSACTIONSBALANCE_LONG);
-    printf("\t%s, %s\tobject to show report of categories balances.\n"
-            , OBJECT_CATEGORIESBALANCE_SHORT
-            , OBJECT_CATEGORIESBALANCE_LONG);
-    printf("\t%s, %s\tobject to show report of main categories balances.\n"
-            , OBJECT_MAINCATSBALANCE_SHORT
-            , OBJECT_MAINCATSBALANCE_LONG);
-    printf("\t%s, %s\tobject to show report of budget for categories.\n"
-            , OBJECT_BUDGETCATS_SHORT
-            , OBJECT_BUDGETCATS_LONG);
-    printf("\t%s, %s\tobject to show report of budget for main categories.\n"
-            , OBJECT_BUDGETMAINCATS_SHORT
-            , OBJECT_BUDGETMAINCATS_LONG);
-    printf("\t%s, %s\tobject to show report of net value.\n"
-            , OBJECT_NETVALUE_SHORT
-            , OBJECT_NETVALUE_LONG);
+    printf("\t%s, %s\tobject to show report of accounts balances.\n",
+           OBJECT_ACCOUNTSBALANCE_SHORT, OBJECT_ACCOUNTSBALANCE_LONG);
+    printf("\t%s, %s\tobject to show report of assets summary.\n",
+           OBJECT_ASSETSSUMMARY_SHORT, OBJECT_ASSETSSUMMARY_LONG);
+    printf("\t%s, %s\tobject to show report of transactions balances.\n",
+           OBJECT_TRANSACTIONSBALANCE_SHORT,
+           OBJECT_TRANSACTIONSBALANCE_LONG);
+    printf("\t%s, %s\tobject to show report of categories balances.\n",
+           OBJECT_CATEGORIESBALANCE_SHORT, OBJECT_CATEGORIESBALANCE_LONG);
+    printf
+        ("\t%s, %s\tobject to show report of main categories balances.\n",
+         OBJECT_MAINCATSBALANCE_SHORT, OBJECT_MAINCATSBALANCE_LONG);
+    printf("\t%s, %s\tobject to show report of budget for categories.\n",
+           OBJECT_BUDGETCATS_SHORT, OBJECT_BUDGETCATS_LONG);
+    printf
+        ("\t%s, %s\tobject to show report of budget for main categories.\n",
+         OBJECT_BUDGETMAINCATS_SHORT, OBJECT_BUDGETMAINCATS_LONG);
+    printf("\t%s, %s\tobject to show report of net value.\n",
+           OBJECT_NETVALUE_SHORT, OBJECT_NETVALUE_LONG);
     printf("\nOPTIONS:\n");
-    printf("\t-%c, --%s\tfull path to data file.\n"
-            , OPTION_FILE_SHORT
-            , OPTION_FILE_LONG);
-    printf("\t-%c, --%s\tid for identifying particular object.\n"
-            , OPTION_ID_SHORT
-            , OPTION_ID_LONG);
-    printf("\t-%c, --%s\tname of an object (account, main category & category).\n"
-            , OPTION_NAME_SHORT
-            , OPTION_NAME_LONG);
-    printf("\t-%c, --%s\tdescription of a transaction.\n"
-            , OPTION_DESCRIPTION_SHORT
-            , OPTION_DESCRIPTION_LONG);
-    printf("\t-%c, --%s\tbank name where a given account is maintained.\n"
-            , OPTION_BANK_SHORT
-            , OPTION_BANK_LONG);
-    printf("\t-%c, --%s\tcurrency.\n"
-            , OPTION_CURRENCY_SHORT
-            , OPTION_CURRENCY_LONG);
-    printf("\t-%c, --%s\tcurrency against.\n"
-            , OPTION_CURRENCY_TO_SHORT
-            , OPTION_CURRENCY_TO_LONG);
-    printf("\t-%c, --%s\taccount name. It's enough to give part of the name as long as it allows to identify one account.\n"
-            , OPTION_ACCOUNT_SHORT
-            , OPTION_ACCOUNT_LONG);
-    printf("\t-%c, --%s\tcategory name. It's enough to give part of the name as long as it allows to identify one category.\n"
-            , OPTION_CATEGORY_SHORT
-            , OPTION_CATEGORY_LONG);
-    printf("\t-%c, --%s\tmain category name. It's enough to give part of the name as long as it allows to identify one main category.\n"
-            , OPTION_MAINCATEGORY_SHORT
-            , OPTION_MAINCATEGORY_LONG);
-    printf("\t-%c, --%s\tvalue of a transaction, or exchange rate when working with currency.\n"
-            , OPTION_VALUE_SHORT
-            , OPTION_VALUE_LONG);
-    printf("\t-%c, --%s\taccount type. Allowed values are: t/transact (default), s/saving, p/property, i/investment, l/loan.\n"
-            , OPTION_ACCOUNTTYPE_SHORT
-            , OPTION_ACCOUNTTYPE_LONG);
-    printf("\t-%c, --%s\tmain category type. Allowed values are: c/cost, t/transfer, i/income.\n"
-            , OPTION_MAINCATEGORYTYPE_SHORT
-            , OPTION_MAINCATEGORYTYPE_LONG);
-    printf("\t-%c, --%s\tdate. Required format is YYYY (for year), YYYY-MM (for year-month) and YYYY-MM-DD (for full date). Today by default.\n"
-            , OPTION_DATE_SHORT
-            , OPTION_DATE_LONG);
-    printf("\t  , --%s\tmake the program verbose.\n"
-            , OPTION_VERBOSE_LONG);
+    printf("\t-%c, --%s\tfull path to data file.\n", OPTION_FILE_SHORT,
+           OPTION_FILE_LONG);
+    printf("\t-%c, --%s\tid for identifying particular object.\n",
+           OPTION_ID_SHORT, OPTION_ID_LONG);
+    printf
+        ("\t-%c, --%s\tname of an object (account, main category & category).\n",
+         OPTION_NAME_SHORT, OPTION_NAME_LONG);
+    printf("\t-%c, --%s\tdescription of a transaction.\n",
+           OPTION_DESCRIPTION_SHORT, OPTION_DESCRIPTION_LONG);
+    printf("\t-%c, --%s\tbank name where a given account is maintained.\n",
+           OPTION_BANK_SHORT, OPTION_BANK_LONG);
+    printf("\t-%c, --%s\tcurrency.\n", OPTION_CURRENCY_SHORT,
+           OPTION_CURRENCY_LONG);
+    printf("\t-%c, --%s\tcurrency against.\n", OPTION_CURRENCY_TO_SHORT,
+           OPTION_CURRENCY_TO_LONG);
+    printf
+        ("\t-%c, --%s\taccount name. It's enough to give part of the name as long as it allows to identify one account.\n",
+         OPTION_ACCOUNT_SHORT, OPTION_ACCOUNT_LONG);
+    printf
+        ("\t-%c, --%s\tcategory name. It's enough to give part of the name as long as it allows to identify one category.\n",
+         OPTION_CATEGORY_SHORT, OPTION_CATEGORY_LONG);
+    printf
+        ("\t-%c, --%s\tmain category name. It's enough to give part of the name as long as it allows to identify one main category.\n",
+         OPTION_MAINCATEGORY_SHORT, OPTION_MAINCATEGORY_LONG);
+    printf
+        ("\t-%c, --%s\tvalue of a transaction, or exchange rate when working with currency.\n",
+         OPTION_VALUE_SHORT, OPTION_VALUE_LONG);
+    printf
+        ("\t-%c, --%s\taccount type. Allowed values are: t/transact (default), s/saving, p/property, i/investment, l/loan.\n",
+         OPTION_ACCOUNTTYPE_SHORT, OPTION_ACCOUNTTYPE_LONG);
+    printf
+        ("\t-%c, --%s\tmain category type. Allowed values are: c/cost, t/transfer, i/income.\n",
+         OPTION_MAINCATEGORYTYPE_SHORT, OPTION_MAINCATEGORYTYPE_LONG);
+    printf
+        ("\t-%c, --%s\tdate. Required format is YYYY (for year), YYYY-MM (for year-month) and YYYY-MM-DD (for full date). Today by default.\n",
+         OPTION_DATE_SHORT, OPTION_DATE_LONG);
+    printf("\t  , --%s\tmake the program verbose.\n", OPTION_VERBOSE_LONG);
 }
 
 static void print_usage(void)
 {
     printf("Usage:\n");
-    printf("\tmm COMMAND [object | reports] [OPTIONS] [--%s]\n"
-            , OPTION_VERBOSE_LONG);
+    printf("\tmm COMMAND [object | reports] [OPTIONS] [--%s]\n",
+           OPTION_VERBOSE_LONG);
 
     printf("\tmm -%c%c%c%c%c%c%c"
-            " [%s %s %s %s %s %s | %s %s %s %s %s %s %s %s]"
-            " [-%c%c%c%c%c%c%c%c%c%c%c%c%c%c]"
-            " [--%s]\n"
-            , OPTION_CMND_INIT_SHORT
-            , OPTION_CMND_ADD_SHORT
-            , OPTION_CMND_EDIT_SHORT
-            , OPTION_CMND_DELETE_SHORT
-            , OPTION_CMND_LIST_SHORT
-            , OPTION_CMND_REPORT_SHORT
-            , OPTION_CMND_HELP_SHORT
-            , OBJECT_ACCOUNT_SHORT
-            , OBJECT_TRANSACTION_SHORT
-            , OBJECT_MAINCATEGORY_SHORT
-            , OBJECT_CURRENCY_SHORT
-            , OBJECT_CATEGORY_SHORT
-            , OBJECT_BUDGET_SHORT
-            , OBJECT_ACCOUNTSBALANCE_SHORT
-            , OBJECT_ASSETSSUMMARY_SHORT
-            , OBJECT_TRANSACTIONSBALANCE_SHORT
-            , OBJECT_CATEGORIESBALANCE_SHORT
-            , OBJECT_MAINCATSBALANCE_SHORT
-            , OBJECT_BUDGETCATS_SHORT
-            , OBJECT_BUDGETMAINCATS_SHORT
-            , OBJECT_NETVALUE_SHORT
-            , OPTION_FILE_SHORT
-            , OPTION_ID_SHORT
-            , OPTION_NAME_SHORT
-            , OPTION_DESCRIPTION_SHORT
-            , OPTION_BANK_SHORT
-            , OPTION_CURRENCY_SHORT
-            , OPTION_CURRENCY_TO_SHORT
-            , OPTION_ACCOUNT_SHORT
-            , OPTION_CATEGORY_SHORT
-            , OPTION_MAINCATEGORY_SHORT
-            , OPTION_VALUE_SHORT
-            , OPTION_ACCOUNTTYPE_SHORT
-            , OPTION_MAINCATEGORYTYPE_SHORT
-            , OPTION_DATE_SHORT
-            , OPTION_VERBOSE_LONG
-            );
+           " [%s %s %s %s %s %s | %s %s %s %s %s %s %s %s]"
+           " [-%c%c%c%c%c%c%c%c%c%c%c%c%c%c]"
+           " [--%s]\n", OPTION_CMND_INIT_SHORT, OPTION_CMND_ADD_SHORT,
+           OPTION_CMND_EDIT_SHORT, OPTION_CMND_DELETE_SHORT,
+           OPTION_CMND_LIST_SHORT, OPTION_CMND_REPORT_SHORT,
+           OPTION_CMND_HELP_SHORT, OBJECT_ACCOUNT_SHORT,
+           OBJECT_TRANSACTION_SHORT, OBJECT_MAINCATEGORY_SHORT,
+           OBJECT_CURRENCY_SHORT, OBJECT_CATEGORY_SHORT,
+           OBJECT_BUDGET_SHORT, OBJECT_ACCOUNTSBALANCE_SHORT,
+           OBJECT_ASSETSSUMMARY_SHORT, OBJECT_TRANSACTIONSBALANCE_SHORT,
+           OBJECT_CATEGORIESBALANCE_SHORT, OBJECT_MAINCATSBALANCE_SHORT,
+           OBJECT_BUDGETCATS_SHORT, OBJECT_BUDGETMAINCATS_SHORT,
+           OBJECT_NETVALUE_SHORT, OPTION_FILE_SHORT, OPTION_ID_SHORT,
+           OPTION_NAME_SHORT, OPTION_DESCRIPTION_SHORT, OPTION_BANK_SHORT,
+           OPTION_CURRENCY_SHORT, OPTION_CURRENCY_TO_SHORT,
+           OPTION_ACCOUNT_SHORT, OPTION_CATEGORY_SHORT,
+           OPTION_MAINCATEGORY_SHORT, OPTION_VALUE_SHORT,
+           OPTION_ACCOUNTTYPE_SHORT, OPTION_MAINCATEGORYTYPE_SHORT,
+           OPTION_DATE_SHORT, OPTION_VERBOSE_LONG);
 }
 
-static void setDefaultParameters(PARAMETERS* parameters, char* app_name)
+static void setDefaultParameters(PARAMETERS * parameters, char *app_name)
 {
-     memset(parameters->prog_name, NULL_STRING, PAR_PROGNAME_LEN);
-     memset(parameters->dataFilePath, NULL_STRING, FILE_PATH_MAX);
-     memset(parameters->name, NULL_STRING, PAR_NAME_LEN);
-     memset(parameters->description, NULL_STRING, PAR_DESCRIPTION_LEN);
-     memset(parameters->institution, NULL_STRING, PAR_INSTITUTION_LEN);
-     memset(parameters->currency, NULL_STRING, PAR_CURRENCY_LEN);
-     memset(parameters->currency_to, NULL_STRING, PAR_CURRENCY_LEN);
-     memset(parameters->default_currency, NULL_STRING, PAR_CURRENCY_LEN);
-     memset(parameters->acc_name, NULL_STRING, PAR_NAME_LEN);
-     memset(parameters->cat_name, NULL_STRING, PAR_NAME_LEN);
-     memset(parameters->maincat_name, NULL_STRING, PAR_NAME_LEN);
-     memset(parameters->value, NULL_STRING, PAR_VALUE_LEN);
-     memset(parameters->date, NULL_STRING, DATE_FULL_LEN);
-     memset(parameters->date_default, NULL_STRING, DATE_FULL_LEN);
+    memset(parameters->prog_name, NULL_STRING, PAR_PROGNAME_LEN);
+    memset(parameters->dataFilePath, NULL_STRING, FILE_PATH_MAX);
+    memset(parameters->name, NULL_STRING, PAR_NAME_LEN);
+    memset(parameters->description, NULL_STRING, PAR_DESCRIPTION_LEN);
+    memset(parameters->institution, NULL_STRING, PAR_INSTITUTION_LEN);
+    memset(parameters->currency, NULL_STRING, PAR_CURRENCY_LEN);
+    memset(parameters->currency_to, NULL_STRING, PAR_CURRENCY_LEN);
+    memset(parameters->default_currency, NULL_STRING, PAR_CURRENCY_LEN);
+    memset(parameters->acc_name, NULL_STRING, PAR_NAME_LEN);
+    memset(parameters->cat_name, NULL_STRING, PAR_NAME_LEN);
+    memset(parameters->maincat_name, NULL_STRING, PAR_NAME_LEN);
+    memset(parameters->value, NULL_STRING, PAR_VALUE_LEN);
+    memset(parameters->date, NULL_STRING, DATE_FULL_LEN);
+    memset(parameters->date_default, NULL_STRING, DATE_FULL_LEN);
 
     parameters->account_type = ACC_TYPE_UNSET;
     parameters->maincategory_type = CAT_TYPE_NOTSET;

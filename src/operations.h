@@ -202,5 +202,4 @@ int budget_edit(PARAMETERS parameters);
  */
 int budget_remove(PARAMETERS parameters);
 
-#endif	/* OPERATIONS_H */
-
+#endif                          /* OPERATIONS_H */
