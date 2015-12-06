@@ -124,7 +124,7 @@ int accounts_balance(PARAMETERS parameters)
     rc = sqlite3_finalize(sqlStmt);
 
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -144,7 +144,7 @@ int assets_summary(PARAMETERS parameters)
     int year, month, day;
     ACCOUNT_TYPE current_type = ACC_TYPE_UNSET;
     char* list_of_missing_currencies = NULL;
-    float subtotal, total = 0;
+    float subtotal =0 , total = 0;
 
     // Make sure necessary data have been delivered
     if (parameters.dataFilePath[0] == NULL_STRING) {
@@ -264,7 +264,7 @@ int assets_summary(PARAMETERS parameters)
     rc = sqlite3_finalize(sqlStmt);
 
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -536,7 +536,7 @@ int budget_report_categories(PARAMETERS parameters)
 
 
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -811,7 +811,7 @@ int budget_report_maincategories(PARAMETERS parameters)
 
 
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -889,6 +889,8 @@ int categories_balance(PARAMETERS parameters)
                         , year, month);
                 sprintf(balance_title, "Category during month %d-%02d", year, month);
                 break;
+            case DT_NO_DATE:
+                 break;
             }
         }
     } else {
@@ -1081,6 +1083,8 @@ int maincategories_balance(PARAMETERS parameters)
                         , year, month);
                 sprintf(balance_title, "Category during month %d-%02d", year, month);
                 break;
+            case DT_NO_DATE:
+                 break;
             }
         }
     } else {
@@ -1279,6 +1283,8 @@ int transactions_balance(PARAMETERS parameters)
                             , year, month);
                     sprintf(balance_title, "Transactions during month %d-%02d", year, month);
                     break;
+                case DT_NO_DATE:
+                     break;
                 }
             }
         } else {
@@ -1313,7 +1319,7 @@ int transactions_balance(PARAMETERS parameters)
                 return 1;
             } else {
                 sprintf(sql_maincategory_subquery,
-                        "(SELECT * FROM MAIN_CATEGORIES WHERE MAIN_CATEGORY_ID=%d)",
+                        "(SELECT * FROM MAIN_CATEGORIES WHERE MAIN_CATEGORY_ID=%li)",
                         maincategory_id);
             }
         }
@@ -1331,7 +1337,7 @@ int transactions_balance(PARAMETERS parameters)
                 return 1;
             } else {
                 sprintf(sql_category_subquery,
-                        "(SELECT * FROM CATEGORIES WHERE CATEGORY_ID=%d)",
+                        "(SELECT * FROM CATEGORIES WHERE CATEGORY_ID=%li)",
                         category_id);
             }
         }
@@ -1349,7 +1355,7 @@ int transactions_balance(PARAMETERS parameters)
                 return 1;
             } else {
                 sprintf(sql_account_subquery,
-                        "(SELECT * FROM ACCOUNTS WHERE ACCOUNT_ID=%d)",
+                        "(SELECT * FROM ACCOUNTS WHERE ACCOUNT_ID=%li)",
                         account_id);
             }
         }
@@ -1513,7 +1519,7 @@ int net_value(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 

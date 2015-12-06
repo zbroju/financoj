@@ -226,7 +226,6 @@ int main(int argc, char* const argv[])
             }
             break;
         case OPTION_FILE_SHORT:
-            printf("%s\n", optarg);
             strncpy(parameters.dataFilePath, optarg, FILE_PATH_MAX - 1);
             break;
         case OPTION_ID_SHORT:
@@ -285,7 +284,7 @@ int main(int argc, char* const argv[])
             result = 1;
             break;
         default:
-            fprintf(stderr, "%s: unknown option %c.\n", opt);
+             fprintf(stderr, "%s: unknown option %c.\n", parameters.prog_name, (char) opt);
             result = 1;
         }
     }
@@ -331,6 +330,9 @@ int main(int argc, char* const argv[])
         case BUDGET:
             result = budget_add(parameters);
             break;
+        default:
+             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+             result = EXIT_FAILURE;
         }
     } else if (command == EDIT) {
         switch (object) {
@@ -352,6 +354,9 @@ int main(int argc, char* const argv[])
         case BUDGET:
             result = budget_edit(parameters);
             break;
+        default:
+             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+             result = EXIT_FAILURE;
         }
     } else if (command == DELETE) {
         switch (object) {
@@ -373,11 +378,14 @@ int main(int argc, char* const argv[])
         case BUDGET:
             result = budget_remove(parameters);
             break;
+        default:
+             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+             result = EXIT_FAILURE;
         }
     } else if (command == LIST) {
         switch (object) {
         case ACCOUNT:
-            result == account_list(parameters);
+            result = account_list(parameters);
             break;
         case TRANSACTION:
             result = transaction_list(parameters);
@@ -394,6 +402,9 @@ int main(int argc, char* const argv[])
         case BUDGET:
             result = budget_list(parameters);
             break;
+        default:
+             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+             result = EXIT_FAILURE;
         }
     } else if (command == REPORT) {
         switch (object) {
@@ -421,6 +432,9 @@ int main(int argc, char* const argv[])
         case REP_NETVALUE:
             result = net_value(parameters);
             break;
+        default:
+             fprintf(stderr, MSG_WRONG_OBJECT, parameters.prog_name);
+             result = EXIT_FAILURE;
         }
     } else if (command == HELP) {
         print_help();
@@ -484,7 +498,7 @@ static int getObject(char* arg, OBJECT* obj, char* app_name)
             result = 1;
         }
     } else {
-        fprintf(stderr, "%s: more than one object given. Stop.\n", app_name, arg);
+        fprintf(stderr, "%s: more than one object given - %s. Stop.\n", app_name, arg);
         result = 1;
     }
     return result;

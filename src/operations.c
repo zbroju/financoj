@@ -138,7 +138,7 @@ int account_add(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -201,28 +201,28 @@ int account_edit(PARAMETERS parameters)
         strcat(sql_edit_account, "BEGIN TRANSACTION;");
 
         if (parameters.name[0] != NULL_STRING) {
-            sprintf(buf, "UPDATE ACCOUNTS SET NAME='%s' WHERE ACCOUNT_ID=%d;"
+            sprintf(buf, "UPDATE ACCOUNTS SET NAME='%s' WHERE ACCOUNT_ID=%li;"
                     , parameters.name
                     , parameters.id);
             strncat(sql_edit_account, buf, BUF_SIZE);
         }
 
         if (parameters.description[0] != NULL_STRING) {
-            sprintf(buf, "UPDATE ACCOUNTS SET DESCRIPTION='%s' WHERE ACCOUNT_ID=%d;"
+            sprintf(buf, "UPDATE ACCOUNTS SET DESCRIPTION='%s' WHERE ACCOUNT_ID=%li;"
                     , parameters.description
                     , parameters.id);
             strncat(sql_edit_account, buf, BUF_SIZE);
         }
 
         if (parameters.institution[0] != NULL_STRING) {
-            sprintf(buf, "UPDATE ACCOUNTS SET INSTITUTION='%s' WHERE ACCOUNT_ID=%d;"
+            sprintf(buf, "UPDATE ACCOUNTS SET INSTITUTION='%s' WHERE ACCOUNT_ID=%li;"
                     , parameters.institution
                     , parameters.id);
             strncat(sql_edit_account, buf, BUF_SIZE);
         }
 
         if (parameters.account_type != ACC_TYPE_UNSET) {
-            sprintf(buf, "UPDATE ACCOUNTS SET TYPE=%d WHERE ACCOUNT_ID=%d;"
+            sprintf(buf, "UPDATE ACCOUNTS SET TYPE=%d WHERE ACCOUNT_ID=%li;"
                     , parameters.account_type
                     , parameters.id);
             strncat(sql_edit_account, buf, BUF_SIZE);
@@ -234,17 +234,17 @@ int account_edit(PARAMETERS parameters)
             fprintf(stderr, "%s: %s\n", parameters.prog_name, zErrMsg);
             sqlite3_free(zErrMsg);
             result = 1;
-            sprintf(final_message, "%s: no change done for account with id=%d\n"
+            sprintf(final_message, "%s: no change done for account with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         } else {
-            sprintf(final_message, "%s: edited account with id=%d\n"
+            sprintf(final_message, "%s: edited account with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         }
     } else {
         result = 1;
-        sprintf(final_message, "%s: there is no account with id=%d - no change done\n"
+        sprintf(final_message, "%s: there is no account with id=%li - no change done\n"
                 , parameters.prog_name
                 , parameters.id);
     }
@@ -253,7 +253,7 @@ int account_edit(PARAMETERS parameters)
     if (sqlite3_close(db) != SQLITE_OK) {
         fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
-        sprintf(final_message, "%s: edited account with id=%d\n"
+        sprintf(final_message, "%s: edited account with id=%li\n"
                 , parameters.prog_name
                 , parameters.id);
     }
@@ -297,7 +297,7 @@ int account_close(PARAMETERS parameters)
     }
 
     // Prepare SQL query and perform database actions
-    sprintf(sql_remove_account, "UPDATE ACCOUNTS SET STATUS=%d WHERE ACCOUNT_ID=%d;"
+    sprintf(sql_remove_account, "UPDATE ACCOUNTS SET STATUS=%d WHERE ACCOUNT_ID=%li;"
             , ITEM_STAT_CLOSED
             , parameters.id);
 
@@ -309,14 +309,14 @@ int account_close(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
     // if succeded and verbose then inform about performed actions
     if (parameters.verbose) {
         if (result == 0) {
-            printf("%s: closed account: %d\n", parameters.prog_name, parameters.id);
+            printf("%s: closed account: %li\n", parameters.prog_name, parameters.id);
         } else {
 
             printf("%s: no accounts closed.\n", parameters.prog_name);
@@ -400,7 +400,7 @@ int account_list(PARAMETERS parameters)
 
     if (sqlite3_close(db) != SQLITE_OK) {
 
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -459,7 +459,7 @@ int category_add(PARAMETERS parameters)
     sprintf(sql_add_category,
             "INSERT INTO CATEGORIES VALUES ("
             "null, " // id - auto increment
-            "%d, " // 1 - main category
+            "%li, " // 1 - main category
             "'%s', " // 2 - name
             "%d);", // 3 - status
             maincategory_id,
@@ -474,7 +474,7 @@ int category_add(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -537,15 +537,15 @@ int category_edit(PARAMETERS parameters)
                 sqlite3_close(db);
                 return 1;
             } else {
-                sprintf(buf, "UPDATE CATEGORIES SET MAIN_CATEGORY_ID=%d"
-                        " WHERE CATEGORY_ID=%d;",
+                sprintf(buf, "UPDATE CATEGORIES SET MAIN_CATEGORY_ID=%li"
+                        " WHERE CATEGORY_ID=%li;",
                         maincategory_id,
                         parameters.id);
                 strncat(sql_edit_category, buf, BUF_SIZE);
             }
         }
         if (parameters.name[0] != NULL_STRING) {
-            sprintf(buf, "UPDATE CATEGORIES SET NAME='%s' WHERE CATEGORY_ID=%d;",
+            sprintf(buf, "UPDATE CATEGORIES SET NAME='%s' WHERE CATEGORY_ID=%li;",
                     parameters.name,
                     parameters.id);
             strncat(sql_edit_category, buf, BUF_SIZE);
@@ -556,26 +556,26 @@ int category_edit(PARAMETERS parameters)
             fprintf(stderr, "%s: %s\n", parameters.prog_name, zErrMsg);
             sqlite3_free(zErrMsg);
             result = 1;
-            sprintf(final_message, "%s: no change done for category with id=%d\n"
+            sprintf(final_message, "%s: no change done for category with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         } else {
-            sprintf(final_message, "%s: edited category with id=%d\n"
+            sprintf(final_message, "%s: edited category with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         }
     } else {
         result = 1;
-        sprintf(final_message, "%s: there is no category with id=%d - no change done\n"
+        sprintf(final_message, "%s: there is no category with id=%li - no change done\n"
                 , parameters.prog_name
                 , parameters.id);
     }
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
-        sprintf(final_message, "%s: edited category with id =%d\n"
+        sprintf(final_message, "%s: edited category with id =%li\n"
                 , parameters.prog_name
                 , parameters.id);
     }
@@ -615,7 +615,7 @@ int category_remove(PARAMETERS parameters)
 
     // Prepare SQL query and perform database actions
     sprintf(sql_remove_category, "UPDATE CATEGORIES SET STATUS=%d"
-            " WHERE CATEGORY_ID=%d;"
+            " WHERE CATEGORY_ID=%li;"
             , ITEM_STAT_CLOSED
             , parameters.id);
 
@@ -627,14 +627,14 @@ int category_remove(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
     // if succeded and verbose then inform about performed actions
     if (parameters.verbose) {
         if (result == 0) {
-            printf("%s: removed category: %d\n", parameters.prog_name, parameters.id);
+            printf("%s: removed category: %li\n", parameters.prog_name, parameters.id);
         } else {
 
             printf("%s: no category removed.\n", parameters.prog_name);
@@ -710,7 +710,7 @@ int category_list(PARAMETERS parameters)
     rc = sqlite3_finalize(sqlStmt);
 
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -775,7 +775,7 @@ int currency_add(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -797,7 +797,6 @@ int currency_edit(PARAMETERS parameters)
 {
     sqlite3 *db;
     char sql_edit_currency[SQL_SIZE] = {NULL_STRING};
-    char buf[BUF_SIZE];
     char *zErrMsg;
     int result = 0;
     char final_message[BUF_SIZE] = {NULL_STRING};
@@ -873,7 +872,7 @@ int currency_edit(PARAMETERS parameters)
     }
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
         sprintf(final_message, "%s: edited exchange rate for %s-%s\n"
                 , parameters.prog_name
@@ -944,7 +943,7 @@ int currency_remove(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -1017,7 +1016,7 @@ int currency_list(PARAMETERS parameters)
 
     if (sqlite3_close(db) != SQLITE_OK) {
 
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -1172,7 +1171,7 @@ int maincategory_add(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -1225,13 +1224,13 @@ int maincategory_edit(PARAMETERS parameters)
         strcat(sql_edit_maincategory, "BEGIN TRANSACTION;");
 
         if (parameters.maincategory_type != CAT_TYPE_NOTSET) {
-            sprintf(buf, "UPDATE MAIN_CATEGORIES SET TYPE=%d WHERE MAIN_CATEGORY_ID=%d;",
+            sprintf(buf, "UPDATE MAIN_CATEGORIES SET TYPE=%d WHERE MAIN_CATEGORY_ID=%li;",
                     parameters.maincategory_type,
                     parameters.id);
             strncat(sql_edit_maincategory, buf, BUF_SIZE);
         }
         if (parameters.name[0] != NULL_STRING) {
-            sprintf(buf, "UPDATE MAIN_CATEGORIES SET NAME='%s' WHERE MAIN_CATEGORY_ID=%d;",
+            sprintf(buf, "UPDATE MAIN_CATEGORIES SET NAME='%s' WHERE MAIN_CATEGORY_ID=%li;",
                     parameters.name,
                     parameters.id);
             strncat(sql_edit_maincategory, buf, BUF_SIZE);
@@ -1243,26 +1242,26 @@ int maincategory_edit(PARAMETERS parameters)
             fprintf(stderr, "%s: %s\n", parameters.prog_name, zErrMsg);
             sqlite3_free(zErrMsg);
             result = 1;
-            sprintf(final_message, "%s: no change done for main category with id=%d\n"
+            sprintf(final_message, "%s: no change done for main category with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         } else {
-            sprintf(final_message, "%s: edited main category with id=%d\n"
+            sprintf(final_message, "%s: edited main category with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         }
     } else {
         result = 1;
-        sprintf(final_message, "%s: there is no main category with id=%d - no change done\n"
+        sprintf(final_message, "%s: there is no main category with id=%li - no change done\n"
                 , parameters.prog_name
                 , parameters.id);
     }
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
-        sprintf(final_message, "%s: edited main cateory with id=%d\n"
+        sprintf(final_message, "%s: edited main cateory with id=%li\n"
                 , parameters.prog_name
                 , parameters.id);
     }
@@ -1302,7 +1301,7 @@ int maincategory_remove(PARAMETERS parameters)
 
     // Prepare SQL query and perform database actions
     sprintf(sql_remove_maincategory, "UPDATE MAIN_CATEGORIES"
-            " SET STATUS=%d WHERE MAIN_CATEGORY_ID=%d;"
+            " SET STATUS=%d WHERE MAIN_CATEGORY_ID=%li;"
             , ITEM_STAT_CLOSED
             , parameters.id);
 
@@ -1314,14 +1313,14 @@ int maincategory_remove(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
     // if succeded and verbose then inform about performed actions
     if (parameters.verbose) {
         if (result == 0) {
-            printf("%s: removed main category: %d\n"
+            printf("%s: removed main category: %li\n"
                     , parameters.prog_name, parameters.id);
         } else {
 
@@ -1391,7 +1390,7 @@ int maincategory_list(PARAMETERS parameters)
 
     if (sqlite3_close(db) != SQLITE_OK) {
 
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -1477,10 +1476,10 @@ int transaction_add(PARAMETERS parameters)
             "%d, " // year
             "%d, " // month
             "%d, " // day
-            "%d, " // account id
+            "%li, " // account id
             "'%s', " // description
             "round(%f,2), " // value
-            "%d);", // category id
+            "%li);", // category id
             year,
             month,
             day,
@@ -1498,7 +1497,7 @@ int transaction_add(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -1557,9 +1556,9 @@ int transaction_edit(PARAMETERS parameters)
                 fprintf(stderr, MSG_WRONG_DATE_FULL, parameters.prog_name);
                 return 1;
             } else {
-                sprintf(buf, "UPDATE TRANSACTIONS SET YEAR=%d WHERE TRANSACTION_ID=%d;"
-                        "UPDATE TRANSACTIONS SET MONTH=%d WHERE TRANSACTION_ID=%d;"
-                        "UPDATE TRANSACTIONS SET DAY=%d WHERE TRANSACTION_ID=%d;",
+                sprintf(buf, "UPDATE TRANSACTIONS SET YEAR=%d WHERE TRANSACTION_ID=%li;"
+                        "UPDATE TRANSACTIONS SET MONTH=%d WHERE TRANSACTION_ID=%li;"
+                        "UPDATE TRANSACTIONS SET DAY=%d WHERE TRANSACTION_ID=%li;",
                         year, parameters.id,
                         month, parameters.id,
                         day, parameters.id);
@@ -1575,7 +1574,7 @@ int transaction_edit(PARAMETERS parameters)
                 sqlite3_close(db);
                 return 1;
             } else {
-                sprintf(buf, "UPDATE TRANSACTIONS SET ACCOUNT_ID=%d WHERE TRANSACTION_ID=%d;",
+                sprintf(buf, "UPDATE TRANSACTIONS SET ACCOUNT_ID=%li WHERE TRANSACTION_ID=%li;",
                         account_id,
                         parameters.id);
                 strncat(sql_edit_transaction, buf, BUF_SIZE);
@@ -1583,7 +1582,7 @@ int transaction_edit(PARAMETERS parameters)
         }
 
         if (parameters.description[0] != NULL_STRING) {
-            sprintf(buf, "UPDATE TRANSACTIONS SET DESCRIPTION='%s' WHERE TRANSACTION_ID=%d;",
+            sprintf(buf, "UPDATE TRANSACTIONS SET DESCRIPTION='%s' WHERE TRANSACTION_ID=%li;",
                     parameters.description,
                     parameters.id);
             strncat(sql_edit_transaction, buf, BUF_SIZE);
@@ -1598,7 +1597,7 @@ int transaction_edit(PARAMETERS parameters)
                 return 1;
             } else {
                 //TODO: add automatic sign change in case you change category from income to cost or opposite
-                sprintf(buf, "UPDATE TRANSACTIONS SET CATEGORY_ID=%d WHERE TRANSACTION_ID=%d;",
+                sprintf(buf, "UPDATE TRANSACTIONS SET CATEGORY_ID=%li WHERE TRANSACTION_ID=%li;",
                         category_id,
                         parameters.id);
                 strncat(sql_edit_transaction, buf, BUF_SIZE);
@@ -1608,7 +1607,7 @@ int transaction_edit(PARAMETERS parameters)
         }
         if (parameters.value[0] != NULL_STRING) {
             transaction_value = category_factor_for_id(db, category_id) * atof(parameters.value);
-            sprintf(buf, "UPDATE TRANSACTIONS SET VALUE=round(%f,2) WHERE TRANSACTION_ID=%d;",
+            sprintf(buf, "UPDATE TRANSACTIONS SET VALUE=round(%f,2) WHERE TRANSACTION_ID=%li;",
                     transaction_value,
                     parameters.id);
             strncat(sql_edit_transaction, buf, BUF_SIZE);
@@ -1619,17 +1618,17 @@ int transaction_edit(PARAMETERS parameters)
             fprintf(stderr, "%s: %s\n", parameters.prog_name, zErrMsg);
             sqlite3_free(zErrMsg);
             result = 1;
-            sprintf(final_message, "%s: no change done for transaction with id=%d\n"
+            sprintf(final_message, "%s: no change done for transaction with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         } else {
-            sprintf(final_message, "%s: edited transaction with id=%d\n"
+            sprintf(final_message, "%s: edited transaction with id=%li\n"
                     , parameters.prog_name
                     , parameters.id);
         }
     } else {
         result = 1;
-        sprintf(final_message, "%s: there is no transaction with id=%d - no change done\n"
+        sprintf(final_message, "%s: there is no transaction with id=%li - no change done\n"
                 , parameters.prog_name
                 , parameters.id);
     }
@@ -1638,7 +1637,7 @@ int transaction_edit(PARAMETERS parameters)
     if (sqlite3_close(db) != SQLITE_OK) {
         fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
-        sprintf(final_message, "%s: edited transaction with id=%d\n"
+        sprintf(final_message, "%s: edited transaction with id=%li\n"
                 , parameters.prog_name
                 , parameters.id);
     }
@@ -1677,7 +1676,7 @@ int transaction_remove(PARAMETERS parameters)
     }
 
     // Prepare SQL query and perform database actions
-    sprintf(sql_remove_transaction, "DELETE FROM TRANSACTIONS WHERE TRANSACTION_ID=%d;", parameters.id);
+    sprintf(sql_remove_transaction, "DELETE FROM TRANSACTIONS WHERE TRANSACTION_ID=%li;", parameters.id);
     if (sqlite3_exec(db, sql_remove_transaction, NULL, NULL, &zErrMsg) != SQLITE_OK) {
         fprintf(stderr, "%s: %s\n", parameters.prog_name, zErrMsg);
         sqlite3_free(zErrMsg);
@@ -1686,14 +1685,14 @@ int transaction_remove(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
     // If succeded and verbose then inform about performed actions
     if (parameters.verbose) {
         if (result == 0) {
-            printf("%s: deleted transaction: %d\n", parameters.prog_name, parameters.id);
+            printf("%s: deleted transaction: %li\n", parameters.prog_name, parameters.id);
         } else {
 
             printf("%s: no transaction deleted.\n", parameters.prog_name);
@@ -1857,7 +1856,7 @@ int transaction_list(PARAMETERS parameters)
     rc = sqlite3_finalize(sqlStmt);
 
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -1931,7 +1930,7 @@ int budget_add(PARAMETERS parameters)
             "INSERT INTO BUDGETS VALUES ("
             "%d, " // year
             "%d, " // month
-            "%d, " // category id
+            "%li, " // category id
             "round(%f,2), " // value
             "'%s'" // currency
             ");",
@@ -1950,7 +1949,7 @@ int budget_add(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -2014,30 +2013,28 @@ int budget_list(PARAMETERS parameters)
     if (parameters.date[0] != NULL_STRING) {
         int year, month;
         DATE_TYPE date_type = date_from_string(parameters.date, &year, &month, NULL);
-        if (date_type != DT_YEAR && date_type != DT_MONTH) {
-            fprintf(stderr, MSG_WRONG_DATE_MONTH_OR_YEAR, parameters.prog_name);
-            return 1;
-        } else {
-            switch (date_type) {
-            case DT_YEAR:
-                if (where_already_set == 0) {
-                    sprintf(sql_buf, " WHERE b.YEAR=%d", year);
-                    where_already_set = 1;
-                } else {
-                    sprintf(sql_buf, " AND b.YEAR=%d", year);
-                }
-                break;
-            case DT_MONTH:
-                if (where_already_set == 0) {
-                    sprintf(sql_buf, " WHERE b.YEAR=%d AND b.MONTH=%d", year, month);
-                    where_already_set = 1;
-                } else {
-                    sprintf(sql_buf, " AND b.YEAR=%d AND b.MONTH=%d", year, month);
-                }
-                break;
-            }
-            strncat(sql_list_budgets, sql_buf, BUF_SIZE);
+        switch (date_type) {
+        case DT_YEAR:
+             if (where_already_set == 0) {
+                  sprintf(sql_buf, " WHERE b.YEAR=%d", year);
+                  where_already_set = 1;
+             } else {
+                  sprintf(sql_buf, " AND b.YEAR=%d", year);
+             }
+             break;
+        case DT_MONTH:
+             if (where_already_set == 0) {
+                  sprintf(sql_buf, " WHERE b.YEAR=%d AND b.MONTH=%d", year, month);
+                  where_already_set = 1;
+             } else {
+                  sprintf(sql_buf, " AND b.YEAR=%d AND b.MONTH=%d", year, month);
+             }
+             break;
+        default:
+             fprintf(stderr, MSG_WRONG_DATE_MONTH_OR_YEAR, parameters.prog_name);
+             return 1;
         }
+        strncat(sql_list_budgets, sql_buf, BUF_SIZE);
     }
     strncat(sql_list_budgets, " ORDER BY b.YEAR, b.MONTH, mc.TYPE, mc.NAME, c.NAME;", BUF_SIZE);
 
@@ -2069,7 +2066,7 @@ int budget_list(PARAMETERS parameters)
     rc = sqlite3_finalize(sqlStmt);
 
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
@@ -2135,14 +2132,14 @@ int budget_edit(PARAMETERS parameters)
         if (parameters.value[0] != NULL_STRING) {
             budget_value = category_factor_for_id(db, category_id) * atof(parameters.value);
             sprintf(buf, "UPDATE BUDGETS SET VALUE=round(%f,2)"
-                    " WHERE YEAR=%d AND MONTH=%d AND CATEGORY_ID=%d;",
+                    " WHERE YEAR=%d AND MONTH=%d AND CATEGORY_ID=%li;",
                     budget_value,
                     year, month, category_id);
             strncat(sql_edit_budget, buf, BUF_SIZE);
         }
         if (parameters.currency[0] != NULL_STRING) {
             sprintf(buf, "UPDATE BUDGETS SET CURRENCY='%s'"
-                    " WHERE YEAR=%d AND MONTH=%d AND CATEGORY_ID=%d;",
+                    " WHERE YEAR=%d AND MONTH=%d AND CATEGORY_ID=%li;",
                     parameters.currency,
                     year, month, category_id);
             strncat(sql_edit_budget, buf, BUF_SIZE);
@@ -2229,7 +2226,7 @@ int budget_remove(PARAMETERS parameters)
     sprintf(sql_remove_budget, "DELETE FROM BUDGETS WHERE"
             " YEAR=%d"
             " AND MONTH=%d"
-            " AND CATEGORY_ID=%d"
+            " AND CATEGORY_ID=%li"
             ";"
             , year, month, category_id);
     if (sqlite3_exec(db, sql_remove_budget, NULL, NULL, &zErrMsg) != SQLITE_OK) {
@@ -2240,14 +2237,14 @@ int budget_remove(PARAMETERS parameters)
 
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
-        fprintf(stderr, "s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
+        fprintf(stderr, "%s: %s\n", parameters.prog_name, sqlite3_errmsg(db));
         result = 1;
     }
 
     // If succeded and verbose then inform about performed actions
     if (parameters.verbose) {
         if (result == 0) {
-            printf("%s: deleted budget.\n", parameters.prog_name, parameters.id);
+            printf("%s: deleted budget.\n", parameters.prog_name);
         } else {
 
             printf("%s: no budget deleted.\n", parameters.prog_name);
@@ -2267,7 +2264,7 @@ static bool account_exists(sqlite3* db, const unsigned long account_id)
     bool result = false;
 
     sprintf(sql_account_exist
-            , "SELECT count(ACCOUNT_ID) FROM ACCOUNTS WHERE ACCOUNT_ID=%d AND STATUS=%d;"
+            , "SELECT count(ACCOUNT_ID) FROM ACCOUNTS WHERE ACCOUNT_ID=%li AND STATUS=%d;"
             , account_id
             , ITEM_STAT_OPEN
             );
@@ -2295,7 +2292,7 @@ static bool budget_exists(sqlite3* db, const unsigned long category_id, const in
     bool result = false;
 
     sprintf(sql_budget_exists
-            , "SELECT count(YEAR) FROM BUDGETS WHERE YEAR=%d AND MONTH=%d AND CATEGORY_ID=%d;"
+            , "SELECT count(YEAR) FROM BUDGETS WHERE YEAR=%d AND MONTH=%d AND CATEGORY_ID=%li;"
             , year, month, category_id);
 
     if (sqlite3_prepare_v2(db, sql_budget_exists, SQL_SIZE, &sqlStmt, NULL) == SQLITE_OK) {
@@ -2320,7 +2317,7 @@ static bool category_exists(sqlite3* db, const unsigned long category_id)
     bool result = false;
 
     sprintf(sql_category_exists
-            , "SELECT count(CATEGORY_ID) FROM CATEGORIES WHERE CATEGORY_ID=%d AND STATUS=%d;"
+            , "SELECT count(CATEGORY_ID) FROM CATEGORIES WHERE CATEGORY_ID=%li AND STATUS=%d;"
             , category_id
             , ITEM_STAT_OPEN
             );
@@ -2376,7 +2373,7 @@ static bool maincategory_exists(sqlite3* db, const unsigned long maincategory_id
     bool result = false;
 
     sprintf(sql_maincategory_exists
-            , "SELECT count(MAIN_CATEGORY_ID) FROM MAIN_CATEGORIES WHERE MAIN_CATEGORY_ID=%d AND STATUS=%d;"
+            , "SELECT count(MAIN_CATEGORY_ID) FROM MAIN_CATEGORIES WHERE MAIN_CATEGORY_ID=%li AND STATUS=%d;"
             , maincategory_id
             , ITEM_STAT_OPEN
             );
@@ -2404,7 +2401,7 @@ static bool transaction_exists(sqlite3* db, const unsigned long transaction_id)
     bool result = false;
 
     sprintf(sql_transaction_exists
-            , "SELECT count(TRANSACTION_ID) FROM TRANSACTIONS WHERE TRANSACTION_ID=%d;"
+            , "SELECT count(TRANSACTION_ID) FROM TRANSACTIONS WHERE TRANSACTION_ID=%li;"
             , transaction_id
             );
 

@@ -32,6 +32,7 @@
 #define MSG_WRONG_DATE_MONTH "%s: wrong month given. Specify it in format: YYYY-MM.\n"
 #define MSG_WRONG_DATE_MONTH_OR_YEAR "%s: wrong date given - expected year or month. Specify it in format: YYYY or YYYY-MM.\n"
 #define MSG_MISSING_EXCHANGE_RATES "%s: currencies exchange rate(s) missing: %s - add them first.\n"
+#define MSG_WRONG_OBJECT "%s: wrong object given.\n"
 
 /* CONSTANTS */
 #define FILE_PATH_MAX 1000

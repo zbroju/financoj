@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 CC = gcc
-CFLAG = -Wall
+CFLAGS = -O3
 LIBRARIES = -lsqlite3 -lconfig
 EXECUTABLE = mm
 
@@ -13,6 +13,8 @@ HEADERS = $(wildcard $(SRC_DIR)/*.h)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))
 
 all: pre_compile $(EXECUTABLE)
+
+test: pre_test
 
 $(EXECUTABLE):$(OBJECTS)
 	$(CC) $(CFLAGS) -o $(TARGET_DIR)/$@ $(OBJECTS) $(LIBRARIES)
@@ -26,3 +28,6 @@ clean:
 pre_compile:
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(TARGET_DIR)
+
+pre_test: CFLAGS += -Wall
+pre_test: pre_compile $(EXECUTABLE)

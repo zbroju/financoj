@@ -60,7 +60,7 @@ ACCOUNT_TYPE account_type_id(char* account_type)
         result = ACC_PROPERTY;
     } else if (strncmp(account_type, "investment", OBJ_OR_TYPE_LEN) == 0
             || strncmp(account_type, "i", OBJ_OR_TYPE_LEN) == 0) {
-        result == ACC_INVESTMENT;
+        result = ACC_INVESTMENT;
     } else if (strncmp(account_type, "loan", OBJ_OR_TYPE_LEN) == 0
             || strncmp(account_type, "l", OBJ_OR_TYPE_LEN) == 0) {
         result = ACC_LOAN;
@@ -305,7 +305,7 @@ unsigned long transaction_category_id(sqlite3* db, unsigned long transaction_id)
 
 
     // Prepare SQL query
-    sprintf(sql_getCategoryID, "SELECT CATEGORY_ID FROM TRANSACTIONS WHERE TRANSACTION_ID=%d;",
+    sprintf(sql_getCategoryID, "SELECT CATEGORY_ID FROM TRANSACTIONS WHERE TRANSACTION_ID=%li;",
             transaction_id);
     if (sqlite3_prepare_v2(db, sql_getCategoryID, COMMON_SQL_SIZE, &sqlStmt, NULL) != SQLITE_OK) {
         result = -1;
