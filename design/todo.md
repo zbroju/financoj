@@ -1,8 +1,13 @@
 # TO BE DONE
+- add literals to definition of short options for getopt
+- add help for each command separately
+- add function to check if the given file is a mymoney database
+- add condition to check if object exists in listings and reports (e.g. account)
+- add report pre-formatted for gnuplot (net value, categories balance)
 - add condition that an account cannot be closed if its balance is <> 0
 - make comparison for currencies insensitive to case letters
 - overview report (balances of all operational accounts, summaries of other accounts, current net value, summary of budget)
-- tutorial step by step how to work (for the part that is done)
+- tutorial step by step how to work
 - package it as deb & tar
 - deleting budget for the whole month/year
 - copy budget to new month
