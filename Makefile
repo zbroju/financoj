@@ -20,7 +20,7 @@ all: build
 
 build: pre_compile $(EXECUTABLE)
 
-test: pre_test
+debug: pre_debug
 
 $(EXECUTABLE):$(OBJECTS)
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/$@ $(OBJECTS) $(LIBRARIES)
@@ -35,5 +35,5 @@ pre_compile:
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(TARGET_DIR)
 
-pre_test: CFLAGS += -Wall
-pre_test: pre_compile $(EXECUTABLE)
+pre_debug: CFLAGS += -Wall -g
+pre_debug: pre_compile $(EXECUTABLE)
