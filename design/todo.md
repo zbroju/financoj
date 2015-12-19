@@ -1,5 +1,4 @@
 # TO BE DONE
-- make comparison for currencies insensitive to case letters
 - add function to check if the given file is a mymoney database
 - add condition to check if object exists in listings and reports (e.g. account)
 - add report pre-formatted for gnuplot (net value, categories balance)
@@ -27,3 +26,4 @@
 - truncate all the strings before inserting to DB according to the set string lengths
 - adjust reports so that respect string lengths and be more compact
 - add comments to example of configuration file
+- make comparison for currencies insensitive to case letters
