@@ -1,16 +1,7 @@
 # TO BE DONE
-- add function to check if the given file is a mymoney database
-- add condition to check if object exists in listings and reports (e.g. account)
-- add report pre-formatted for gnuplot (net value, categories balance)
-- add condition that an account cannot be closed if its balance is <> 0
-- overview report (balances of all operational accounts, summaries of other accounts, current net value, summary of budget)
-- package it as deb & tar
-- deleting budget for the whole month/year
-- copy budget to new month
-
 
 # COMPLETED
-- create applicatoin
+- create application
 - report with account balance in one currency (assets)
 - secure the license is attached
 - report: net value
@@ -27,3 +18,13 @@
 - adjust reports so that respect string lengths and be more compact
 - add comments to example of configuration file
 - make comparison for currencies insensitive to case letters
+- add condition that an account cannot be closed if its balance is <> 0
+
+# DISCARDED
+- add function to check if the given file is a mymoney database (RATIONALE: not necessary: application doesn't overwrite or change existing file)
+- overview report (balances of all operational accounts, summaries of other accounts, current net value, summary of budget); (RATIONALE: not necessary, existing reports are enough)
+- add condition to check if object exists in listings and reports (e.g. account); (RATIONALE: not necessary, if there is no objects to show, only header is printed, which is OK.)
+- package it as deb & tar; (RATIONALE: not necessary until someone needs that.)
+- deleting budget for the whole month/year; (RATIONALE: there is no issue with data size, it's better to keep control over it but forcing removing the budgets one by one.)
+- copy budget to new month; (RATIONALE: not neccessary because it can be easily done with bash scripts.)
+- add report pre-formatted for gnuplot (net value, categories balance); (RATIONALE: it doesn't make sense, because we need mainly bar and pie charts and pie charts are not very easily done in gnuplot.)

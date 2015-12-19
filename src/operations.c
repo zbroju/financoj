@@ -13,9 +13,19 @@
 #include <sqlite3.h>
 #include <time.h>
 #include <stdbool.h>
+#include <math.h>
 
 #define SQL_SIZE 1000
 #define BUF_SIZE 200
+
+
+/**
+ * Returns true if the given account balance is equal 0.
+ * @param db sqlite3* database pointer
+ * @param account_id an unsigned long with account id
+ * @return true or false
+ */
+static bool account_clean(sqlite3 * db, const unsigned long account_id);
 
 /**
  * Returns true if an account for given id exists, or false otherwise.
@@ -277,17 +287,24 @@ int account_close(PARAMETERS parameters)
         sqlite3_close(db);
         return 1;
     }
-    // Prepare SQL query and perform database actions
-    sprintf(sql_remove_account,
-            "UPDATE ACCOUNTS SET STATUS=%d WHERE ACCOUNT_ID=%li;",
-            ITEM_STAT_CLOSED, parameters.id);
+    // Check if the account is clean, i.e. its balance is 0
+    if (account_clean(db, parameters.id) == true) {
+        // Prepare SQL query and perform database actions
+        sprintf(sql_remove_account,
+                "UPDATE ACCOUNTS SET STATUS=%d WHERE ACCOUNT_ID=%li;",
+                ITEM_STAT_CLOSED, parameters.id);
 
-    if (sqlite3_exec(db, sql_remove_account, NULL, NULL, &zErrMsg) !=
-        SQLITE_OK) {
-        fprintf(stderr, "%s: %s\n", parameters.prog_name, zErrMsg);
-        sqlite3_free(zErrMsg);
+        if (sqlite3_exec(db, sql_remove_account, NULL, NULL, &zErrMsg) !=
+            SQLITE_OK) {
+            fprintf(stderr, "%s: %s\n", parameters.prog_name, zErrMsg);
+            sqlite3_free(zErrMsg);
+            result = 1;
+        }
+    } else {
+        fprintf(stderr, MSG_ACCOUNT_NOT_CLEAN, parameters.prog_name);
         result = 1;
     }
+
     // Close database file
     if (sqlite3_close(db) != SQLITE_OK) {
         fprintf(stderr, "%s: %s\n", parameters.prog_name,
@@ -2228,6 +2245,32 @@ int budget_remove(PARAMETERS parameters)
 }
 
 /* Local functions */
+
+static bool account_clean(sqlite3 * db, const unsigned long account_id)
+{
+    char sql_getBalance[SQL_SIZE] = { NULL_STRING };
+    sqlite3_stmt *sqlStmt;
+    int rc;
+    bool result = false;
+
+    sprintf(sql_getBalance,
+            "SELECT sum(VALUE) FROM TRANSACTIONS WHERE ACCOUNT_ID=%li;",
+            account_id);
+
+    if (sqlite3_prepare_v2(db, sql_getBalance, SQL_SIZE, &sqlStmt, NULL) ==
+        SQLITE_OK) {
+        if ((rc = sqlite3_step(sqlStmt)) == SQLITE_ROW) {
+            if (abs(sqlite3_column_double(sqlStmt, 0)) < 0.01) {
+                result = true;
+            }
+        }
+    }
+    // Clean
+    rc = sqlite3_finalize(sqlStmt);
+
+    return result;
+}
+
 
 static bool account_exists(sqlite3 * db, const unsigned long account_id)
 {

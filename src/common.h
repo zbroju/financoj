@@ -16,6 +16,7 @@
 #define MSG_MISSING_PAR_NAME "%s: missing name. Specify it with -%c (--%s) option.\n"
 #define MSG_MISSING_PAR_ID "%s: missing id. Specify it with -%c (--%s) option.\n"
 #define MSG_ACCOUNT_NOT_FOUND "%s: given account not found or the name is ambiguous: %s.\n"
+#define MSG_ACCOUNT_NOT_CLEAN "%s: given account has balance different from 0.\n"
 #define MSG_CATEGORY_NOT_FOUND "%s: given category not found or the name is ambiguous: %s.\n"
 #define MSG_MAINCATEGORY_NOT_FOUND "%s: given main category not found or the name is ambiguous %s.\n"
 #define MSG_CURRENCY_CANNOT_CHANGE "%s: changing currency for existing account is impossible. Don't use -%c (--%s) option when editing account details.\n"

@@ -127,7 +127,6 @@ static void setDefaultParameters(PARAMETERS * parameters, char *app_name);
 /**
  * Returns string with uppercase.
  * @param ls string to be changed to uppercase
- * @return string with all letter uppercase
  */
 static void stringToUpper(char *ls);
 

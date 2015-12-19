@@ -11,6 +11,8 @@
 
 #define COMMON_SQL_SIZE 1000
 
+
+
 long account_id_for_name(sqlite3 * db, char *acc_name)
 {
     char sql_getId[COMMON_SQL_SIZE] = { NULL_STRING };
