@@ -263,12 +263,12 @@ int main(int argc, char *const argv[])
                     PAR_INSTITUTION_LEN - 1);
             break;
         case OPTION_CURRENCY_SHORT:
-	     strncpy(parameters.currency, optarg, PAR_CURRENCY_LEN - 1);
-	     stringToUpper(parameters.currency);
+            strncpy(parameters.currency, optarg, PAR_CURRENCY_LEN - 1);
+            stringToUpper(parameters.currency);
             break;
         case OPTION_CURRENCY_TO_SHORT:
-	     strncpy(parameters.currency_to, optarg, PAR_CURRENCY_LEN - 1);
-	     stringToUpper(parameters.currency_to);
+            strncpy(parameters.currency_to, optarg, PAR_CURRENCY_LEN - 1);
+            stringToUpper(parameters.currency_to);
             break;
         case OPTION_ACCOUNT_SHORT:
             strncpy(parameters.acc_name, optarg, PAR_NAME_LEN - 1);
@@ -579,8 +579,8 @@ static int getParametersFromConfFile(PARAMETERS * parameters)
     }
     // Get the DEFAULT_CURRENCY
     if (config_lookup_string(&cfg, "DEFAULT_CURRENCY", &str)) {
-	 strncpy(parameters->default_currency, str, PAR_CURRENCY_LEN - 1);
-	 stringToUpper(parameters->default_currency);
+        strncpy(parameters->default_currency, str, PAR_CURRENCY_LEN - 1);
+        stringToUpper(parameters->default_currency);
     }
     // Get the VERBOSE flague
     int verbose_flague;
@@ -752,9 +752,9 @@ static void setDefaultParameters(PARAMETERS * parameters, char *app_name)
 
 static void stringToUpper(char *ls)
 {
-     char *c;
+    char *c;
 
-     for (c = ls; *c != '\0'; c++){
-	  *c =(char)toupper(*c);
-     }
+    for (c = ls; *c != '\0'; c++) {
+        *c = (char) toupper(*c);
+    }
 }
