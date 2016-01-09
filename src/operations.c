@@ -423,8 +423,8 @@ int category_add(PARAMETERS parameters)
                 OPTION_FILE_SHORT, OPTION_FILE_LONG);
         return 1;
     } else if (parameters.name[0] == NULL_STRING) {
-        fprintf(stderr, MSG_MISSING_PAR_FILE, parameters.prog_name,
-                OPTION_FILE_SHORT, OPTION_FILE_LONG);
+        fprintf(stderr, MSG_MISSING_PAR_NAME, parameters.prog_name,
+                OPTION_NAME_SHORT, OPTION_NAME_LONG);
         return 1;
     } else if (parameters.maincat_name[0] == NULL_STRING) {
         fprintf(stderr, MSG_MISSING_PAR_MAINCATEGORY, parameters.prog_name,
