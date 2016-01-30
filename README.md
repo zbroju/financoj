@@ -1,9 +1,11 @@
 # mymoney
 
 ## Description
-A commandline personal finance management program. It has capabilities of tracking expenses, creating budgets, reporting, among other features.
+A commandline personal finance management program - written in c. It has capabilities of tracking expenses, creating budgets, reporting, among other features.
 
 It uses reliable sqlite3 database to store your data, so it's safe and accessible using other tools as well.
+
+WARNING! This project is not longer developed, only errors & bugs will be fixed. I decided to rewrite the entire application to RUST (see the repository: http://github.com/zbroju/rust).
 
 ## Installation
 Download source code on your disk:
