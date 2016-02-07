@@ -5,12 +5,10 @@ A commandline personal finance management program - written in c. It has capabil
 
 It uses reliable sqlite3 database to store your data, so it's safe and accessible using other tools as well.
 
-WARNING! This project is no longer developed, only errors & bugs will be fixed. I decided to rewrite the entire application to RUST (see the repository: http://github.com/zbroju/mymoney).
-
 ## Installation
 Download source code on your disk:
 ```
-git clone github.com/zbroju/mymoney
+git clone https://github.com/zbroju/mymoney
 ```
 and compile:
 ```
