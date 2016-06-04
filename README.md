@@ -8,7 +8,7 @@ It uses reliable sqlite3 database to store your data, so it's safe and accessibl
 ## Installation
 Download source code on your disk:
 ```
-git clone https://github.com/zbroju/mymoney
+git clone https://github.com/zbroju/mymoney-c
 ```
 and compile:
 ```

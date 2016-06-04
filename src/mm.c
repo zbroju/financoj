@@ -81,12 +81,6 @@ typedef enum objectT {
 
 /* FUNCTION PROTOTYPES */
 /**
- * Prints error message when more than one command has been put by user.
- * @param app_name char* containig program name.
- * @return int with error code.
- */
-
-/**
  * Assigns correct object for command.
  * @param arg char* object given by user.
  * @param obj OBJECT* variable which will hold the object.
@@ -103,7 +97,7 @@ static int getObject(char *arg, OBJECT * obj, char *app_name);
 static int getParametersFromConfFile(PARAMETERS * parameters);
 
 /**
- * Prints errer message if there are too many commands given.
+ * Prints error message if there are too many commands given.
  */
 static int perrorTooManyCmnds(char *app_name);
 
