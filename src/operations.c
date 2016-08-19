@@ -1027,6 +1027,7 @@ int datafile_init(PARAMETERS parameters)
         "CURRENCY_TO TEXT,"
         "EXCHANGE_RATE REAL,"
         "PRIMARY KEY (CURRENCY_FROM, CURRENCY_TO));"
+
         "CREATE TABLE ACCOUNTS ("
         "ACCOUNT_ID INTEGER PRIMARY KEY,"
         "NAME TEXT,"
@@ -1035,6 +1036,7 @@ int datafile_init(PARAMETERS parameters)
         "TYPE INTEGER,"
         "CURRENCY TEXT,"
         "STATUS INTEGER);"
+
         "CREATE TABLE TRANSACTIONS ("
         "TRANSACTION_ID INTEGER PRIMARY KEY,"
         "YEAR INTEGER,"
@@ -1044,6 +1046,7 @@ int datafile_init(PARAMETERS parameters)
         "DESCRIPTION TEXT,"
         "VALUE REAL,"
         "CATEGORY_ID INTEGER);"
+
         "CREATE TABLE BUDGETS ("
         "YEAR INTEGER,"
         "MONTH INTEGER,"
@@ -1051,11 +1054,13 @@ int datafile_init(PARAMETERS parameters)
         "VALUE REAL,"
         "CURRENCY TEXT,"
         "PRIMARY KEY (YEAR, MONTH, CATEGORY_ID));"
+
         "CREATE TABLE CATEGORIES ("
         "CATEGORY_ID INTEGER PRIMARY KEY,"
         "MAIN_CATEGORY_ID INTEGER,"
         "NAME TEXT,"
         "STATUS INTEGER);"
+
         "CREATE TABLE MAIN_CATEGORIES ("
         "MAIN_CATEGORY_ID INTEGER PRIMARY KEY,"
         "TYPE INTEGER," "NAME TEXT," "STATUS INTEGER);" "COMMIT;";
