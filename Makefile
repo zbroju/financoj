@@ -3,20 +3,20 @@ SHELL = /bin/bash
 CC = gcc
 CFLAGS = -O3
 LIBRARIES = -lsqlite3 -lconfig
-EXECUTABLE = mm
+EXECUTABLE = fin
 
 SRC_DIR = src
 BUILD_DIR = build
 TARGET_DIR = target
-DIST_DIR = mymoney
+DIST_DIR = financoj
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
 HEADERS = $(wildcard $(SRC_DIR)/*.h)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))
 
 all: build
 	mkdir -p $(TARGET_DIR)/$(DIST_DIR)
-	cp LICENSE README.md example.mmrc $(BUILD_DIR)/$(EXECUTABLE) $(TARGET_DIR)/$(DIST_DIR)
-	tar -czvf $(TARGET_DIR)/mymoney.tar.gz -C $(TARGET_DIR) $(DIST_DIR)
+	cp LICENSE README.md example.financojrc $(BUILD_DIR)/$(EXECUTABLE) $(TARGET_DIR)/$(DIST_DIR)
+	tar -czvf $(TARGET_DIR)/financoj.tar.gz -C $(TARGET_DIR) $(DIST_DIR)
 
 build: pre_compile $(EXECUTABLE)
 

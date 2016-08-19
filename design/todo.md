@@ -1,4 +1,10 @@
 # TO BE DONE
+- implement formatting strings so that the reports are compact
+- implement full strings for user input
+- add signature to the database – the same as for gsqlitehandler and check it every time when opening the file
+- write tutorial
+- prepare README with installation instruction and dependencies
+- prepare debian package
 
 # COMPLETED
 - create application
@@ -19,6 +25,7 @@
 - add comments to example of configuration file
 - make comparison for currencies insensitive to case letters
 - add condition that an account cannot be closed if its balance is <> 0
+- change name of the project to financoj
 
 # DISCARDED
 - add function to check if the given file is a mymoney database (RATIONALE: not necessary: application doesn't overwrite or change existing file)

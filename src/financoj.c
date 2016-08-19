@@ -5,7 +5,7 @@
 */
 
 /* INCLUDES */
-#include "mm.h"
+#include "financoj.h"
 #include "common.h"
 #include "operations.h"
 #include "reports.h"
@@ -594,7 +594,7 @@ static int perrorTooManyCmnds(char *app_name)
 static void print_help(void)
 {
     printf("Usage:\n");
-    printf("\tmm COMMAND [object | reports] [OPTIONS]\n");
+    printf("\tfin COMMAND [object | reports] [OPTIONS]\n");
     printf("\nCOMMANDS:\n");
     printf("\t-%c, --%s\tinit a new file. Requires -%c (--%s) option.\n",
            OPTION_CMND_INIT_SHORT, OPTION_CMND_INIT_LONG,
@@ -693,10 +693,10 @@ static void print_help(void)
 static void print_usage(void)
 {
     printf("Usage:\n");
-    printf("\tmm COMMAND [object | reports] [OPTIONS] [--%s]\n",
+    printf("\tfin COMMAND [object | reports] [OPTIONS] [--%s]\n",
            OPTION_VERBOSE_LONG);
 
-    printf("\tmm -%c%c%c%c%c%c%c"
+    printf("\tfin -%c%c%c%c%c%c%c"
            " [%s %s %s %s %s %s | %s %s %s %s %s %s %s %s]"
            " [-%c%c%c%c%c%c%c%c%c%c%c%c%c%c]"
            " [--%s]\n", OPTION_CMND_INIT_SHORT, OPTION_CMND_ADD_SHORT,

@@ -1,4 +1,4 @@
-# mymoney
+# financoj
 
 ## Description
 A commandline personal finance management program - written in c. It has capabilities of tracking expenses, creating budgets, reporting, among other features.
@@ -8,7 +8,7 @@ It uses reliable sqlite3 database to store your data, so it's safe and accessibl
 ## Installation
 Download source code on your disk:
 ```
-git clone https://github.com/zbroju/mymoney-c
+git clone https://github.com/zbroju/financoj
 ```
 and compile:
 ```
@@ -18,13 +18,13 @@ make
 ## Documentation:
 Type:
 ```
-mm --help
+fin --help
 ```
 to get help and all available options
-It is worth to copy the file example.mmrc to your $HOME/.mmrc and edit it by putting your own settings.
+It is worth to copy the file example.financojrc to your $HOME/.financojrc and edit it by putting your own settings.
 ```
 Usage:
-	mm COMMAND [object | reports] [OPTIONS]
+	fin COMMAND [object | reports] [OPTIONS]
 	
 COMMANDS: 
         -I, --init	init a new file. Requires -f (--file) option.
