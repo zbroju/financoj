@@ -3,6 +3,3 @@ DATA_FILE = "/home/marcin/documents/finance/operacje/mojeFinanse.mmdb"
 
 # Default currency
 DEFAULT_CURRENCY = "SEK"
-
-# Verbosity. If 'true' then extra information is shown after each operation.
-VERBOSE=true

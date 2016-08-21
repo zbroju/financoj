@@ -1,20 +1,37 @@
 # financoj
 
 ## Description
-A commandline personal finance management program - written in c. It has capabilities of tracking expenses, creating budgets, reporting, among other features.
+A commandline personal finance management program. It has capabilities of tracking expenses, creating budgets, reporting, among other features.
 
 It uses reliable sqlite3 database to store your data, so it's safe and accessible using other tools as well.
 
 ## Installation
-Download source code on your disk:
+
+### Version 1.0
+If you want to get the working version 1.0 then download the c sources from:
 ```
-git clone https://github.com/zbroju/financoj
+https://github.com/zbroju/financoj/archive/Release_1.0.zip
+```
+or
+```
+https://github.com/zbroju/financoj/archive/Release_1.0.tar.gz
 ```
 and compile:
 ```
 make
 ```
+Version 1.0 requires the following c libraries to work:
+```
+libconfig
+libsqlite3
+```
+### Current development
+Current MASTER branch represents an early development stage of version 2 (where I move sources from c language to golang) and should be used *only* for development.
 
+Download source code on your disk:
+```
+git clone https://github.com/zbroju/financoj
+```
 ## Documentation:
 Type:
 ```
