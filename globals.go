@@ -27,7 +27,61 @@ const (
 	confDataFile = "DATA_FILE"
 )
 
+// Objects and options
+const (
+	optFile                  = "file"
+	optFileAlias             = "f"
+	optMainCategoryType      = "main_category_type"
+	optMainCategoryTypeAlias = "o"
+	optID                    = "id"
+	optIDAlias               = "i"
+
+	objMainCategory      = "main_category"
+	objMainCategoryAlias = "m"
+)
+
 // Error messages
 const (
-	errMissingFileFlag = "missing information about data file. Specify it with --file or -f flag"
+	errMissingFileFlag           = "missing information about data file"
+	errMissingMainCategory       = "missing information about main category name"
+	errIncorrectMainCategoryType = "incorrect main category type"
+
+	errWritingToFile   = "error writing to file"
+	errReadingFromFile = "error reading from file"
 )
+
+// ItemStatus indicates the life cycle of an object
+type ItemStatus int
+
+const (
+	IS_Close ItemStatus = 0
+	IS_Open  ItemStatus = 1
+)
+
+// MainCategoryStatusT describes the behaviour of categories and its descendants (transactions)
+type MainCategoryTypeT int
+
+const (
+	MCT_NotSet   MainCategoryTypeT = -2
+	MCT_Cost     MainCategoryTypeT = -1
+	MCT_Transfer MainCategoryTypeT = 0
+	MCT_Income   MainCategoryTypeT = 1
+)
+
+// Satisfy fmt.Stringer interface in order to get human readable names
+func (mct MainCategoryTypeT) String() string {
+	var mctName string
+
+	switch mct {
+	case MCT_Income:
+		mctName = "income"
+	case MCT_Cost:
+		mctName = "cost"
+	case MCT_Transfer:
+		mctName = "transfer"
+	default:
+		mctName = "not set"
+	}
+
+	return mctName
+}

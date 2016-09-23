@@ -5,8 +5,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/urfave/cli"
+	"github.com/zbroju/gprops"
+	"log"
 	"os"
+	"path"
 )
 
 func main() {
@@ -37,14 +41,15 @@ SUBCOMMANDS:
 
 	app := cli.NewApp()
 	app.Name = AppName
-	app.Usage = "keeps track of you bike rides"
+	app.Usage = "keeps track of your finance"
 	app.Version = "2.0.0"
 	app.Authors = []cli.Author{
 		cli.Author{"Marcin 'Zbroju' Zbroinski", "marcin@zbroinski.net"},
 	}
 
-	flagFile := cli.StringFlag{Name: "file, f", Value: dataFile, Usage: "data file"}
-	//flagAccount := cli.StringFlag{Name: "account, a", Value: NotSetStringValue, Usage: "account name"}
+	flagFile := cli.StringFlag{Name: optFile + " ," + optFileAlias, Value: dataFile, Usage: "data file"}
+	flagMainCategory := cli.StringFlag{Name: objMainCategory + ", " + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
+	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + ", " + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
 
 	app.Commands = []cli.Command{
 		{Name: "init",
@@ -52,19 +57,44 @@ SUBCOMMANDS:
 			Flags:   []cli.Flag{flagFile},
 			Usage:   "Init a new data file specified by the user",
 			Action:  cmdInit},
-		/*{Name: "add", Aliases: []string{"A"}, Usage: "Add an object (account).",
+		{Name: "add", Aliases: []string{"A"}, Usage: "Add an object (main_category).",
 			Subcommands: []cli.Command{
-				{Name: objectBicycleType,
-					Aliases: []string{objectBicycleTypeAlias},
-					Flags:   []cli.Flag{flagFile, flagType},
+				{Name: objMainCategory,
+					Aliases: []string{objMainCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
 					Usage:   "Add new bicycle type.",
-					Action:  cmdTypeAdd},
+					Action:  cmdMainCategoryAdd},
 			},
-		},*/
+		},
 	}
 
 	app.Run(os.Args)
 
+}
+
+// GetConfigSettings returns contents of settings file
+func getConfigSettings() (dataFile string, err error) {
+	// Read config file
+	configSettings := gprops.New()
+	configFile, err := os.Open(path.Join(os.Getenv("HOME"), ConfigFile))
+	if err == nil {
+		err = configSettings.Load(configFile)
+		if err != nil {
+			return NotSetStringValue, err
+		}
+	}
+	configFile.Close()
+	dataFile = configSettings.GetOrDefault(confDataFile, NotSetStringValue)
+
+	return dataFile, nil
+}
+
+// GetLoggers returns two loggers for standard formatting of messages and errors
+func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
+	messageLogger = log.New(os.Stdout, fmt.Sprintf("%s: ", AppName), 0)
+	errorLogger = log.New(os.Stderr, fmt.Sprintf("%s: ", AppName), 0)
+
+	return
 }
 
 //DONE: init file
@@ -80,7 +110,7 @@ SUBCOMMANDS:
 //TODO: currency edit
 //TODO: currency remove
 //TODO: currency list
-//TODO: main category add
+//DONE: main category add
 //TODO: main category edit
 //TODO: main category remove
 //TODO: main category list
@@ -101,4 +131,4 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 
-//DONE: 1/33 (3%)
+//DONE: 2/33 (6%)
