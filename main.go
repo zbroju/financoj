@@ -48,22 +48,32 @@ SUBCOMMANDS:
 	}
 
 	flagFile := cli.StringFlag{Name: optFile + " ," + optFileAlias, Value: dataFile, Usage: "data file"}
+	flagID := cli.IntFlag{Name: optID + " ," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + ", " + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + ", " + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
 
 	app.Commands = []cli.Command{
-		{Name: "init",
-			Aliases: []string{"I"},
+		{Name: cmdInit,
+			Aliases: []string{cmdInitAlias},
 			Flags:   []cli.Flag{flagFile},
 			Usage:   "Init a new data file specified by the user",
-			Action:  cmdInit},
-		{Name: "add", Aliases: []string{"A"}, Usage: "Add an object (main_category).",
+			Action:  CreateNewDataFile},
+		{Name: cmdAdd, Aliases: []string{cmdAddAlias}, Usage: "Add an object (main_category).",
 			Subcommands: []cli.Command{
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
-					Usage:   "Add new bicycle type.",
-					Action:  cmdMainCategoryAdd},
+					Usage:   "Add new main category.",
+					Action:  MainCategoryAdd},
+			},
+		},
+		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object (main_category).",
+			Subcommands: []cli.Command{
+				{Name: objMainCategory,
+					Aliases: []string{objMainCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagID, flagMainCategory, flagMainCategoryType},
+					Usage:   "Edit main category.",
+					Action:  MainCategoryEdit},
 			},
 		},
 	}
@@ -111,7 +121,7 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 //TODO: currency remove
 //TODO: currency list
 //DONE: main category add
-//TODO: main category edit
+//DONE: main category edit
 //TODO: main category remove
 //TODO: main category list
 //TODO: transaction add
@@ -131,4 +141,4 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 //TODO: report transaction balance
 //TODO: report net value
 
-//DONE: 2/33 (6%)
+//DONE: 3/33 (9%)

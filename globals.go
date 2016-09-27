@@ -11,8 +11,8 @@ const (
 	FSSeparator   = "  "
 	NullDataValue = "-"
 
-	NotSetIntValue    int     = -1
-	NotSetFloatValue  float64 = -1
+	NotSetIntValue    int     = 0
+	NotSetFloatValue  float64 = 0.0
 	NotSetStringValue         = ""
 )
 
@@ -27,8 +27,15 @@ const (
 	confDataFile = "DATA_FILE"
 )
 
-// Objects and options
+// Commands, objects and options
 const (
+	cmdInit      = "init"
+	cmdInitAlias = "I"
+	cmdAdd       = "add"
+	cmdAddAlias  = "A"
+	cmdEdit      = "edit"
+	cmdEditAlias = "E"
+
 	optFile                  = "file"
 	optFileAlias             = "f"
 	optMainCategoryType      = "main_category_type"
@@ -43,8 +50,10 @@ const (
 // Error messages
 const (
 	errMissingFileFlag           = "missing information about data file"
+	errMissingIDFlag             = "missing ID"
 	errMissingMainCategory       = "missing information about main category name"
 	errIncorrectMainCategoryType = "incorrect main category type"
+	errNoMainCategoryWithID      = "no main category with given ID"
 
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
@@ -62,7 +71,7 @@ const (
 type MainCategoryTypeT int
 
 const (
-	MCT_NotSet   MainCategoryTypeT = -2
+	MCT_Unknown  MainCategoryTypeT = -2
 	MCT_Cost     MainCategoryTypeT = -1
 	MCT_Transfer MainCategoryTypeT = 0
 	MCT_Income   MainCategoryTypeT = 1
@@ -84,4 +93,20 @@ func (mct MainCategoryTypeT) String() string {
 	}
 
 	return mctName
+}
+
+// ResolveMainCategoryType returns main category type for given string
+func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
+	switch m {
+	case "c", "cost", NotSetStringValue: // If null string is given, then the default value is MCT_Cost
+		mct = MCT_Cost
+	case "i", "income":
+		mct = MCT_Income
+	case "t", "transfer":
+		mct = MCT_Transfer
+	default:
+		mct = MCT_Unknown
+	}
+
+	return mct
 }
