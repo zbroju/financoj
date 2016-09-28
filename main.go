@@ -76,6 +76,15 @@ SUBCOMMANDS:
 					Action:  MainCategoryEdit},
 			},
 		},
+		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object (main_category).",
+			Subcommands: []cli.Command{
+				{Name: objMainCategory,
+					Aliases: []string{objMainCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagID},
+					Usage:   "Remove main category.",
+					Action:  MainCategoryRemove},
+			},
+		},
 	}
 
 	app.Run(os.Args)
@@ -122,7 +131,7 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 //TODO: currency list
 //DONE: main category add
 //DONE: main category edit
-//TODO: main category remove
+//DONE: main category remove
 //TODO: main category list
 //TODO: transaction add
 //TODO: transaction edit
@@ -140,5 +149,9 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 //TODO: report main categories balance
 //TODO: report transaction balance
 //TODO: report net value
+//
+//DONE: 4/33 (12%)
 
-//DONE: 3/33 (9%)
+// IDEAS
+//TODO: add to main_categories column with 'coefficient', which will be used for calculations instead of signs in transactions (because of that we can have a real main category edit with correct type change)
+//TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely

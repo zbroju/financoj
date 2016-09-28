@@ -135,3 +135,45 @@ func MainCategoryEdit(c *cli.Context) error {
 
 	return nil
 }
+
+// MainCategoryRemove sets man category status to IS_Close
+func MainCategoryRemove(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	id := c.Int(optID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file
+	df := gsqlitehandler.New(f, dataFileProperties)
+	if err = df.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer df.Close()
+
+	// Set correct status (IS_Close)
+	sqlQuery := fmt.Sprintf("UPDATE main_categories SET status=%d WHERE id=%d;", IS_Close, id)
+
+	r, err := df.Handler.Exec(sqlQuery)
+	if err != nil {
+		printError.Fatalln(errWritingToFile)
+	}
+	if i, _ := r.RowsAffected(); i == 0 {
+		printError.Fatalln(errNoMainCategoryWithID)
+	}
+
+	// Show summary
+	printUserMsg.Printf("removed main category with id = %d\n", id)
+
+	return nil
+}

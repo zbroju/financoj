@@ -29,12 +29,14 @@ const (
 
 // Commands, objects and options
 const (
-	cmdInit      = "init"
-	cmdInitAlias = "I"
-	cmdAdd       = "add"
-	cmdAddAlias  = "A"
-	cmdEdit      = "edit"
-	cmdEditAlias = "E"
+	cmdInit        = "init"
+	cmdInitAlias   = "I"
+	cmdAdd         = "add"
+	cmdAddAlias    = "A"
+	cmdEdit        = "edit"
+	cmdEditAlias   = "E"
+	cmdRemove      = "remove"
+	cmdRemoveAlias = "R"
 
 	optFile                  = "file"
 	optFileAlias             = "f"
