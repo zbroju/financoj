@@ -7,10 +7,45 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli"
-	"github.com/zbroju/gprops"
+	. "github.com/zbroju/financoj/lib/financoj"
 	"log"
 	"os"
-	"path"
+)
+
+// Settings
+const (
+	FSSeparator   = "  "
+	NullDataValue = "-"
+)
+
+// Commands, objects and options
+const (
+	cmdInit        = "init"
+	cmdInitAlias   = "I"
+	cmdAdd         = "add"
+	cmdAddAlias    = "A"
+	cmdEdit        = "edit"
+	cmdEditAlias   = "E"
+	cmdRemove      = "remove"
+	cmdRemoveAlias = "R"
+
+	optFile                  = "file"
+	optFileAlias             = "f"
+	optMainCategoryType      = "main_category_type"
+	optMainCategoryTypeAlias = "o"
+	optID                    = "id"
+	optIDAlias               = "i"
+
+	objMainCategory      = "main_category"
+	objMainCategoryAlias = "m"
+)
+
+// Errors
+const (
+	errMissingFileFlag           = "missing information about data file"
+	errMissingIDFlag             = "missing ID"
+	errMissingMainCategory       = "missing information about main category name"
+	errIncorrectMainCategoryType = "incorrect main category type"
 )
 
 func main() {
@@ -18,7 +53,7 @@ func main() {
 	_, printError := getLoggers()
 
 	// Get config settings
-	dataFile, err := getConfigSettings()
+	dataFile, err := GetConfigSettings()
 	if err != nil {
 		printError.Fatalln(err)
 	}
@@ -57,14 +92,14 @@ SUBCOMMANDS:
 			Aliases: []string{cmdInitAlias},
 			Flags:   []cli.Flag{flagFile},
 			Usage:   "Init a new data file specified by the user",
-			Action:  CreateNewDataFile},
+			Action:  cmdCreateNewDataFile},
 		{Name: cmdAdd, Aliases: []string{cmdAddAlias}, Usage: "Add an object (main_category).",
 			Subcommands: []cli.Command{
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
 					Usage:   "Add new main category.",
-					Action:  MainCategoryAdd},
+					Action:  cmdMainCategoryAdd},
 			},
 		},
 		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object (main_category).",
@@ -73,7 +108,7 @@ SUBCOMMANDS:
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID, flagMainCategory, flagMainCategoryType},
 					Usage:   "Edit main category.",
-					Action:  MainCategoryEdit},
+					Action:  cmdMainCategoryEdit},
 			},
 		},
 		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object (main_category).",
@@ -82,7 +117,7 @@ SUBCOMMANDS:
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove main category.",
-					Action:  MainCategoryRemove},
+					Action:  cmdMainCategoryRemove},
 			},
 		},
 	}
@@ -91,21 +126,157 @@ SUBCOMMANDS:
 
 }
 
-// GetConfigSettings returns contents of settings file
-func getConfigSettings() (dataFile string, err error) {
-	// Read config file
-	configSettings := gprops.New()
-	configFile, err := os.Open(path.Join(os.Getenv("HOME"), ConfigFile))
-	if err == nil {
-		err = configSettings.Load(configFile)
-		if err != nil {
-			return NotSetStringValue, err
-		}
-	}
-	configFile.Close()
-	dataFile = configSettings.GetOrDefault(confDataFile, NotSetStringValue)
+// cmdCreateNewDataFile creates a new sqlite file and tables for financoj
+func cmdCreateNewDataFile(c *cli.Context) error {
+	// Get loggers
+	printUserMsg, printError := getLoggers()
 
-	return dataFile, nil
+	// Check the obligatory parameters and exit if missing
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+
+	// Create new data file
+	fh := GetDataFileHandler(f)
+	if err := CreateNewDataFile(fh); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("created file %s\n", f)
+
+	return nil
+}
+
+// cmdMainCategoryAdd adds new main category
+func cmdMainCategoryAdd(c *cli.Context) error {
+	//FIXME: use only prepare stmt for all queries [https://astaxie.gitbooks.io/build-web-application-with-golang/content/en/05.3.html]
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags (file, name)
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	mcName := c.String(objMainCategory)
+	if mcName == NotSetStringValue {
+		printError.Fatalln(errMissingMainCategory)
+	}
+	mcType := mainCategoryTypeForString(c.String(optMainCategoryType))
+	if mcType == MCTUnknown {
+		printError.Fatalln(errIncorrectMainCategoryType)
+	}
+
+	// Add new main category
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	if err := MainCategoryAdd(fh, mcType, mcName); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("added new main category: %s (type: %s)\n", mcName, mcType)
+
+	return nil
+}
+
+// cmdMainCategoryEdit updates main category with new values
+func cmdMainCategoryEdit(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	id := c.Int(optID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var mc MainCategoryT
+	if mc, err = MainCategoryForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Edit main category
+	if t := c.String(optMainCategoryType); t != NotSetStringValue {
+		mct := mainCategoryTypeForString(t)
+		if mct == MCTUnknown {
+			printError.Fatalln(errIncorrectMainCategoryType)
+		}
+		mc.MCType = mct
+	}
+	if n := c.String(objMainCategory); n != NotSetStringValue {
+		mc.Name = n
+	}
+	if err = MainCategoryEdit(fh, mc); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("changed details of main category with id = %d\n", id)
+
+	return nil
+}
+
+// cmdMainCategoryRemove sets man category status to IS_Close
+func cmdMainCategoryRemove(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	id := c.Int(optID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var mc MainCategoryT
+	if mc, err = MainCategoryForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Remove the main category
+	if err = MainCategoryRemove(fh, mc); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("removed main category with id = %d\n", id)
+
+	return nil
 }
 
 // GetLoggers returns two loggers for standard formatting of messages and errors
@@ -114,6 +285,22 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	errorLogger = log.New(os.Stderr, fmt.Sprintf("%s: ", AppName), 0)
 
 	return
+}
+
+// ResolveMainCategoryType returns main category type for given string
+func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
+	switch m {
+	case "c", "cost", NotSetStringValue: // If null string is given, then the default value is MCT_Cost
+		mct = MCTCost
+	case "i", "income":
+		mct = MCTIncome
+	case "t", "transfer":
+		mct = MCTTransfer
+	default:
+		mct = MCTUnknown
+	}
+
+	return mct
 }
 
 //DONE: init file
