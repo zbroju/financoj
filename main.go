@@ -151,7 +151,6 @@ func cmdCreateNewDataFile(c *cli.Context) error {
 
 // cmdMainCategoryAdd adds new main category
 func cmdMainCategoryAdd(c *cli.Context) error {
-	//FIXME: use only prepare stmt for all queries [https://astaxie.gitbooks.io/build-web-application-with-golang/content/en/05.3.html]
 	// Get loggers
 	printUserMsg, printError := getLoggers()
 

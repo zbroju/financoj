@@ -52,8 +52,11 @@ func CreateNewDataFile(db *gsqlitehandler.SqliteDB) error {
 
 // MainCategoryAdd adds new main category with type (t) and name (n)
 func MainCategoryAdd(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string) error {
-	sqlAddType := fmt.Sprintf("INSERT INTO main_categories VALUES (NULL, %d,'%s', %d);", t, n, isOpen)
-	if _, err := db.Handler.Exec(sqlAddType); err != nil {
+	stmt, err := db.Handler.Prepare("INSERT INTO main_categories VALUES (NULL, ?, ?, ?);")
+	if err != nil {
+		return errors.New(errWritingToFile)
+	}
+	if _, err = stmt.Exec(t, n, isOpen); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
@@ -76,9 +79,12 @@ func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m MainCategoryT, err
 
 // MainCategoryEdit updates main category with new values for type (t), name (n)
 func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
-	sqlQuery := fmt.Sprintf("UPDATE main_categories SET type=%d, name='%s' WHERE id=%d;", m.MCType, m.Name, m.Id)
-
-	if _, err := db.Handler.Exec(sqlQuery); err != nil {
+	stmt, err := db.Handler.Prepare("UPDATE main_categories SET type=?, name=? WHERE id=?;")
+	if err != nil {
+		errors.New(errWritingToFile)
+	}
+	_, err = stmt.Exec(m.MCType, m.Name, m.Id)
+	if err != nil {
 		errors.New(errWritingToFile)
 	}
 
@@ -89,9 +95,11 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 // MainCategoryRemove updates main category status with isClose
 func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 	// Set correct status (IS_Close)
-	sqlQuery := fmt.Sprintf("UPDATE main_categories SET status=%d WHERE id=%d;", isClose, m.Id)
-
-	if _, err := db.Handler.Exec(sqlQuery); err != nil {
+	stmt, err := db.Handler.Prepare("UPDATE main_categories SET status=? WHERE id=?;")
+	if err != nil {
+		return errors.New(errWritingToFile)
+	}
+	if _, err = stmt.Exec(isClose, m.Id); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
