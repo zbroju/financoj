@@ -123,7 +123,6 @@ SUBCOMMANDS:
 	}
 
 	app.Run(os.Args)
-
 }
 
 // cmdCreateNewDataFile creates a new sqlite file and tables for financoj
@@ -160,12 +159,12 @@ func cmdMainCategoryAdd(c *cli.Context) error {
 		printError.Fatalln(errMissingFileFlag)
 
 	}
-	mcName := c.String(objMainCategory)
-	if mcName == NotSetStringValue {
+	n := c.String(objMainCategory)
+	if n == NotSetStringValue {
 		printError.Fatalln(errMissingMainCategory)
 	}
-	mcType := mainCategoryTypeForString(c.String(optMainCategoryType))
-	if mcType == MCTUnknown {
+	t := mainCategoryTypeForString(c.String(optMainCategoryType))
+	if t == MCTUnknown {
 		printError.Fatalln(errIncorrectMainCategoryType)
 	}
 
@@ -176,12 +175,13 @@ func cmdMainCategoryAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	if err := MainCategoryAdd(fh, mcType, mcName); err != nil {
+	m := MainCategoryT{MType: t, Name: n, Status: ISOpen}
+	if err := MainCategoryAdd(fh, m); err != nil {
 		printError.Fatalln(err)
 	}
 
 	// Show summary
-	printUserMsg.Printf("added new main category: %s (type: %s)\n", mcName, mcType)
+	printUserMsg.Printf("added new main category: %s (type: %s)\n", n, t)
 
 	return nil
 }
@@ -222,7 +222,7 @@ func cmdMainCategoryEdit(c *cli.Context) error {
 		if mct == MCTUnknown {
 			printError.Fatalln(errIncorrectMainCategoryType)
 		}
-		mc.MCType = mct
+		mc.MType = mct
 	}
 	if n := c.String(objMainCategory); n != NotSetStringValue {
 		mc.Name = n

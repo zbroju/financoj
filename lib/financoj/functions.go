@@ -51,8 +51,7 @@ func CreateNewDataFile(db *gsqlitehandler.SqliteDB) error {
 }
 
 // MainCategoryAdd adds new main category with type (t) and name (n)
-func MainCategoryAdd(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string) error {
-	// FIXME: change arguments of the function to use object main category instead of basic types
+func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 	var err error
 	var stmt *sql.Stmt
 
@@ -61,7 +60,7 @@ func MainCategoryAdd(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string)
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(t, n, isOpen); err != nil {
+	if _, err = stmt.Exec(m.MType, m.Name, m.Status); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
@@ -80,7 +79,7 @@ func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m MainCategoryT, err
 	defer stmt.Close()
 
 	m = MainCategoryT{}
-	if err = stmt.QueryRow(i).Scan(&m.Id, &m.MCType, &m.Name, &m.Status); err != nil {
+	if err = stmt.QueryRow(i).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
 		return m, errors.New(errNoMainCategoryWithID)
 	}
 
@@ -98,7 +97,7 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(m.MCType, m.Name, m.Id); err != nil {
+	if _, err = stmt.Exec(m.MType, m.Name, m.Id); err != nil {
 		errors.New(errWritingToFile)
 	}
 
@@ -116,7 +115,7 @@ func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(isClose, m.Id); err != nil {
+	if _, err = stmt.Exec(ISClose, m.Id); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
