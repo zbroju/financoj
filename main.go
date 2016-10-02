@@ -335,9 +335,11 @@ func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
 //TODO: report main categories balance
 //TODO: report transaction balance
 //TODO: report net value
+//TODO: add procedure to migrate from data file version 1 to version 2
 //
 //DONE: 4/33 (12%)
 
 // IDEAS
+//TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
 //TODO: add to main_categories column with 'coefficient', which will be used for calculations instead of signs in transactions (because of that we can have a real main category edit with correct type change)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely

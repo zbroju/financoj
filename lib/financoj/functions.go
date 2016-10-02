@@ -5,8 +5,8 @@
 package financoj
 
 import (
+	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/zbroju/gprops"
 	"github.com/zbroju/gsqlitehandler"
 	"os"
@@ -52,10 +52,15 @@ func CreateNewDataFile(db *gsqlitehandler.SqliteDB) error {
 
 // MainCategoryAdd adds new main category with type (t) and name (n)
 func MainCategoryAdd(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string) error {
-	stmt, err := db.Handler.Prepare("INSERT INTO main_categories VALUES (NULL, ?, ?, ?);")
-	if err != nil {
+	// FIXME: change arguments of the function to use object main category instead of basic types
+	var err error
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("INSERT INTO main_categories VALUES (NULL, ?, ?, ?);"); err != nil {
 		return errors.New(errWritingToFile)
 	}
+	defer stmt.Close()
+
 	if _, err = stmt.Exec(t, n, isOpen); err != nil {
 		return errors.New(errWritingToFile)
 	}
@@ -67,41 +72,75 @@ func MainCategoryAdd(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string)
 
 // MainCategoryForID returns MainCategoryT for given id
 func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m MainCategoryT, err error) {
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE id=?;"); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+
 	m = MainCategoryT{}
-	sqlQuery := fmt.Sprintf("SELECT * FROM main_categories WHERE id=%d;", i)
-	if err = db.Handler.QueryRow(sqlQuery).Scan(&m.Id, &m.MCType, &m.Name, &m.Status); err != nil {
+	if err = stmt.QueryRow(i).Scan(&m.Id, &m.MCType, &m.Name, &m.Status); err != nil {
 		return m, errors.New(errNoMainCategoryWithID)
 	}
 
-	return m, err
-
+	return m, nil
 }
 
 // MainCategoryEdit updates main category with new values for type (t), name (n)
+// Both type and name is updated, so make sure you pass old values in argument 'm'
 func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
-	stmt, err := db.Handler.Prepare("UPDATE main_categories SET type=?, name=? WHERE id=?;")
-	if err != nil {
+	var err error
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("UPDATE main_categories SET type=?, name=? WHERE id=?;"); err != nil {
 		errors.New(errWritingToFile)
 	}
-	_, err = stmt.Exec(m.MCType, m.Name, m.Id)
-	if err != nil {
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(m.MCType, m.Name, m.Id); err != nil {
 		errors.New(errWritingToFile)
 	}
 
 	return nil
-
 }
 
 // MainCategoryRemove updates main category status with isClose
 func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
+	var err error
+	var stmt *sql.Stmt
+
 	// Set correct status (IS_Close)
-	stmt, err := db.Handler.Prepare("UPDATE main_categories SET status=? WHERE id=?;")
-	if err != nil {
+	if stmt, err = db.Handler.Prepare("UPDATE main_categories SET status=? WHERE id=?;"); err != nil {
 		return errors.New(errWritingToFile)
 	}
+	defer stmt.Close()
+
 	if _, err = stmt.Exec(isClose, m.Id); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
 	return nil
 }
+
+/*
+// MainCategoryList returns closure which generates a sequence of Main Category objects
+func MainCategoryList(db *gsqlitehandler.SqliteDB, mcT MainCategoryTypeT) (func() MainCategoryT, error) {
+	sqlQuery:=fmt.Sprintf("SELECT id, type, name FROM main_categories WHERE status")
+	rows, err:=db.Handler.Query()
+
+
+
+
+
+	// Prepare SQL query and perform database actions
+	sprintf(sql_list_maincategories, "SELECT"
+	" MAIN_CATEGORY_ID, TYPE, NAME"
+	" FROM MAIN_CATEGORIES WHERE STATUS=%d", ITEM_STAT_OPEN);
+if (parameters.maincategory_type != CAT_TYPE_NOTSET) {
+sprintf(sql_buf, " AND TYPE=%d", parameters.maincategory_type);
+strncat(sql_list_maincategories, sql_buf, BUF_SIZE);
+}
+strncat(sql_list_maincategories, " ORDER BY TYPE, NAME;", BUF_SIZE);
+}
+*/
