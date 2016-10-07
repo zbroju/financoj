@@ -16,10 +16,11 @@ const (
 type MainCategoryTypeT int
 
 const (
-	MCTUnknown  MainCategoryTypeT = -2
-	MCTCost     MainCategoryTypeT = -1
-	MCTTransfer MainCategoryTypeT = 0
-	MCTIncome   MainCategoryTypeT = 1
+	MCTUnknown  MainCategoryTypeT = -1
+	MCTUnset    MainCategoryTypeT = 0
+	MCTCost     MainCategoryTypeT = 1
+	MCTTransfer MainCategoryTypeT = 2
+	MCTIncome   MainCategoryTypeT = 3
 )
 
 // String satisfies fmt.Stringer interface in order to get human readable names
@@ -27,14 +28,16 @@ func (mct MainCategoryTypeT) String() string {
 	var mctName string
 
 	switch mct {
+	case MCTUnknown:
+		mctName = "unknown"
+	case MCTUnset:
+		mctName = "not set"
 	case MCTIncome:
 		mctName = "income"
 	case MCTCost:
 		mctName = "cost"
 	case MCTTransfer:
 		mctName = "transfer"
-	default:
-		mctName = "not set"
 	}
 
 	return mctName

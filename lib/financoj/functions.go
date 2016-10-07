@@ -28,11 +28,13 @@ func GetConfigSettings() (dataFile string, err error) {
 	dataFile = configSettings.GetOrDefault(confDataFile, NotSetStringValue)
 
 	return dataFile, nil
+	//TODO: add test
 }
 
 // GetDataFileHandler returns new file handler for given path
 func GetDataFileHandler(filePath string) *gsqlitehandler.SqliteDB {
 	return gsqlitehandler.New(filePath, dataFileProperties)
+	//TODO: add test
 }
 
 // CreateNewDataFile creates new data file for given data file handler
@@ -48,6 +50,7 @@ func CreateNewDataFile(db *gsqlitehandler.SqliteDB) error {
 	err := db.CreateNew(sqlCreateTables)
 
 	return err
+	//TODO: add test
 }
 
 // MainCategoryAdd adds new main category with type (t) and name (n)
@@ -67,6 +70,7 @@ func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 	//TODO: add to the database schema coefficient so that transactions are always positive
 
 	return nil
+	//TODO: add test
 }
 
 // MainCategoryForID returns MainCategoryT for given id
@@ -84,6 +88,7 @@ func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m MainCategoryT, err
 	}
 
 	return m, nil
+	//TODO: add test
 }
 
 // MainCategoryEdit updates main category with new values for type (t), name (n)
@@ -102,6 +107,7 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 	}
 
 	return nil
+	//TODO: add test
 }
 
 // MainCategoryRemove updates main category status with isClose
@@ -120,26 +126,39 @@ func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 	}
 
 	return nil
+	//TODO: add test
 }
 
-/*
 // MainCategoryList returns closure which generates a sequence of Main Category objects
-func MainCategoryList(db *gsqlitehandler.SqliteDB, mcT MainCategoryTypeT) (func() MainCategoryT, error) {
-	sqlQuery:=fmt.Sprintf("SELECT id, type, name FROM main_categories WHERE status")
-	rows, err:=db.Handler.Query()
+func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string) (f func() *MainCategoryT, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
 
+	const notSetName = "notSetName"
+	if n == NotSetStringValue {
+		n = notSetName
+	} else {
+		n = "%" + n + "%"
+	}
 
+	if stmt, err = db.Handler.Prepare("SELECT id, type, name, status FROM main_categories WHERE (type=? OR ?=?) AND (name LIKE ? OR ?=?) AND (status=?);"); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(t, t, MCTUnset, n, n, notSetName, ISOpen); err != nil {
+		errors.New(errReadingFromFile)
+	}
 
+	f = func() *MainCategoryT {
+		for rows.Next() {
+			m := new(MainCategoryT)
+			rows.Scan(&m.Id, &m.MType, &m.Name, &m.Status)
+			return m
+		}
+		rows.Close()
+		stmt.Close()
 
+		return nil
+	}
 
-	// Prepare SQL query and perform database actions
-	sprintf(sql_list_maincategories, "SELECT"
-	" MAIN_CATEGORY_ID, TYPE, NAME"
-	" FROM MAIN_CATEGORIES WHERE STATUS=%d", ITEM_STAT_OPEN);
-if (parameters.maincategory_type != CAT_TYPE_NOTSET) {
-sprintf(sql_buf, " AND TYPE=%d", parameters.maincategory_type);
-strncat(sql_list_maincategories, sql_buf, BUF_SIZE);
+	return f, nil
 }
-strncat(sql_list_maincategories, " ORDER BY TYPE, NAME;", BUF_SIZE);
-}
-*/

@@ -10,6 +10,10 @@ import (
 	. "github.com/zbroju/financoj/lib/financoj"
 	"log"
 	"os"
+
+	"strconv"
+	"strings"
+	"unicode/utf8"
 )
 
 // Settings
@@ -28,6 +32,8 @@ const (
 	cmdEditAlias   = "E"
 	cmdRemove      = "remove"
 	cmdRemoveAlias = "R"
+	cmdList        = "list"
+	cmdListAlias   = "L"
 
 	optFile                  = "file"
 	optFileAlias             = "f"
@@ -38,6 +44,13 @@ const (
 
 	objMainCategory      = "main_category"
 	objMainCategoryAlias = "m"
+)
+
+// Headings for displaying data and reports
+const (
+	HMCId   = "ID"
+	HMCType = "TYPE"
+	HMCName = "NAME"
 )
 
 // Errors
@@ -82,10 +95,10 @@ SUBCOMMANDS:
 		cli.Author{"Marcin 'Zbroju' Zbroinski", "marcin@zbroinski.net"},
 	}
 
-	flagFile := cli.StringFlag{Name: optFile + " ," + optFileAlias, Value: dataFile, Usage: "data file"}
-	flagID := cli.IntFlag{Name: optID + " ," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
-	flagMainCategory := cli.StringFlag{Name: objMainCategory + ", " + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
-	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + ", " + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
+	flagFile := cli.StringFlag{Name: optFile + "," + optFileAlias, Value: dataFile, Usage: "data file"}
+	flagID := cli.IntFlag{Name: optID + "," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
+	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
+	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
 
 	app.Commands = []cli.Command{
 		{Name: cmdInit,
@@ -93,7 +106,7 @@ SUBCOMMANDS:
 			Flags:   []cli.Flag{flagFile},
 			Usage:   "Init a new data file specified by the user",
 			Action:  cmdCreateNewDataFile},
-		{Name: cmdAdd, Aliases: []string{cmdAddAlias}, Usage: "Add an object (main_category).",
+		{Name: cmdAdd, Aliases: []string{cmdAddAlias}, Usage: "Add an object.",
 			Subcommands: []cli.Command{
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
@@ -102,7 +115,7 @@ SUBCOMMANDS:
 					Action:  cmdMainCategoryAdd},
 			},
 		},
-		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object (main_category).",
+		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object.",
 			Subcommands: []cli.Command{
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
@@ -111,13 +124,22 @@ SUBCOMMANDS:
 					Action:  cmdMainCategoryEdit},
 			},
 		},
-		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object (main_category).",
+		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object.",
 			Subcommands: []cli.Command{
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove main category.",
 					Action:  cmdMainCategoryRemove},
+			},
+		},
+		{Name: cmdList, Aliases: []string{cmdListAlias}, Usage: "List objects on standard output.",
+			Subcommands: []cli.Command{
+				{Name: objMainCategory,
+					Aliases: []string{objMainCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
+					Usage:   "List main categories.",
+					Action:  cmdMainCategoryList},
 			},
 		},
 	}
@@ -237,7 +259,7 @@ func cmdMainCategoryEdit(c *cli.Context) error {
 	return nil
 }
 
-// cmdMainCategoryRemove sets man category status to IS_Close
+// cmdMainCategoryRemove sets main category status to IS_Close
 func cmdMainCategoryRemove(c *cli.Context) error {
 	var err error
 
@@ -278,6 +300,70 @@ func cmdMainCategoryRemove(c *cli.Context) error {
 	return nil
 }
 
+// cmdMainCategoryList prints main categories on standard output
+func cmdMainCategoryList(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	var mct MainCategoryTypeT
+	if t := c.String(optMainCategoryType); t == NotSetStringValue {
+		mct = MCTUnset
+	} else {
+		mct = mainCategoryTypeForString(t)
+		if mct == MCTUnknown {
+			printError.Fatalln(errIncorrectMainCategoryType)
+		}
+	}
+	n := c.String(objMainCategory)
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Build formatting strings
+	var nextRow func() *MainCategoryT
+	lId, lType, lName := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName)
+	if nextRow, err = MainCategoryList(fh, mct, n); err != nil {
+		printError.Fatalln(err)
+	}
+	for m := nextRow(); m != nil; m = nextRow() {
+		if l := utf8.RuneCountInString(strconv.Itoa(m.Id)); lId < l {
+			lId = l
+		}
+		if l := utf8.RuneCountInString(m.MType.String()); lType < l {
+			lType = l
+		}
+		if l := utf8.RuneCountInString(m.Name); lName < l {
+			lName = l
+		}
+	}
+	fsId := getFSForInt(lId)
+	fsType := getFSForString(lType)
+	fsName := getFSForString(lName)
+	line := strings.Join([]string{fsId, fsType, fsName}, FSSeparator) + "\n"
+
+	// Print main categories
+	if nextRow, err = MainCategoryList(fh, mct, n); err != nil {
+		printError.Fatalln(err)
+	}
+	fmt.Fprintf(os.Stdout, line, HMCId, HMCType, HMCName)
+	for m := nextRow(); m != nil; m = nextRow() {
+		fmt.Fprintf(os.Stdout, line, m.Id, m.MType, m.Name)
+	}
+
+	return nil
+}
+
 // GetLoggers returns two loggers for standard formatting of messages and errors
 func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	messageLogger = log.New(os.Stdout, fmt.Sprintf("%s: ", AppName), 0)
@@ -300,6 +386,16 @@ func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
 	}
 
 	return mct
+}
+
+// Return formatting string for int value
+func getFSForInt(l int) string {
+	return fmt.Sprintf("%%%dv", l)
+}
+
+// Return formatting string for string value
+func getFSForString(l int) string {
+	return fmt.Sprintf("%%-%dv", l)
 }
 
 //DONE: init file
