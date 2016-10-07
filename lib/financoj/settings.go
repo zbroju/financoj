@@ -28,7 +28,8 @@ var dataFileProperties = map[string]string{
 
 // Error messages
 const (
-	errNoMainCategoryWithID = "no main category with given ID"
+	errNoMainCategoryWithID   = "no main category with given ID"
+	errNoMainCategoryWithName = "no main category with given name"
 
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"

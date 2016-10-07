@@ -42,6 +42,8 @@ const (
 	optID                    = "id"
 	optIDAlias               = "i"
 
+	objCategory          = "category"
+	objCategoryAlias     = "c"
 	objMainCategory      = "main_category"
 	objMainCategoryAlias = "m"
 )
@@ -57,7 +59,8 @@ const (
 const (
 	errMissingFileFlag           = "missing information about data file"
 	errMissingIDFlag             = "missing ID"
-	errMissingMainCategory       = "missing information about main category name"
+	errMissingCategory           = "missing category name"
+	errMissingMainCategory       = "missing main category name"
 	errIncorrectMainCategoryType = "incorrect main category type"
 )
 
@@ -97,6 +100,7 @@ SUBCOMMANDS:
 
 	flagFile := cli.StringFlag{Name: optFile + "," + optFileAlias, Value: dataFile, Usage: "data file"}
 	flagID := cli.IntFlag{Name: optID + "," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
+	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
 
@@ -108,6 +112,11 @@ SUBCOMMANDS:
 			Action:  cmdCreateNewDataFile},
 		{Name: cmdAdd, Aliases: []string{cmdAddAlias}, Usage: "Add an object.",
 			Subcommands: []cli.Command{
+				{Name: objCategory,
+					Aliases: []string{objCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagCategory, flagMainCategory},
+					Usage:   "Add new category.",
+					Action:  cmdCategoryAdd},
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
@@ -170,6 +179,51 @@ func cmdCreateNewDataFile(c *cli.Context) error {
 	return nil
 }
 
+// cmdCategoryAdd adds new category
+func cmdCategoryAdd(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags (file, name)
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	n := c.String(objCategory)
+	if n == NotSetStringValue {
+		printError.Fatalln(errMissingCategory)
+	}
+	m := c.String(objMainCategory)
+	if m == NotSetStringValue {
+		printError.Fatalln(errMissingMainCategory)
+	}
+
+	// Add new category
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var mc *MainCategoryT
+	if mc, err = MainCategoryForName(fh, m); err != nil {
+		printError.Fatalln(err)
+	}
+
+	newCategory := &CategoryT{MainCategory: mc, Name: n, Status: ISOpen}
+	if err = CategoryAdd(fh, newCategory); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("added new category: %s\n", n)
+
+	return nil
+}
+
 // cmdMainCategoryAdd adds new main category
 func cmdMainCategoryAdd(c *cli.Context) error {
 	// Get loggers
@@ -197,7 +251,7 @@ func cmdMainCategoryAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	m := MainCategoryT{MType: t, Name: n, Status: ISOpen}
+	m := &MainCategoryT{MType: t, Name: n, Status: ISOpen}
 	if err := MainCategoryAdd(fh, m); err != nil {
 		printError.Fatalln(err)
 	}
@@ -233,7 +287,7 @@ func cmdMainCategoryEdit(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var mc MainCategoryT
+	var mc *MainCategoryT
 	if mc, err = MainCategoryForID(fh, id); err != nil {
 		printError.Fatalln(err)
 	}
@@ -284,7 +338,7 @@ func cmdMainCategoryRemove(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var mc MainCategoryT
+	var mc *MainCategoryT
 	if mc, err = MainCategoryForID(fh, id); err != nil {
 		printError.Fatalln(err)
 	}
@@ -331,12 +385,12 @@ func cmdMainCategoryList(c *cli.Context) error {
 	defer fh.Close()
 
 	// Build formatting strings
-	var nextRow func() *MainCategoryT
+	var getNextMainCategory func() *MainCategoryT
 	lId, lType, lName := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName)
-	if nextRow, err = MainCategoryList(fh, mct, n); err != nil {
+	if getNextMainCategory, err = MainCategoryList(fh, mct, n); err != nil {
 		printError.Fatalln(err)
 	}
-	for m := nextRow(); m != nil; m = nextRow() {
+	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
 		if l := utf8.RuneCountInString(strconv.Itoa(m.Id)); lId < l {
 			lId = l
 		}
@@ -347,17 +401,15 @@ func cmdMainCategoryList(c *cli.Context) error {
 			lName = l
 		}
 	}
-	fsId := getFSForInt(lId)
-	fsType := getFSForString(lType)
-	fsName := getFSForString(lName)
+	fsId, fsType, fsName := getFSForInt(lId), getFSForString(lType), getFSForString(lName)
 	line := strings.Join([]string{fsId, fsType, fsName}, FSSeparator) + "\n"
 
 	// Print main categories
-	if nextRow, err = MainCategoryList(fh, mct, n); err != nil {
+	if getNextMainCategory, err = MainCategoryList(fh, mct, n); err != nil {
 		printError.Fatalln(err)
 	}
 	fmt.Fprintf(os.Stdout, line, HMCId, HMCType, HMCName)
-	for m := nextRow(); m != nil; m = nextRow() {
+	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
 		fmt.Fprintf(os.Stdout, line, m.Id, m.MType, m.Name)
 	}
 
@@ -414,7 +466,7 @@ func getFSForString(l int) string {
 //DONE: main category add
 //DONE: main category edit
 //DONE: main category remove
-//TODO: main category list
+//DONE: main category list
 //TODO: transaction add
 //TODO: transaction edit
 //TODO: transaction remove

@@ -12,6 +12,14 @@ const (
 	ISOpen  ItemStatus = 1
 )
 
+// Category represents the basic object for category
+type CategoryT struct {
+	Id           int
+	MainCategory *MainCategoryT
+	Name         string
+	Status       ItemStatus
+}
+
 // MainCategoryStatusT describes the behaviour of categories and its descendants (transactions)
 type MainCategoryTypeT int
 

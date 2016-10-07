@@ -53,8 +53,27 @@ func CreateNewDataFile(db *gsqlitehandler.SqliteDB) error {
 	//TODO: add test
 }
 
-// MainCategoryAdd adds new main category with type (t) and name (n)
-func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
+// CategoryAdd add new category with name n
+func CategoryAdd(db *gsqlitehandler.SqliteDB, c *CategoryT) error {
+	var err error
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("INSERT INTO categories VALUES (NULL, ?, ?, ?);"); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(c.MainCategory.Id, c.Name, c.Status); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
+
+	//TODO: add test
+}
+
+// MainCategoryAdd adds new main category with type t and name n
+func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	var err error
 	var stmt *sql.Stmt
 
@@ -67,24 +86,41 @@ func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 		return errors.New(errWritingToFile)
 	}
 
-	//TODO: add to the database schema coefficient so that transactions are always positive
-
 	return nil
 	//TODO: add test
 }
 
-// MainCategoryForID returns MainCategoryT for given id
-func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m MainCategoryT, err error) {
+// MainCategoryForID returns pointer to MainCategoryT for given id
+func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m *MainCategoryT, err error) {
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE id=?;"); err != nil {
+	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE id=? AND status=?;"); err != nil {
 		errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
-	m = MainCategoryT{}
-	if err = stmt.QueryRow(i).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
+	m = new(MainCategoryT)
+	if err = stmt.QueryRow(i, ISOpen).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
 		return m, errors.New(errNoMainCategoryWithID)
+	}
+
+	return m, nil
+	//TODO: add test
+}
+
+// MainCategoryForName returns pointer to MainCategoryT for given (part of) name
+func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategoryT, err error) {
+	var stmt *sql.Stmt
+
+	n = "%" + n + "%"
+	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE name LIKE ? AND status=?;"); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+
+	m = new(MainCategoryT)
+	if err = stmt.QueryRow(n, ISOpen).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
+		return m, errors.New(errNoMainCategoryWithName)
 	}
 
 	return m, nil
@@ -93,7 +129,7 @@ func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m MainCategoryT, err
 
 // MainCategoryEdit updates main category with new values for type (t), name (n)
 // Both type and name is updated, so make sure you pass old values in argument 'm'
-func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
+func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	var err error
 	var stmt *sql.Stmt
 
@@ -111,7 +147,7 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
 }
 
 // MainCategoryRemove updates main category status with isClose
-func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m MainCategoryT) error {
+func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	var err error
 	var stmt *sql.Stmt
 
@@ -161,4 +197,5 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 	}
 
 	return f, nil
+	//TODO: add test
 }
