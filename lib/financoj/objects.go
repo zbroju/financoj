@@ -8,6 +8,7 @@ package financoj
 type ItemStatus int
 
 const (
+	ISUnset ItemStatus = -1
 	ISClose ItemStatus = 0
 	ISOpen  ItemStatus = 1
 )
@@ -57,4 +58,16 @@ type MainCategoryT struct {
 	MType  MainCategoryTypeT
 	Name   string
 	Status ItemStatus
+}
+
+// MainCategory list represents the list of main categories
+type MainCategoryListT struct {
+	MainCategories map[*int]MainCategoryT
+}
+
+// MainCategoryListNew returns initialized MainCategoryList
+func MainCategoryListNew() *MainCategoryListT {
+	mcList := new(MainCategoryListT)
+	mcList.MainCategories = make(map[*int]MainCategoryT)
+	return mcList
 }

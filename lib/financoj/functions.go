@@ -165,6 +165,38 @@ func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	//TODO: add test
 }
 
+// MainCategoryList returns all main categories from file as MainCategoriesList
+func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string, s ItemStatus) (l *MainCategoryListT, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	const notSetName = "notSetName"
+	if n == NotSetStringValue {
+		n = notSetName
+	} else {
+		n = "%" + n + "%"
+	}
+
+	if stmt, err = db.Handler.Prepare("SELECT id, type, name, status FROM main_categories WHERE (type=? OR ?=?) AND (name LIKE ? OR ?=?) AND (status=? or ?=?) ORDER BY type, name;"); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+	if rows, err = stmt.Query(t, t, MCTUnset, n, n, notSetName, s, s, ISUnset); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	defer rows.Close()
+	l = MainCategoryListNew()
+	for rows.Next() {
+		m := new(MainCategoryT)
+		rows.Scan(&m.Id, &m.MType, &m.Name, &m.Status)
+		l.MainCategories[&m.Id] = *m
+	}
+
+	return l, nil
+	//TODO: add test
+}
+
+/*
 // MainCategoryList returns closure which generates a sequence of Main Category objects
 func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string) (f func() *MainCategoryT, err error) {
 	var stmt *sql.Stmt
@@ -181,6 +213,7 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 		errors.New(errReadingFromFile)
 	}
 	if rows, err = stmt.Query(t, t, MCTUnset, n, n, notSetName, ISOpen); err != nil {
+	//if rows, err = stmt.Query(t, t, MCTUnset, n, n, NotSetStringValue, ISOpen); err != nil {
 		errors.New(errReadingFromFile)
 	}
 
@@ -199,3 +232,4 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 	return f, nil
 	//TODO: add test
 }
+*/

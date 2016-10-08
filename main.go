@@ -37,6 +37,8 @@ const (
 
 	optFile                  = "file"
 	optFileAlias             = "f"
+	optAll                   = "all"
+	optAllAliast             = "a"
 	optMainCategoryType      = "main_category_type"
 	optMainCategoryTypeAlias = "o"
 	optID                    = "id"
@@ -100,6 +102,7 @@ SUBCOMMANDS:
 
 	flagFile := cli.StringFlag{Name: optFile + "," + optFileAlias, Value: dataFile, Usage: "data file"}
 	flagID := cli.IntFlag{Name: optID + "," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
+	flagAll := cli.BoolFlag{Name: optAll + "," + optAllAliast, Usage: "show all elements, including removed"}
 	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
@@ -146,7 +149,7 @@ SUBCOMMANDS:
 			Subcommands: []cli.Command{
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
-					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
+					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType, flagAll},
 					Usage:   "List main categories.",
 					Action:  cmdMainCategoryList},
 			},
@@ -376,6 +379,10 @@ func cmdMainCategoryList(c *cli.Context) error {
 		}
 	}
 	n := c.String(objMainCategory)
+	s := ISOpen
+	if a := c.Bool(optAll); a == true {
+		s = ISUnset
+	}
 
 	// Open data file
 	fh := GetDataFileHandler(f)
@@ -385,12 +392,12 @@ func cmdMainCategoryList(c *cli.Context) error {
 	defer fh.Close()
 
 	// Build formatting strings
-	var getNextMainCategory func() *MainCategoryT
-	lId, lType, lName := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName)
-	if getNextMainCategory, err = MainCategoryList(fh, mct, n); err != nil {
+	var mcl *MainCategoryListT
+	if mcl, err = MainCategoryList(fh, mct, n, s); err != nil {
 		printError.Fatalln(err)
 	}
-	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
+	lId, lType, lName := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName)
+	for _, m := range mcl.MainCategories {
 		if l := utf8.RuneCountInString(strconv.Itoa(m.Id)); lId < l {
 			lId = l
 		}
@@ -405,11 +412,8 @@ func cmdMainCategoryList(c *cli.Context) error {
 	line := strings.Join([]string{fsId, fsType, fsName}, FSSeparator) + "\n"
 
 	// Print main categories
-	if getNextMainCategory, err = MainCategoryList(fh, mct, n); err != nil {
-		printError.Fatalln(err)
-	}
 	fmt.Fprintf(os.Stdout, line, HMCId, HMCType, HMCName)
-	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
+	for _, m := range mcl.MainCategories {
 		fmt.Fprintf(os.Stdout, line, m.Id, m.MType, m.Name)
 	}
 
@@ -455,7 +459,7 @@ func getFSForString(l int) string {
 //TODO: account edit
 //TODO: account close
 //TODO: account list
-//TODO: category add
+//DONE: category add
 //TODO: category edit
 //TODO: category remove
 //TODO: category list
@@ -485,7 +489,7 @@ func getFSForString(l int) string {
 //TODO: report net value
 //TODO: add procedure to migrate from data file version 1 to version 2
 //
-//DONE: 4/33 (12%)
+//DONE: 6/33 (18%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
