@@ -10,7 +10,6 @@ import (
 	. "github.com/zbroju/financoj/lib/financoj"
 	"log"
 	"os"
-
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -52,9 +51,10 @@ const (
 
 // Headings for displaying data and reports
 const (
-	HMCId   = "ID"
-	HMCType = "TYPE"
-	HMCName = "NAME"
+	HMCId     = "ID"
+	HMCType   = "TYPE"
+	HMCName   = "NAME"
+	HMCStatus = "STATUS"
 )
 
 // Errors
@@ -396,7 +396,7 @@ func cmdMainCategoryList(c *cli.Context) error {
 	if mcl, err = MainCategoryList(fh, mct, n, s); err != nil {
 		printError.Fatalln(err)
 	}
-	lId, lType, lName := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName)
+	lId, lType, lName, lStatus := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HMCStatus)
 	for _, m := range mcl.MainCategories {
 		if l := utf8.RuneCountInString(strconv.Itoa(m.Id)); lId < l {
 			lId = l
@@ -407,14 +407,17 @@ func cmdMainCategoryList(c *cli.Context) error {
 		if l := utf8.RuneCountInString(m.Name); lName < l {
 			lName = l
 		}
+		if l := utf8.RuneCountInString(m.Status.String()); lStatus < l {
+			lStatus = l
+		}
 	}
-	fsId, fsType, fsName := getFSForInt(lId), getFSForString(lType), getFSForString(lName)
-	line := strings.Join([]string{fsId, fsType, fsName}, FSSeparator) + "\n"
+	fsId, fsType, fsName, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lName), getFSForString(lStatus)
+	line := strings.Join([]string{fsId, fsType, fsName, fsStatus}, FSSeparator) + "\n"
 
 	// Print main categories
-	fmt.Fprintf(os.Stdout, line, HMCId, HMCType, HMCName)
+	fmt.Fprintf(os.Stdout, line, HMCId, HMCType, HMCName, HMCStatus)
 	for _, m := range mcl.MainCategories {
-		fmt.Fprintf(os.Stdout, line, m.Id, m.MType, m.Name)
+		fmt.Fprintf(os.Stdout, line, m.Id, m.MType, m.Name, m.Status)
 	}
 
 	return nil

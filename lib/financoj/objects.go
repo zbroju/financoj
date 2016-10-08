@@ -13,6 +13,22 @@ const (
 	ISOpen  ItemStatus = 1
 )
 
+// String satisfies fmt.Stringer interface in order to get human readable names
+func (is ItemStatus) String() string {
+	var s string
+
+	switch is {
+	case ISUnset:
+		s = "unset"
+	case ISOpen:
+		s = "active"
+	case ISClose:
+		s = "inactive"
+	}
+
+	return s
+}
+
 // Category represents the basic object for category
 type CategoryT struct {
 	Id           int
