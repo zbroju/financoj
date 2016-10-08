@@ -37,7 +37,7 @@ const (
 	optFile                  = "file"
 	optFileAlias             = "f"
 	optAll                   = "all"
-	optAllAliast             = "a"
+	optAllAlias              = "a"
 	optMainCategoryType      = "main_category_type"
 	optMainCategoryTypeAlias = "o"
 	optID                    = "id"
@@ -56,7 +56,7 @@ const (
 
 	HMCId     = "ID"
 	HMCType   = "TYPE"
-	HMCName   = "MAIN CAT"
+	HMCName   = "MAINCAT"
 	HMCStatus = "STATUS"
 )
 
@@ -105,7 +105,7 @@ SUBCOMMANDS:
 
 	flagFile := cli.StringFlag{Name: optFile + "," + optFileAlias, Value: dataFile, Usage: "data file"}
 	flagID := cli.IntFlag{Name: optID + "," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
-	flagAll := cli.BoolFlag{Name: optAll + "," + optAllAliast, Usage: "show all elements, including removed"}
+	flagAll := cli.BoolFlag{Name: optAll + "," + optAllAlias, Usage: "show all elements, including removed"}
 	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
@@ -248,7 +248,7 @@ func cmdCategoryList(c *cli.Context) error {
 		printError.Fatalln(errMissingFileFlag)
 	}
 
-	mcat := c.String(objCategory)
+	mcat := c.String(objMainCategory)
 	var mct MainCategoryTypeT
 	if t := c.String(optMainCategoryType); t == NotSetStringValue {
 		mct = MCTUnset
@@ -258,7 +258,7 @@ func cmdCategoryList(c *cli.Context) error {
 			printError.Fatalln(errIncorrectMainCategoryType)
 		}
 	}
-	cat := c.String(objMainCategory)
+	cat := c.String(objCategory)
 	s := ISOpen
 	if a := c.Bool(optAll); a == true {
 		s = ISUnset
@@ -278,21 +278,11 @@ func cmdCategoryList(c *cli.Context) error {
 	}
 	lId, lType, lMCat, lCat, lStatus := utf8.RuneCountInString(HCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HCName), utf8.RuneCountInString(HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
-		if l := utf8.RuneCountInString(strconv.Itoa(ct.Id)); lId < l {
-			lId = l
-		}
-		if l := utf8.RuneCountInString(ct.MainCategory.MType.String()); lType < l {
-			lType = l
-		}
-		if l := utf8.RuneCountInString(ct.MainCategory.Name); lMCat < l {
-			lMCat = l
-		}
-		if l := utf8.RuneCountInString(ct.Name); lCat < l {
-			lCat = l
-		}
-		if l := utf8.RuneCountInString(ct.Status.String()); lStatus < l {
-			lStatus = l
-		}
+		lId = maxRune(strconv.Itoa(ct.Id), lId)
+		lType = maxRune(ct.MainCategory.MType.String(), lType)
+		lMCat = maxRune(ct.MainCategory.Name, lMCat)
+		lCat = maxRune(ct.Name, lCat)
+		lStatus = maxRune(ct.Status.String(), lStatus)
 	}
 	fsId, fsType, fsMCat, fsCat, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lMCat), getFSForString(lCat), getFSForString(lStatus)
 	line := strings.Join([]string{fsId, fsType, fsMCat, fsCat, fsStatus}, FSSeparator) + "\n"
@@ -480,18 +470,10 @@ func cmdMainCategoryList(c *cli.Context) error {
 	}
 	lId, lType, lName, lStatus := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HMCStatus)
 	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
-		if l := utf8.RuneCountInString(strconv.Itoa(m.Id)); lId < l {
-			lId = l
-		}
-		if l := utf8.RuneCountInString(m.MType.String()); lType < l {
-			lType = l
-		}
-		if l := utf8.RuneCountInString(m.Name); lName < l {
-			lName = l
-		}
-		if l := utf8.RuneCountInString(m.Status.String()); lStatus < l {
-			lStatus = l
-		}
+		lId = maxRune(strconv.Itoa(m.Id), lId)
+		lType = maxRune(m.MType.String(), lType)
+		lName = maxRune(m.Name, lName)
+		lStatus = maxRune(m.Status.String(), lStatus)
 	}
 	fsId, fsType, fsName, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lName), getFSForString(lStatus)
 	line := strings.Join([]string{fsId, fsType, fsName, fsStatus}, FSSeparator) + "\n"
@@ -542,6 +524,15 @@ func getFSForString(l int) string {
 	return fmt.Sprintf("%%-%dv", l)
 }
 
+// Return the bigger number out of the two given
+func maxRune(s string, i int) int {
+	if l := utf8.RuneCountInString(s); i < l {
+		return l
+	} else {
+		return i
+	}
+}
+
 //DONE: init file
 //TODO: account add
 //TODO: account edit
@@ -569,7 +560,7 @@ func getFSForString(l int) string {
 //TODO: budget list
 //TODO: report accounts balance
 //TODO: report assets summary
-//TODO: report budget categories
+//TODO: report budget categoriesTODO
 //TODO: report budget main categories
 //TODO: report categories balance
 //TODO: report main categories balance
@@ -577,7 +568,7 @@ func getFSForString(l int) string {
 //TODO: report net value
 //TODO: add procedure to migrate from data file version 1 to version 2
 //
-//DONE: 6/33 (18%)
+//DONE: 7/33 (21%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
