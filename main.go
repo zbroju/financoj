@@ -51,9 +51,12 @@ const (
 
 // Headings for displaying data and reports
 const (
+	HCId   = "ID"
+	HCName = "CATEGORY"
+
 	HMCId     = "ID"
 	HMCType   = "TYPE"
-	HMCName   = "NAME"
+	HMCName   = "MAIN CAT"
 	HMCStatus = "STATUS"
 )
 
@@ -152,6 +155,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType, flagAll},
 					Usage:   "List main categories.",
 					Action:  cmdMainCategoryList},
+				{Name: objCategory,
+					Aliases: []string{objCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType, flagCategory, flagAll},
+					Usage:   "List categories.",
+					Action:  cmdCategoryList},
 			},
 		},
 	}
@@ -223,6 +231,80 @@ func cmdCategoryAdd(c *cli.Context) error {
 
 	// Show summary
 	printUserMsg.Printf("added new category: %s\n", n)
+
+	return nil
+}
+
+// cmdCategoryList prints categories on standard output
+func cmdCategoryList(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+
+	mcat := c.String(objCategory)
+	var mct MainCategoryTypeT
+	if t := c.String(optMainCategoryType); t == NotSetStringValue {
+		mct = MCTUnset
+	} else {
+		mct = mainCategoryTypeForString(t)
+		if mct == MCTUnknown {
+			printError.Fatalln(errIncorrectMainCategoryType)
+		}
+	}
+	cat := c.String(objMainCategory)
+	s := ISOpen
+	if a := c.Bool(optAll); a == true {
+		s = ISUnset
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Build formatting strings
+	var getNextCategory func() *CategoryT
+	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
+		printError.Fatalln(err)
+	}
+	lId, lType, lMCat, lCat, lStatus := utf8.RuneCountInString(HCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HCName), utf8.RuneCountInString(HMCStatus)
+	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
+		if l := utf8.RuneCountInString(strconv.Itoa(ct.Id)); lId < l {
+			lId = l
+		}
+		if l := utf8.RuneCountInString(ct.MainCategory.MType.String()); lType < l {
+			lType = l
+		}
+		if l := utf8.RuneCountInString(ct.MainCategory.Name); lMCat < l {
+			lMCat = l
+		}
+		if l := utf8.RuneCountInString(ct.Name); lCat < l {
+			lCat = l
+		}
+		if l := utf8.RuneCountInString(ct.Status.String()); lStatus < l {
+			lStatus = l
+		}
+	}
+	fsId, fsType, fsMCat, fsCat, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lMCat), getFSForString(lCat), getFSForString(lStatus)
+	line := strings.Join([]string{fsId, fsType, fsMCat, fsCat, fsStatus}, FSSeparator) + "\n"
+
+	// Print categories
+	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
+		printError.Fatalln(err)
+	}
+	fmt.Fprintf(os.Stdout, line, HCId, HMCType, HMCName, HCName, HMCStatus)
+	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
+		fmt.Fprintf(os.Stdout, line, ct.Id, ct.MainCategory.MType, ct.MainCategory.Name, ct.Name, ct.Status)
+	}
 
 	return nil
 }
@@ -392,12 +474,12 @@ func cmdMainCategoryList(c *cli.Context) error {
 	defer fh.Close()
 
 	// Build formatting strings
-	var mcl *MainCategoryListT
-	if mcl, err = MainCategoryList(fh, mct, n, s); err != nil {
+	var getNextMainCategory func() *MainCategoryT
+	if getNextMainCategory, err = MainCategoryList(fh, mct, n, s); err != nil {
 		printError.Fatalln(err)
 	}
 	lId, lType, lName, lStatus := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HMCStatus)
-	for _, m := range mcl.MainCategories {
+	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
 		if l := utf8.RuneCountInString(strconv.Itoa(m.Id)); lId < l {
 			lId = l
 		}
@@ -415,8 +497,11 @@ func cmdMainCategoryList(c *cli.Context) error {
 	line := strings.Join([]string{fsId, fsType, fsName, fsStatus}, FSSeparator) + "\n"
 
 	// Print main categories
+	if getNextMainCategory, err = MainCategoryList(fh, mct, n, s); err != nil {
+		printError.Fatalln(err)
+	}
 	fmt.Fprintf(os.Stdout, line, HMCId, HMCType, HMCName, HMCStatus)
-	for _, m := range mcl.MainCategories {
+	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
 		fmt.Fprintf(os.Stdout, line, m.Id, m.MType, m.Name, m.Status)
 	}
 
@@ -465,7 +550,7 @@ func getFSForString(l int) string {
 //DONE: category add
 //TODO: category edit
 //TODO: category remove
-//TODO: category list
+//DONE: category list
 //TODO: currency add
 //TODO: currency edit
 //TODO: currency remove

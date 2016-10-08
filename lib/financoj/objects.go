@@ -75,15 +75,3 @@ type MainCategoryT struct {
 	Name   string
 	Status ItemStatus
 }
-
-// MainCategory list represents the list of main categories
-type MainCategoryListT struct {
-	MainCategories map[*int]MainCategoryT
-}
-
-// MainCategoryListNew returns initialized MainCategoryList
-func MainCategoryListNew() *MainCategoryListT {
-	mcList := new(MainCategoryListT)
-	mcList.MainCategories = make(map[*int]MainCategoryT)
-	return mcList
-}
