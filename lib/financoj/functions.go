@@ -143,7 +143,7 @@ func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m *MainCategoryT, er
 
 	m = new(MainCategoryT)
 	if err = stmt.QueryRow(i, ISOpen).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
-		return m, errors.New(errNoMainCategoryWithID)
+		return m, errors.New(errMainCategoryWithIDNone)
 	}
 
 	return m, nil
@@ -153,6 +153,7 @@ func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m *MainCategoryT, er
 // MainCategoryForName returns pointer to MainCategoryT for given (part of) name
 func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategoryT, err error) {
 	var stmt *sql.Stmt
+	var rows *sql.Rows
 
 	n = "%" + n + "%"
 	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE name LIKE ? AND status=?;"); err != nil {
@@ -161,11 +162,26 @@ func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategory
 	defer stmt.Close()
 
 	m = new(MainCategoryT)
-	if err = stmt.QueryRow(n, ISOpen).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
-		return m, errors.New(errNoMainCategoryWithName)
+	if rows, err = stmt.Query(n, ISOpen); err != nil {
+		return nil, errors.New(errReadingFromFile)
 	}
-	//TODO: add checking if the name of main category isn't ambiguous (as in C version)
-	return m, nil
+	defer rows.Close()
+
+	var noOfMainCategories int
+	for rows.Next() {
+		noOfMainCategories++
+		rows.Scan(&m.Id, &m.MType, &m.Name, &m.Status)
+	}
+
+	switch noOfMainCategories {
+	case 0:
+		return nil, errors.New(errMainCategoryWithNameNone)
+	case 1:
+		return m, nil
+	default:
+		return nil, errors.New(errMainCategoryWithNameAmbiguous)
+	}
+
 	//TODO: add test
 }
 
