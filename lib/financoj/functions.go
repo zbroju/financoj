@@ -226,12 +226,12 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	var err error
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("UPDATE main_categories SET type=?, name=? WHERE id=?;"); err != nil {
+	if stmt, err = db.Handler.Prepare("UPDATE main_categories SET type=?, name=?, status=? WHERE id=?;"); err != nil {
 		errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(m.MType, m.Name, m.Id); err != nil {
+	if _, err = stmt.Exec(m.MType, m.Name, m.Status, m.Id); err != nil {
 		errors.New(errWritingToFile)
 	}
 
