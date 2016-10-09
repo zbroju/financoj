@@ -587,7 +587,7 @@ func maxRune(s string, i int) int {
 //TODO: account list
 //DONE: category add
 //TODO: category edit
-//TODO: category remove
+//DONE: category remove
 //DONE: category list
 //TODO: currency add
 //TODO: currency edit
@@ -615,7 +615,7 @@ func maxRune(s string, i int) int {
 //TODO: report net value
 //TODO: add procedure to migrate from data file version 1 to version 2
 //
-//DONE: 7/33 (21%)
+//DONE: 8/33 (24%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)

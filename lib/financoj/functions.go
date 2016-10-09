@@ -85,7 +85,6 @@ func CategoryForID(db *gsqlitehandler.SqliteDB, i int) (c *CategoryT, err error)
 	if err = stmt.QueryRow(i, ISOpen).Scan(&c.Id, &c.Name, &c.Status, &c.MainCategory.Id, &c.MainCategory.MType, &c.MainCategory.Name, &c.MainCategory.Status); err != nil {
 		return nil, errors.New(errCategoryWithIDNone)
 	}
-	//FIXME: replace new(CategoryT) with CategoryNew() - everywhere!!!
 	return c, nil
 	//TODO: add test
 }
@@ -136,8 +135,7 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c 
 
 	f = func() *CategoryT {
 		for rows.Next() {
-			c := new(CategoryT)
-			c.MainCategory = new(MainCategoryT)
+			c := CategoryNew()
 			rows.Scan(&c.Id, &c.Name, &c.Status, &c.MainCategory.Id, &c.MainCategory.MType, &c.MainCategory.Name, &c.MainCategory.Status)
 			return c
 		}
