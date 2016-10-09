@@ -89,6 +89,25 @@ func CategoryForID(db *gsqlitehandler.SqliteDB, i int) (c *CategoryT, err error)
 	//TODO: add test
 }
 
+// CategoryEdit updates category with new values for name, main category and status
+// All three fields are updated, so make sure you pass old values in argument 'c'
+func CategoryEdit(db *gsqlitehandler.SqliteDB, c *CategoryT) error {
+	var err error
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("UPDATE categories SET main_category_id=?, name=?, status=? WHERE id=?;"); err != nil {
+		errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(c.MainCategory.Id, c.Name, c.Status, c.Id); err != nil {
+		errors.New(errWritingToFile)
+	}
+
+	return nil
+	//TODO: add test
+}
+
 // CategoryRemove updates given category status with ISClose
 func CategoryRemove(db *gsqlitehandler.SqliteDB, c *CategoryT) error {
 	var err error
@@ -220,8 +239,8 @@ func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategory
 	//TODO: add test
 }
 
-// MainCategoryEdit updates main category with new values for type (t), name (n)
-// Both type and name is updated, so make sure you pass old values in argument 'm'
+// MainCategoryEdit updates main category with new values for type, name and status
+// Both type, name and status is updated, so make sure you pass old values in argument 'm'
 func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	var err error
 	var stmt *sql.Stmt

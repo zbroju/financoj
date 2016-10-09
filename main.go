@@ -132,6 +132,11 @@ SUBCOMMANDS:
 		},
 		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object.",
 			Subcommands: []cli.Command{
+				{Name: objCategory,
+					Aliases: []string{objCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagID, flagCategory, flagMainCategory},
+					Usage:   "Edit category.",
+					Action:  cmdCategoryEdit},
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID, flagMainCategory, flagMainCategoryType},
@@ -236,6 +241,58 @@ func cmdCategoryAdd(c *cli.Context) error {
 
 	// Show summary
 	printUserMsg.Printf("added new category: %s\n", n)
+
+	return nil
+}
+
+// cmdCategoryEdit updates category with new values
+func cmdCategoryEdit(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	id := c.Int(optID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Prepare new values
+	var cat *CategoryT
+	if cat, err = CategoryForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+	if m := c.String(objMainCategory); m != NotSetStringValue {
+		var mcat *MainCategoryT
+		if mcat, err = MainCategoryForName(fh, m); err != nil {
+			printError.Fatalln(err)
+		}
+		cat.MainCategory = mcat
+	}
+	if n := c.String(objCategory); n != NotSetStringValue {
+		cat.Name = n
+	}
+
+	// Execute the changes
+	if err = CategoryEdit(fh, cat); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("changed details of category with id = %d\n", id)
 
 	return nil
 }
@@ -586,7 +643,7 @@ func maxRune(s string, i int) int {
 //TODO: account close
 //TODO: account list
 //DONE: category add
-//TODO: category edit
+//DONE: category edit
 //DONE: category remove
 //DONE: category list
 //TODO: currency add
@@ -615,7 +672,7 @@ func maxRune(s string, i int) int {
 //TODO: report net value
 //TODO: add procedure to migrate from data file version 1 to version 2
 //
-//DONE: 8/33 (24%)
+//DONE: 9/33 (27%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
