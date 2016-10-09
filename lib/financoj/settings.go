@@ -32,6 +32,8 @@ const (
 	errMainCategoryWithNameNone      = "no main category with given name"
 	errMainCategoryWithNameAmbiguous = "given main category name is ambiguous"
 
+	errCategoryWithIDNone = "no category with given ID"
+
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
 )

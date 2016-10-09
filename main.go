@@ -141,6 +141,11 @@ SUBCOMMANDS:
 		},
 		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object.",
 			Subcommands: []cli.Command{
+				{Name: objCategory,
+					Aliases: []string{objCategoryAlias},
+					Flags:   []cli.Flag{flagFile, flagID},
+					Usage:   "Remove category.",
+					Action:  cmdCategoryRemove},
 				{Name: objMainCategory,
 					Aliases: []string{objMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID},
@@ -233,6 +238,48 @@ func cmdCategoryAdd(c *cli.Context) error {
 	printUserMsg.Printf("added new category: %s\n", n)
 
 	return nil
+}
+
+// cmdCategoryRemove sets category status to ISClose
+func cmdCategoryRemove(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	id := c.Int(optID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var cat *CategoryT
+	if cat, err = CategoryForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Remove the category
+	if err = CategoryRemove(fh, cat); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("removed  category with id = %d\n", id)
+
+	return nil
+
 }
 
 // cmdCategoryList prints categories on standard output
@@ -388,7 +435,7 @@ func cmdMainCategoryEdit(c *cli.Context) error {
 	return nil
 }
 
-// cmdMainCategoryRemove sets main category status to IS_Close
+// cmdMainCategoryRemove sets main category status to ISClose
 func cmdMainCategoryRemove(c *cli.Context) error {
 	var err error
 

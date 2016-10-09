@@ -72,6 +72,43 @@ func CategoryAdd(db *gsqlitehandler.SqliteDB, c *CategoryT) error {
 	//TODO: add test
 }
 
+// CategoryForID returns pointer to CategoryT for given id
+func CategoryForID(db *gsqlitehandler.SqliteDB, i int) (c *CategoryT, err error) {
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("SELECT c.id, c.name, c.status, m.id, m.type, m.name, m.status FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id WHERE c.id=? AND c.status=?;"); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+
+	c = CategoryNew()
+	if err = stmt.QueryRow(i, ISOpen).Scan(&c.Id, &c.Name, &c.Status, &c.MainCategory.Id, &c.MainCategory.MType, &c.MainCategory.Name, &c.MainCategory.Status); err != nil {
+		return nil, errors.New(errCategoryWithIDNone)
+	}
+	//FIXME: replace new(CategoryT) with CategoryNew() - everywhere!!!
+	return c, nil
+	//TODO: add test
+}
+
+// CategoryRemove updates given category status with ISClose
+func CategoryRemove(db *gsqlitehandler.SqliteDB, c *CategoryT) error {
+	var err error
+	var stmt *sql.Stmt
+
+	// Set correct status (ISClose
+	if stmt, err = db.Handler.Prepare("UPDATE categories SET status=? WHERE id=?;"); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(ISClose, c.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
+	//TODO: add test
+}
+
 // CategoryList returns all categories from file as CategoriesList
 func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c string, s ItemStatus) (f func() *CategoryT, err error) {
 	var stmt *sql.Stmt
@@ -204,12 +241,12 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	//TODO: add test
 }
 
-// MainCategoryRemove updates main category status with isClose
+// MainCategoryRemove updates main category status with ISClose
 func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m *MainCategoryT) error {
 	var err error
 	var stmt *sql.Stmt
 
-	// Set correct status (IS_Close)
+	// Set correct status (ISClose)
 	if stmt, err = db.Handler.Prepare("UPDATE main_categories SET status=? WHERE id=?;"); err != nil {
 		return errors.New(errWritingToFile)
 	}

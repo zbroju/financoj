@@ -37,6 +37,13 @@ type CategoryT struct {
 	Status       ItemStatus
 }
 
+func CategoryNew() *CategoryT {
+	c := new(CategoryT)
+	c.MainCategory = new(MainCategoryT)
+
+	return c
+}
+
 // MainCategoryStatusT describes the behaviour of categories and its descendants (transactions)
 type MainCategoryTypeT int
 
