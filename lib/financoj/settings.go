@@ -18,6 +18,7 @@ const (
 	configFile = ".financojrc"
 
 	confDataFile = "DATA_FILE"
+	confCurrency = "DEFAULT_CURRENCY"
 )
 
 // DB Properties

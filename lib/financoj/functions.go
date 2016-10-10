@@ -14,20 +14,21 @@ import (
 )
 
 // GetConfigSettings returns contents of settings file
-func GetConfigSettings() (dataFile string, err error) {
+func GetConfigSettings() (dataFile string, currency string, err error) {
 	// Read config file
 	configSettings := gprops.New()
 	configFile, err := os.Open(path.Join(os.Getenv("HOME"), configFile))
 	if err == nil {
 		err = configSettings.Load(configFile)
 		if err != nil {
-			return NotSetStringValue, err
+			return NotSetStringValue, NotSetStringValue, err
 		}
 	}
 	configFile.Close()
 	dataFile = configSettings.GetOrDefault(confDataFile, NotSetStringValue)
+	currency = configSettings.GetOrDefault(confCurrency, NotSetStringValue)
 
-	return dataFile, nil
+	return dataFile, currency, nil
 	//TODO: add test
 }
 
@@ -309,5 +310,23 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 	}
 
 	return f, nil
+	//TODO: add test
+}
+
+// CurrencyAdd add new currency exchange rate
+func CurrencyAdd(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
+	var err error
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("INSERT into currencies VALUES (?, ?, ?);"); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(c.CurrencyFrom, c.CurrencyTo, c.ExchangeRate); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
 	//TODO: add test
 }

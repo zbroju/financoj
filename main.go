@@ -42,11 +42,17 @@ const (
 	optMainCategoryTypeAlias = "o"
 	optID                    = "id"
 	optIDAlias               = "i"
+	optCurrencyTo            = "currency_to"
+	optCurrencyToAlias       = "k"
+	optExchangeRate          = "rate"
+	optExchangeRateAlias     = "r"
 
 	objCategory          = "category"
 	objCategoryAlias     = "c"
 	objMainCategory      = "main_category"
 	objMainCategoryAlias = "m"
+	objCurrency          = "currency"
+	objCurrencyAlias     = "j"
 )
 
 // Headings for displaying data and reports
@@ -67,6 +73,9 @@ const (
 	errMissingCategory           = "missing category name"
 	errMissingMainCategory       = "missing main category name"
 	errIncorrectMainCategoryType = "incorrect main category type"
+	errMissingCurrencyFlag       = "missing currency (from) name"
+	errMissingCurrencyToFlag     = "missing currency_to name"
+	errMissingExchangeRateFlag   = "missing exchange rate"
 )
 
 func main() {
@@ -74,7 +83,7 @@ func main() {
 	_, printError := getLoggers()
 
 	// Get config settings
-	dataFile, err := GetConfigSettings()
+	dataFile, defaultCurrency, err := GetConfigSettings()
 	if err != nil {
 		printError.Fatalln(err)
 	}
@@ -109,6 +118,9 @@ SUBCOMMANDS:
 	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
+	flagCurrency := cli.StringFlag{Name: objCurrency + "," + objCurrencyAlias, Value: defaultCurrency, Usage: "currency (from)"}
+	flagCurrencyTo := cli.StringFlag{Name: optCurrencyTo + "," + optCurrencyToAlias, Value: NotSetStringValue, Usage: "currency to"}
+	flagExchangeRate := cli.Float64Flag{Name: optExchangeRate + "," + optExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
 
 	app.Commands = []cli.Command{
 		{Name: cmdInit,
@@ -128,6 +140,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
 					Usage:   "Add new main category.",
 					Action:  cmdMainCategoryAdd},
+				{Name: objCurrency,
+					Aliases: []string{objCurrencyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo, flagExchangeRate},
+					Usage:   "Add new currency exchange rate.",
+					Action:  cmdCurrencyAdd},
 			},
 		},
 		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object.",
@@ -263,14 +280,14 @@ func cmdCategoryEdit(c *cli.Context) error {
 		printError.Fatalln(errMissingIDFlag)
 	}
 
-	// Open data file and get original main category
+	// Open data file
 	fh := GetDataFileHandler(f)
 	if err := fh.Open(); err != nil {
 		printError.Fatalln(err)
 	}
 	defer fh.Close()
 
-	// Prepare new values
+	// Prepare new values based on old ones
 	var cat *CategoryT
 	if cat, err = CategoryForID(fh, id); err != nil {
 		printError.Fatalln(err)
@@ -594,6 +611,49 @@ func cmdMainCategoryList(c *cli.Context) error {
 	return nil
 }
 
+// cmdCurrencyAdd adds new currency
+func cmdCurrencyAdd(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags (file, name)
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	curFrom := c.String(objCurrency)
+	if curFrom == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+	curTo := c.String(optCurrencyTo)
+	if curTo == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyToFlag)
+	}
+	rate := c.Float64(optExchangeRateAlias)
+	if rate == NotSetFloatValue {
+		printError.Fatalln(errMissingExchangeRateFlag)
+	}
+
+	// Add currency exchange rate
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	newCurrency := &CurrencyT{CurrencyFrom: curFrom, CurrencyTo: curTo, ExchangeRate: rate}
+	if err = CurrencyAdd(fh, newCurrency); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("added new currency exchange rate: %s-%s\n", curFrom, curTo)
+	return nil
+}
+
 // GetLoggers returns two loggers for standard formatting of messages and errors
 func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	messageLogger = log.New(os.Stdout, fmt.Sprintf("%s: ", AppName), 0)
@@ -646,7 +706,7 @@ func maxRune(s string, i int) int {
 //DONE: category edit
 //DONE: category remove
 //DONE: category list
-//TODO: currency add
+//DONE: currency add
 //TODO: currency edit
 //TODO: currency remove
 //TODO: currency list
