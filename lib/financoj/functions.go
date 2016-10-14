@@ -317,8 +317,8 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 func CurrencyAdd(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
 	var err error
 	var stmt *sql.Stmt
-
-	if stmt, err = db.Handler.Prepare("INSERT into currencies VALUES (?, ?, ?);"); err != nil {
+	//TODO: check if such currency exchange rate exists
+	if stmt, err = db.Handler.Prepare("INSERT into currencies VALUES (?, ?, round(?,4));"); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
