@@ -415,7 +415,7 @@ func cmdCategoryList(c *cli.Context) error {
 		lStatus = maxRune(ct.Status.String(), lStatus)
 	}
 	fsId, fsType, fsMCat, fsCat, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lMCat), getFSForString(lCat), getFSForString(lStatus)
-	line := strings.Join([]string{fsId, fsType, fsMCat, fsCat, fsStatus}, FSSeparator) + "\n"
+	line := getLineFor(fsId, fsType, fsMCat, fsCat, fsStatus)
 
 	// Print categories
 	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
@@ -606,7 +606,7 @@ func cmdMainCategoryList(c *cli.Context) error {
 		lStatus = maxRune(m.Status.String(), lStatus)
 	}
 	fsId, fsType, fsName, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lName), getFSForString(lStatus)
-	line := strings.Join([]string{fsId, fsType, fsName, fsStatus}, FSSeparator) + "\n"
+	line := getLineFor(fsId, fsType, fsName, fsStatus)
 
 	// Print main categories
 	if getNextMainCategory, err = MainCategoryList(fh, mct, n, s); err != nil {
@@ -695,8 +695,7 @@ func cmdCurrencyList(c *cli.Context) error {
 		lRate = maxRune(strconv.FormatFloat(cur.ExchangeRate, 'f', -1, 64), lRate)
 	}
 	fsCurF, fsCurT, fsRate := getFSForString(lCurF), getFSForString(lCurT), getFsForFloat(lRate)
-	//FIXME: move line in all functions to separate function
-	line := strings.Join([]string{fsCurF, fsCurT, fsRate}, FSSeparator) + "\n"
+	line := getLineFor(fsCurF, fsCurT, fsRate)
 	//FIXME: another FS for heading
 	// Print currencies
 	if getNextCurrency, err = CurrencyList(fh); err != nil {
@@ -748,6 +747,41 @@ func getFsForFloat(l int) string {
 func getFSForString(l int) string {
 	return fmt.Sprintf("%%-%dv", l)
 }
+
+// getLineFor returns pre-formatted line formatting string for reporting
+func getLineFor(fs ...string) string {
+	line := strings.Join(fs, FSSeparator) + "\n"
+	return line
+}
+
+/*
+// Return heading formatting string for string values
+func getHFSForText(l int) string{
+	return fmt.Sprintf("%%-%ds",l)
+}
+
+// Return heading formatting string for numeric values
+func getHFSForNumeric(l int) string{
+	return fmt.Sprintf("%%%ds",l)
+}
+
+// Return data formatting string for string
+func getDFSForText(l int) string{
+	return fmt.Sprintf("%%-%ds",l)
+}
+
+// Return data formatting string for rates
+func getDFSForRates(l int) string{
+	return fmt.Sprintf("%%%d.4f",l)
+}
+
+// Return data formatting string for values
+func getDFSForValue(l int) string{
+	return fmt.Sprintf("%%%d.2f",l)
+}
+*/
+
+//FIXME: replace ITOA by FormatInt
 
 // Return the bigger number out of the two given
 func maxRune(s string, i int) int {
