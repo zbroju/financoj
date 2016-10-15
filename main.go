@@ -414,16 +414,16 @@ func cmdCategoryList(c *cli.Context) error {
 		lCat = maxRune(ct.Name, lCat)
 		lStatus = maxRune(ct.Status.String(), lStatus)
 	}
-	fsId, fsType, fsMCat, fsCat, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lMCat), getFSForString(lCat), getFSForString(lStatus)
-	line := getLineFor(fsId, fsType, fsMCat, fsCat, fsStatus)
+	lineH := getLineFor(getHFSForNumeric(lId), getHFSForText(lType), getHFSForText(lMCat), getHFSForText(lCat), getHFSForText(lStatus))
+	lineD := getLineFor(getDFSForID(lId), getDFSForText(lType), getDFSForText(lMCat), getDFSForText(lCat), getDFSForText(lStatus))
 
 	// Print categories
 	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
 		printError.Fatalln(err)
 	}
-	fmt.Fprintf(os.Stdout, line, HCId, HMCType, HMCName, HCName, HMCStatus)
+	fmt.Fprintf(os.Stdout, lineH, HCId, HMCType, HMCName, HCName, HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
-		fmt.Fprintf(os.Stdout, line, ct.Id, ct.MainCategory.MType, ct.MainCategory.Name, ct.Name, ct.Status)
+		fmt.Fprintf(os.Stdout, lineD, ct.Id, ct.MainCategory.MType, ct.MainCategory.Name, ct.Name, ct.Status)
 	}
 
 	return nil
@@ -605,16 +605,16 @@ func cmdMainCategoryList(c *cli.Context) error {
 		lName = maxRune(m.Name, lName)
 		lStatus = maxRune(m.Status.String(), lStatus)
 	}
-	fsId, fsType, fsName, fsStatus := getFSForInt(lId), getFSForString(lType), getFSForString(lName), getFSForString(lStatus)
-	line := getLineFor(fsId, fsType, fsName, fsStatus)
+	lineH := getLineFor(getHFSForNumeric(lId), getHFSForText(lType), getHFSForText(lName), getHFSForText(lStatus))
+	lineD := getLineFor(getDFSForID(lId), getDFSForText(lType), getDFSForText(lName), getDFSForText(lStatus))
 
 	// Print main categories
 	if getNextMainCategory, err = MainCategoryList(fh, mct, n, s); err != nil {
 		printError.Fatalln(err)
 	}
-	fmt.Fprintf(os.Stdout, line, HMCId, HMCType, HMCName, HMCStatus)
+	fmt.Fprintf(os.Stdout, lineH, HMCId, HMCType, HMCName, HMCStatus)
 	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
-		fmt.Fprintf(os.Stdout, line, m.Id, m.MType, m.Name, m.Status)
+		fmt.Fprintf(os.Stdout, lineD, m.Id, m.MType, m.Name, m.Status)
 	}
 
 	return nil
@@ -694,16 +694,16 @@ func cmdCurrencyList(c *cli.Context) error {
 		lCurT = maxRune(cur.CurrencyTo, lCurT)
 		lRate = maxRune(strconv.FormatFloat(cur.ExchangeRate, 'f', -1, 64), lRate)
 	}
-	fsCurF, fsCurT, fsRate := getFSForString(lCurF), getFSForString(lCurT), getFsForFloat(lRate)
-	line := getLineFor(fsCurF, fsCurT, fsRate)
-	//FIXME: another FS for heading
+	lineH := getLineFor(getHFSForText(lCurF), getHFSForText(lCurT), getHFSForNumeric(lRate))
+	lineD := getLineFor(getDFSForText(lCurF), getDFSForText(lCurT), getDFSForRates(lRate))
+
 	// Print currencies
 	if getNextCurrency, err = CurrencyList(fh); err != nil {
 		printError.Fatalln(err)
 	}
-	fmt.Fprintf(os.Stdout, line, HCurF, HCurT, HCurRate)
+	fmt.Fprintf(os.Stdout, lineH, HCurF, HCurT, HCurRate)
 	for cur := getNextCurrency(); cur != nil; cur = getNextCurrency() {
-		fmt.Fprintf(os.Stdout, line, cur.CurrencyFrom, cur.CurrencyTo, cur.ExchangeRate)
+		fmt.Fprintf(os.Stdout, lineD, cur.CurrencyFrom, cur.CurrencyTo, cur.ExchangeRate)
 	}
 
 	return nil
@@ -733,6 +733,7 @@ func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
 	return mct
 }
 
+/*
 // Return formatting string for int value
 func getFSForInt(l int) string {
 	return fmt.Sprintf("%%%dv", l)
@@ -747,6 +748,7 @@ func getFsForFloat(l int) string {
 func getFSForString(l int) string {
 	return fmt.Sprintf("%%-%dv", l)
 }
+*/
 
 // getLineFor returns pre-formatted line formatting string for reporting
 func getLineFor(fs ...string) string {
@@ -754,32 +756,35 @@ func getLineFor(fs ...string) string {
 	return line
 }
 
-/*
-// Return heading formatting string for string values
-func getHFSForText(l int) string{
-	return fmt.Sprintf("%%-%ds",l)
+// getHFSForText return heading formatting string for string values
+func getHFSForText(l int) string {
+	return fmt.Sprintf("%%-%ds", l)
 }
 
-// Return heading formatting string for numeric values
-func getHFSForNumeric(l int) string{
-	return fmt.Sprintf("%%%ds",l)
+// getHFSForNumeric return heading formatting string for numeric values
+func getHFSForNumeric(l int) string {
+	return fmt.Sprintf("%%%ds", l)
 }
 
-// Return data formatting string for string
-func getDFSForText(l int) string{
-	return fmt.Sprintf("%%-%ds",l)
+// getDFSForText return data formatting string for string
+func getDFSForText(l int) string {
+	return fmt.Sprintf("%%-%ds", l)
 }
 
-// Return data formatting string for rates
-func getDFSForRates(l int) string{
-	return fmt.Sprintf("%%%d.4f",l)
+// getDFSForRates return data formatting string for rates
+func getDFSForRates(l int) string {
+	return fmt.Sprintf("%%%d.4f", l)
 }
 
-// Return data formatting string for values
-func getDFSForValue(l int) string{
-	return fmt.Sprintf("%%%d.2f",l)
+// getDFSForValue return data formatting string for values
+func getDFSForValue(l int) string {
+	return fmt.Sprintf("%%%d.2f", l)
 }
-*/
+
+// getDFSForID return data formatting string for id
+func getDFSForID(l int) string {
+	return fmt.Sprintf("%%%dd", l)
+}
 
 //FIXME: replace ITOA by FormatInt
 
