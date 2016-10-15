@@ -35,6 +35,8 @@ const (
 
 	errCategoryWithIDNone = "no category with given ID"
 
+	errCurrencyNone = "no exchange rate for given currencies"
+
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
 )

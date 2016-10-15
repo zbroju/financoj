@@ -114,7 +114,7 @@ func CategoryRemove(db *gsqlitehandler.SqliteDB, c *CategoryT) error {
 	var err error
 	var stmt *sql.Stmt
 
-	// Set correct status (ISClose
+	// Set correct status (ISClose)
 	if stmt, err = db.Handler.Prepare("UPDATE categories SET status=? WHERE id=?;"); err != nil {
 		return errors.New(errWritingToFile)
 	}
@@ -355,5 +355,42 @@ func CurrencyList(db *gsqlitehandler.SqliteDB) (f func() *CurrencyT, err error) 
 	}
 
 	return f, nil
+	//TODO: add test
+}
+
+// CurrencyForID returns pointer to CurrencyT for given currency_from and currency_to
+func CurrencyForID(db *gsqlitehandler.SqliteDB, cf string, ct string) (c *CurrencyT, err error) {
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies WHERE currency_from=? AND currency_to=?;"); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+
+	c = new(CurrencyT)
+	if err = stmt.QueryRow(cf, ct).Scan(&c.CurrencyFrom, &c.CurrencyTo, &c.ExchangeRate); err != nil {
+		return c, errors.New(errCurrencyNone)
+	}
+
+	return c, nil
+	//TODO: add test
+
+}
+
+// CurrencyRemove removes given currency exchange rate
+func CurrencyRemove(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
+	var err error
+	var stmt *sql.Stmt
+
+	if stmt, err = db.Handler.Prepare("DELETE FROM currencies WHERE currency_from=? AND currency_to=?;"); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(c.CurrencyFrom, c.CurrencyTo); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
 	//TODO: add test
 }

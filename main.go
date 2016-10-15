@@ -177,6 +177,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove main category.",
 					Action:  cmdMainCategoryRemove},
+				{Name: objCurrency,
+					Aliases: []string{objCurrencyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo},
+					Usage:   "Remove currency exchange rate.",
+					Action:  cmdCurrencyRemove},
 			},
 		},
 		{Name: cmdList, Aliases: []string{cmdListAlias}, Usage: "List objects on standard output.",
@@ -709,6 +714,52 @@ func cmdCurrencyList(c *cli.Context) error {
 	return nil
 }
 
+// cmdCurrencyRemove removes exchange rates for given currencies
+func cmdCurrencyRemove(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	j := c.String(objCurrency)
+	if j == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+	k := c.String(optCurrencyTo)
+	if k == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyToFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var cur *CurrencyT
+	if cur, err = CurrencyForID(fh, j, k); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Remove the exchange rate
+	if err = CurrencyRemove(fh, cur); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("removed currency exchange rate for %s and %s\n", cur.CurrencyFrom, cur.CurrencyTo)
+
+	return nil
+
+}
+
 // GetLoggers returns two loggers for standard formatting of messages and errors
 func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	messageLogger = log.New(os.Stdout, fmt.Sprintf("%s: ", AppName), 0)
@@ -732,23 +783,6 @@ func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
 
 	return mct
 }
-
-/*
-// Return formatting string for int value
-func getFSForInt(l int) string {
-	return fmt.Sprintf("%%%dv", l)
-}
-
-// Return formatting string for float value
-func getFsForFloat(l int) string {
-	return fmt.Sprintf("%%%dv", l)
-}
-
-// Return formatting string for string value
-func getFSForString(l int) string {
-	return fmt.Sprintf("%%-%dv", l)
-}
-*/
 
 // getLineFor returns pre-formatted line formatting string for reporting
 func getLineFor(fs ...string) string {
@@ -806,8 +840,8 @@ func maxRune(s string, i int) int {
 //DONE: category list
 //DONE: currency add
 //TODO: currency edit
-//TODO: currency remove
-//TODO: currency list
+//DONE: currency remove
+//DONE: currency list
 //DONE: main category add
 //DONE: main category edit
 //DONE: main category remove
@@ -830,7 +864,7 @@ func maxRune(s string, i int) int {
 //TODO: report net value
 //TODO: add procedure to migrate from data file version 1 to version 2
 //
-//DONE: 10/33 (30%)
+//DONE: 12/33 (36%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
