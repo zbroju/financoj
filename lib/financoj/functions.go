@@ -145,16 +145,15 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c 
 		c = "%" + c + "%"
 	}
 
-	if stmt, err = db.Handler.Prepare("SELECT c.id, c.name, c.status, m.id, m.type, m.name,m.status FROM categories c INNER JOIN main_categories m on c.main_category_id=m.id WHERE (m.name=? OR ?=?) AND (m.type=? OR ?=?) AND (c.name=? OR ?=?) AND (c.status=? or ?=?) ORDER BY m.type, m.name, c.name;"); err != nil {
+	if stmt, err = db.Handler.Prepare("SELECT c.id, c.name, c.status, m.id, m.type, m.name,m.status FROM categories c INNER JOIN main_categories m on c.main_category_id=m.id WHERE (m.name LIKE ? OR ?=?) AND (m.type=? OR ?=?) AND (c.name LIKE ? OR ?=?) AND (c.status=? or ?=?) ORDER BY m.type, m.name, c.name;"); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-	//FIXME: replace in SQL queries '=' with 'LIKE' for strings
+
 	if rows, err = stmt.Query(m, m, notSetName, t, t, MCTUnset, c, c, notSetName, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
 	f = func() *CategoryT {
-		//FIXME: Replace 'for rows.next()' with 'if' in 'list' functions
 		if rows.Next() {
 			c := CategoryNew()
 			rows.Scan(&c.Id, &c.Name, &c.Status, &c.MainCategory.Id, &c.MainCategory.MType, &c.MainCategory.Name, &c.MainCategory.Status)
