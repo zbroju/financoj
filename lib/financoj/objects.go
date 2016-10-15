@@ -31,7 +31,7 @@ func (is ItemStatus) String() string {
 
 // Category represents the basic object for category
 type CategoryT struct {
-	Id           int
+	Id           int64
 	MainCategory *MainCategoryT
 	Name         string
 	Status       ItemStatus
@@ -77,7 +77,7 @@ func (mct MainCategoryTypeT) String() string {
 
 // MainCategory represents the basic object for main category
 type MainCategoryT struct {
-	Id     int
+	Id     int64
 	MType  MainCategoryTypeT
 	Name   string
 	Status ItemStatus

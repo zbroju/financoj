@@ -408,7 +408,7 @@ func cmdCategoryList(c *cli.Context) error {
 	}
 	lId, lType, lMCat, lCat, lStatus := utf8.RuneCountInString(HCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HCName), utf8.RuneCountInString(HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
-		lId = maxRune(strconv.Itoa(ct.Id), lId)
+		lId = maxRune(strconv.FormatInt(ct.Id, 10), lId)
 		lType = maxRune(ct.MainCategory.MType.String(), lType)
 		lMCat = maxRune(ct.MainCategory.Name, lMCat)
 		lCat = maxRune(ct.Name, lCat)
@@ -600,7 +600,7 @@ func cmdMainCategoryList(c *cli.Context) error {
 	}
 	lId, lType, lName, lStatus := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HMCStatus)
 	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
-		lId = maxRune(strconv.Itoa(m.Id), lId)
+		lId = maxRune(strconv.FormatInt(m.Id, 10), lId)
 		lType = maxRune(m.MType.String(), lType)
 		lName = maxRune(m.Name, lName)
 		lStatus = maxRune(m.Status.String(), lStatus)
@@ -785,8 +785,6 @@ func getDFSForValue(l int) string {
 func getDFSForID(l int) string {
 	return fmt.Sprintf("%%%dd", l)
 }
-
-//FIXME: replace ITOA by FormatInt
 
 // Return the bigger number out of the two given
 func maxRune(s string, i int) int {
