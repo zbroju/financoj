@@ -133,14 +133,13 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c 
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
-	const notSetName = "notSetName"
 	if m == NotSetStringValue {
-		m = notSetName
+		m = noParameterValueForSQL
 	} else {
 		m = "%" + m + "%"
 	}
 	if c == NotSetStringValue {
-		c = notSetName
+		c = noParameterValueForSQL
 	} else {
 		c = "%" + c + "%"
 	}
@@ -149,7 +148,7 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c 
 		return nil, errors.New(errReadingFromFile)
 	}
 
-	if rows, err = stmt.Query(m, m, notSetName, t, t, MCTUnset, c, c, notSetName, s, s, ISUnset); err != nil {
+	if rows, err = stmt.Query(m, m, noParameterValueForSQL, t, t, MCTUnset, c, c, noParameterValueForSQL, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
@@ -283,9 +282,8 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
-	const notSetName = "notSetName"
 	if n == NotSetStringValue {
-		n = notSetName
+		n = noParameterValueForSQL
 	} else {
 		n = "%" + n + "%"
 	}
@@ -293,7 +291,7 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 	if stmt, err = db.Handler.Prepare("SELECT id, type, name, status FROM main_categories WHERE (type=? OR ?=?) AND (name LIKE ? OR ?=?) AND (status=? or ?=?) ORDER BY type, name;"); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-	if rows, err = stmt.Query(t, t, MCTUnset, n, n, notSetName, s, s, ISUnset); err != nil {
+	if rows, err = stmt.Query(t, t, MCTUnset, n, n, noParameterValueForSQL, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
@@ -335,8 +333,6 @@ func CurrencyAdd(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
 func CurrencyList(db *gsqlitehandler.SqliteDB) (f func() *CurrencyT, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
-
-	//FIXME: change all local 'notSetName' to global const
 
 	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies ORDER BY currency_from, currency_to;"); err != nil {
 		return nil, errors.New(errReadingFromFile)

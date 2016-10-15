@@ -38,3 +38,8 @@ const (
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
 )
+
+// Other constants
+const (
+	noParameterValueForSQL = "NOT_SET_PARAMETER_VALUE"
+)
