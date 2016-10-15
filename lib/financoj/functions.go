@@ -128,7 +128,7 @@ func CategoryRemove(db *gsqlitehandler.SqliteDB, c *CategoryT) error {
 	//TODO: add test
 }
 
-// CategoryList returns all categories from file as CategoriesList
+// CategoryList returns all categories from file as closure
 func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c string, s ItemStatus) (f func() *CategoryT, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
@@ -148,12 +148,13 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c 
 	if stmt, err = db.Handler.Prepare("SELECT c.id, c.name, c.status, m.id, m.type, m.name,m.status FROM categories c INNER JOIN main_categories m on c.main_category_id=m.id WHERE (m.name=? OR ?=?) AND (m.type=? OR ?=?) AND (c.name=? OR ?=?) AND (c.status=? or ?=?) ORDER BY m.type, m.name, c.name;"); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-
+	//FIXME: replace in SQL queries '=' with 'LIKE' for strings
 	if rows, err = stmt.Query(m, m, notSetName, t, t, MCTUnset, c, c, notSetName, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
 	f = func() *CategoryT {
+		//FIXME: Replace 'for rows.next()' with 'if' in 'list' functions
 		for rows.Next() {
 			c := CategoryNew()
 			rows.Scan(&c.Id, &c.Name, &c.Status, &c.MainCategory.Id, &c.MainCategory.MType, &c.MainCategory.Name, &c.MainCategory.Status)
@@ -328,5 +329,36 @@ func CurrencyAdd(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
 	}
 
 	return nil
+	//TODO: add test
+}
+
+// CurrencyList returns all currency exchange rates as closure
+func CurrencyList(db *gsqlitehandler.SqliteDB) (f func() *CurrencyT, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	//FIXME: change all local 'notSetName' to global const
+
+	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies ORDER BY currency_from, currency_to;"); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	if rows, err = stmt.Query(); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	f = func() *CurrencyT {
+		for rows.Next() {
+			c := new(CurrencyT)
+			rows.Scan(&c.CurrencyFrom, &c.CurrencyTo, &c.ExchangeRate)
+			return c
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
 	//TODO: add test
 }

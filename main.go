@@ -64,6 +64,10 @@ const (
 	HMCType   = "TYPE"
 	HMCName   = "MAINCAT"
 	HMCStatus = "STATUS"
+
+	HCurF    = "CUR_FR"
+	HCurT    = "CUR_TO"
+	HCurRate = "EX.RATE"
 )
 
 // Errors
@@ -187,6 +191,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType, flagCategory, flagAll},
 					Usage:   "List categories.",
 					Action:  cmdCategoryList},
+				{Name: objCurrency,
+					Aliases: []string{objCurrencyAlias},
+					Flags:   []cli.Flag{flagFile},
+					Usage:   "List currency exchange rates.",
+					Action:  cmdCurrencyList},
 			},
 		},
 	}
@@ -654,6 +663,53 @@ func cmdCurrencyAdd(c *cli.Context) error {
 	return nil
 }
 
+// cmdCurrencyList lists currencies
+func cmdCurrencyList(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Build formatting strings
+	var getNextCurrency func() *CurrencyT
+	if getNextCurrency, err = CurrencyList(fh); err != nil {
+		printError.Fatalln(err)
+	}
+	lCurF, lCurT, lRate := utf8.RuneCountInString(HCurF), utf8.RuneCountInString(HCurT), utf8.RuneCountInString(HCurRate)
+	for cur := getNextCurrency(); cur != nil; cur = getNextCurrency() {
+		lCurF = maxRune(cur.CurrencyFrom, lCurF)
+		lCurT = maxRune(cur.CurrencyTo, lCurT)
+		lRate = maxRune(strconv.FormatFloat(cur.ExchangeRate, 'f', -1, 64), lRate)
+	}
+	fsCurF, fsCurT, fsRate := getFSForString(lCurF), getFSForString(lCurT), getFsForFloat(lRate)
+	//FIXME: move line in all functions to separate function
+	line := strings.Join([]string{fsCurF, fsCurT, fsRate}, FSSeparator) + "\n"
+	//FIXME: another FS for heading
+	// Print currencies
+	if getNextCurrency, err = CurrencyList(fh); err != nil {
+		printError.Fatalln(err)
+	}
+	fmt.Fprintf(os.Stdout, line, HCurF, HCurT, HCurRate)
+	for cur := getNextCurrency(); cur != nil; cur = getNextCurrency() {
+		fmt.Fprintf(os.Stdout, line, cur.CurrencyFrom, cur.CurrencyTo, cur.ExchangeRate)
+	}
+
+	return nil
+}
+
 // GetLoggers returns two loggers for standard formatting of messages and errors
 func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	messageLogger = log.New(os.Stdout, fmt.Sprintf("%s: ", AppName), 0)
@@ -680,6 +736,11 @@ func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
 
 // Return formatting string for int value
 func getFSForInt(l int) string {
+	return fmt.Sprintf("%%%dv", l)
+}
+
+// Return formatting string for float value
+func getFsForFloat(l int) string {
 	return fmt.Sprintf("%%%dv", l)
 }
 
@@ -723,8 +784,8 @@ func maxRune(s string, i int) int {
 //TODO: budget remove
 //TODO: budget list
 //TODO: report accounts balance
+//TODO: report budget categories
 //TODO: report assets summary
-//TODO: report budget categoriesTODO
 //TODO: report budget main categories
 //TODO: report categories balance
 //TODO: report main categories balance
@@ -732,7 +793,7 @@ func maxRune(s string, i int) int {
 //TODO: report net value
 //TODO: add procedure to migrate from data file version 1 to version 2
 //
-//DONE: 9/33 (27%)
+//DONE: 10/33 (30%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
