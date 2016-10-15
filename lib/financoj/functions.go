@@ -155,7 +155,7 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c 
 
 	f = func() *CategoryT {
 		//FIXME: Replace 'for rows.next()' with 'if' in 'list' functions
-		for rows.Next() {
+		if rows.Next() {
 			c := CategoryNew()
 			rows.Scan(&c.Id, &c.Name, &c.Status, &c.MainCategory.Id, &c.MainCategory.MType, &c.MainCategory.Name, &c.MainCategory.Status)
 			return c
@@ -299,7 +299,7 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 	}
 
 	f = func() *MainCategoryT {
-		for rows.Next() {
+		if rows.Next() {
 			m := new(MainCategoryT)
 			rows.Scan(&m.Id, &m.MType, &m.Name, &m.Status)
 			return m
@@ -348,7 +348,7 @@ func CurrencyList(db *gsqlitehandler.SqliteDB) (f func() *CurrencyT, err error) 
 	}
 
 	f = func() *CurrencyT {
-		for rows.Next() {
+		if rows.Next() {
 			c := new(CurrencyT)
 			rows.Scan(&c.CurrencyFrom, &c.CurrencyTo, &c.ExchangeRate)
 			return c
