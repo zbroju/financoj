@@ -42,17 +42,17 @@ const (
 	optMainCategoryTypeAlias = "o"
 	optID                    = "id"
 	optIDAlias               = "i"
+	optCurrency              = "currency"
+	optCurrencyAlias         = "j"
 	optCurrencyTo            = "currency_to"
 	optCurrencyToAlias       = "k"
-	optExchangeRate          = "rate"
-	optExchangeRateAlias     = "r"
 
 	objCategory          = "category"
 	objCategoryAlias     = "c"
 	objMainCategory      = "main_category"
 	objMainCategoryAlias = "m"
-	objCurrency          = "currency"
-	objCurrencyAlias     = "j"
+	objExchangeRate      = "rate"
+	objExchangeRateAlias = "r"
 )
 
 // Headings for displaying data and reports
@@ -122,9 +122,9 @@ SUBCOMMANDS:
 	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
-	flagCurrency := cli.StringFlag{Name: objCurrency + "," + objCurrencyAlias, Value: defaultCurrency, Usage: "currency (from)"}
+	flagCurrency := cli.StringFlag{Name: optCurrency + "," + optCurrencyAlias, Value: defaultCurrency, Usage: "currency (from)"}
 	flagCurrencyTo := cli.StringFlag{Name: optCurrencyTo + "," + optCurrencyToAlias, Value: NotSetStringValue, Usage: "currency to"}
-	flagExchangeRate := cli.Float64Flag{Name: optExchangeRate + "," + optExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
+	flagExchangeRate := cli.Float64Flag{Name: objExchangeRate + "," + objExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
 
 	app.Commands = []cli.Command{
 		{Name: cmdInit,
@@ -144,8 +144,8 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
 					Usage:   "Add new main category.",
 					Action:  cmdMainCategoryAdd},
-				{Name: objCurrency,
-					Aliases: []string{objCurrencyAlias},
+				{Name: objExchangeRate,
+					Aliases: []string{objExchangeRateAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Add new currency exchange rate.",
 					Action:  cmdExchangeRateAdd},
@@ -163,6 +163,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagID, flagMainCategory, flagMainCategoryType},
 					Usage:   "Edit main category.",
 					Action:  cmdMainCategoryEdit},
+				{Name: objExchangeRate,
+					Aliases: []string{objExchangeRateAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo, flagExchangeRate},
+					Usage:   "Edit currency exchange rate.",
+					Action:  cmdExchangeRateEdit},
 			},
 		},
 		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object.",
@@ -177,8 +182,8 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove main category.",
 					Action:  cmdMainCategoryRemove},
-				{Name: objCurrency,
-					Aliases: []string{objCurrencyAlias},
+				{Name: objExchangeRate,
+					Aliases: []string{objExchangeRateAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo},
 					Usage:   "Remove currency exchange rate.",
 					Action:  cmdExchangeRateRemove},
@@ -196,8 +201,8 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType, flagCategory, flagAll},
 					Usage:   "List categories.",
 					Action:  cmdCategoryList},
-				{Name: objCurrency,
-					Aliases: []string{objCurrencyAlias},
+				{Name: objExchangeRate,
+					Aliases: []string{objExchangeRateAlias},
 					Flags:   []cli.Flag{flagFile},
 					Usage:   "List currency exchange rates.",
 					Action:  cmdExchangeRateList},
@@ -625,7 +630,7 @@ func cmdMainCategoryList(c *cli.Context) error {
 	return nil
 }
 
-// cmdExchangeRateAdd adds new currency
+// cmdExchangeRateAdd adds new currency echchange rate
 func cmdExchangeRateAdd(c *cli.Context) error {
 	var err error
 
@@ -638,7 +643,7 @@ func cmdExchangeRateAdd(c *cli.Context) error {
 		printError.Fatalln(errMissingFileFlag)
 
 	}
-	curFrom := c.String(objCurrency)
+	curFrom := c.String(optCurrency)
 	if curFrom == NotSetStringValue {
 		printError.Fatalln(errMissingCurrencyFlag)
 	}
@@ -646,7 +651,7 @@ func cmdExchangeRateAdd(c *cli.Context) error {
 	if curTo == NotSetStringValue {
 		printError.Fatalln(errMissingCurrencyToFlag)
 	}
-	rate := c.Float64(optExchangeRateAlias)
+	rate := c.Float64(objExchangeRateAlias)
 	if rate == NotSetFloatValue {
 		printError.Fatalln(errMissingExchangeRateFlag)
 	}
@@ -668,7 +673,57 @@ func cmdExchangeRateAdd(c *cli.Context) error {
 	return nil
 }
 
-// cmdExchangeRateList lists currencies
+// cmdExchangeRateEdit edits currency exchange rate
+func cmdExchangeRateEdit(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	cf := c.String(optCurrency)
+	if cf == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+	ct := c.String(optCurrencyTo)
+	if ct == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyToFlag)
+	}
+	r := c.Float64(objExchangeRate)
+	if r == NotSetFloatValue {
+		printError.Fatalln(errMissingExchangeRateFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var e *ExchangeRateT
+	if e, err = ExchangeRateForCurrencies(fh, cf, ct); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Edit exchange rate
+	e.ExchangeRate = r
+	if err = ExchangeRateEdit(fh, e); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("changed exchange rate for %s-%s\n", e.CurrencyFrom, e.CurrencyTo)
+
+	return nil
+}
+
+// cmdExchangeRateList lists currency exchange rates
 func cmdExchangeRateList(c *cli.Context) error {
 	var err error
 
@@ -727,7 +782,7 @@ func cmdExchangeRateRemove(c *cli.Context) error {
 		printError.Fatalln(errMissingFileFlag)
 
 	}
-	j := c.String(objCurrency)
+	j := c.String(optCurrency)
 	if j == NotSetStringValue {
 		printError.Fatalln(errMissingCurrencyFlag)
 	}
@@ -839,7 +894,7 @@ func maxRune(s string, i int) int {
 //DONE: category remove
 //DONE: category list
 //DONE: currency add
-//TODO: currency edit
+//DONE: currency edit
 //DONE: currency remove
 //DONE: currency list
 //DONE: main category add
