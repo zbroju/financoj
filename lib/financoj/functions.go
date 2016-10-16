@@ -315,7 +315,13 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 func ExchangeRateAdd(db *gsqlitehandler.SqliteDB, e *ExchangeRateT) error {
 	var err error
 	var stmt *sql.Stmt
-	//TODO: check if such currency exchange rate exists
+
+	// Check if such currency exchange rate exists
+	if c, _ := ExchangeRateForCurrencies(db, e.CurrencyFrom, e.CurrencyTo); c != nil {
+		return errors.New(errExchangeRateAlreadyExists)
+	}
+
+	// Add new currency exchange rate
 	if stmt, err = db.Handler.Prepare("INSERT into currencies VALUES (?, ?, round(?,4));"); err != nil {
 		return errors.New(errWritingToFile)
 	}
@@ -369,7 +375,7 @@ func ExchangeRateForCurrencies(db *gsqlitehandler.SqliteDB, cf string, ct string
 
 	e = new(ExchangeRateT)
 	if err = stmt.QueryRow(cf, ct).Scan(&e.CurrencyFrom, &e.CurrencyTo, &e.ExchangeRate); err != nil {
-		return e, errors.New(errCurrencyNone)
+		return nil, errors.New(errExchangeRateNone)
 	}
 
 	return e, nil
