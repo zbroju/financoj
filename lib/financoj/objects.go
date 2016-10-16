@@ -84,7 +84,7 @@ type MainCategoryT struct {
 }
 
 // Currency represents the object of currencies exchange rate
-type CurrencyT struct {
+type ExchangeRateT struct {
 	CurrencyFrom string
 	CurrencyTo   string
 	ExchangeRate float64

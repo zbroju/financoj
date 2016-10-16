@@ -148,7 +148,7 @@ SUBCOMMANDS:
 					Aliases: []string{objCurrencyAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Add new currency exchange rate.",
-					Action:  cmdCurrencyAdd},
+					Action:  cmdExchangeRateAdd},
 			},
 		},
 		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object.",
@@ -181,7 +181,7 @@ SUBCOMMANDS:
 					Aliases: []string{objCurrencyAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo},
 					Usage:   "Remove currency exchange rate.",
-					Action:  cmdCurrencyRemove},
+					Action:  cmdExchangeRateRemove},
 			},
 		},
 		{Name: cmdList, Aliases: []string{cmdListAlias}, Usage: "List objects on standard output.",
@@ -200,7 +200,7 @@ SUBCOMMANDS:
 					Aliases: []string{objCurrencyAlias},
 					Flags:   []cli.Flag{flagFile},
 					Usage:   "List currency exchange rates.",
-					Action:  cmdCurrencyList},
+					Action:  cmdExchangeRateList},
 			},
 		},
 	}
@@ -625,8 +625,8 @@ func cmdMainCategoryList(c *cli.Context) error {
 	return nil
 }
 
-// cmdCurrencyAdd adds new currency
-func cmdCurrencyAdd(c *cli.Context) error {
+// cmdExchangeRateAdd adds new currency
+func cmdExchangeRateAdd(c *cli.Context) error {
 	var err error
 
 	// Get loggers
@@ -658,8 +658,8 @@ func cmdCurrencyAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	newCurrency := &CurrencyT{CurrencyFrom: curFrom, CurrencyTo: curTo, ExchangeRate: rate}
-	if err = CurrencyAdd(fh, newCurrency); err != nil {
+	newCurrency := &ExchangeRateT{CurrencyFrom: curFrom, CurrencyTo: curTo, ExchangeRate: rate}
+	if err = ExchangeRateAdd(fh, newCurrency); err != nil {
 		printError.Fatalln(err)
 	}
 
@@ -668,8 +668,8 @@ func cmdCurrencyAdd(c *cli.Context) error {
 	return nil
 }
 
-// cmdCurrencyList lists currencies
-func cmdCurrencyList(c *cli.Context) error {
+// cmdExchangeRateList lists currencies
+func cmdExchangeRateList(c *cli.Context) error {
 	var err error
 
 	// Get loggers
@@ -689,8 +689,8 @@ func cmdCurrencyList(c *cli.Context) error {
 	defer fh.Close()
 
 	// Build formatting strings
-	var getNextCurrency func() *CurrencyT
-	if getNextCurrency, err = CurrencyList(fh); err != nil {
+	var getNextCurrency func() *ExchangeRateT
+	if getNextCurrency, err = ExchangeRateList(fh); err != nil {
 		printError.Fatalln(err)
 	}
 	lCurF, lCurT, lRate := utf8.RuneCountInString(HCurF), utf8.RuneCountInString(HCurT), utf8.RuneCountInString(HCurRate)
@@ -703,7 +703,7 @@ func cmdCurrencyList(c *cli.Context) error {
 	lineD := getLineFor(getDFSForText(lCurF), getDFSForText(lCurT), getDFSForRates(lRate))
 
 	// Print currencies
-	if getNextCurrency, err = CurrencyList(fh); err != nil {
+	if getNextCurrency, err = ExchangeRateList(fh); err != nil {
 		printError.Fatalln(err)
 	}
 	fmt.Fprintf(os.Stdout, lineH, HCurF, HCurT, HCurRate)
@@ -714,8 +714,8 @@ func cmdCurrencyList(c *cli.Context) error {
 	return nil
 }
 
-// cmdCurrencyRemove removes exchange rates for given currencies
-func cmdCurrencyRemove(c *cli.Context) error {
+// cmdExchangeRateRemove removes exchange rates for given currencies
+func cmdExchangeRateRemove(c *cli.Context) error {
 	var err error
 
 	// Get loggers
@@ -743,13 +743,13 @@ func cmdCurrencyRemove(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var cur *CurrencyT
-	if cur, err = CurrencyForID(fh, j, k); err != nil {
+	var cur *ExchangeRateT
+	if cur, err = ExchangeRateForCurrencies(fh, j, k); err != nil {
 		printError.Fatalln(err)
 	}
 
 	// Remove the exchange rate
-	if err = CurrencyRemove(fh, cur); err != nil {
+	if err = ExchangeRateRemove(fh, cur); err != nil {
 		printError.Fatalln(err)
 	}
 
@@ -862,7 +862,6 @@ func maxRune(s string, i int) int {
 //TODO: report main categories balance
 //TODO: report transaction balance
 //TODO: report net value
-//TODO: add procedure to migrate from data file version 1 to version 2
 //
 //DONE: 12/33 (36%)
 
@@ -870,3 +869,5 @@ func maxRune(s string, i int) int {
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
 //TODO: add to main_categories column with 'coefficient', which will be used for calculations instead of signs in transactions (because of that we can have a real main category edit with correct type change)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
+//TODO: add automatic keeping number of backup copies (the number specified in config file)
+//TODO: add export to csv any list and report

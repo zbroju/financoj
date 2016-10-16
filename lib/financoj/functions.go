@@ -311,8 +311,8 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string
 	//TODO: add test
 }
 
-// CurrencyAdd add new currency exchange rate
-func CurrencyAdd(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
+// ExchangeRateAdd add new currency exchange rate
+func ExchangeRateAdd(db *gsqlitehandler.SqliteDB, e *ExchangeRateT) error {
 	var err error
 	var stmt *sql.Stmt
 	//TODO: check if such currency exchange rate exists
@@ -321,7 +321,7 @@ func CurrencyAdd(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(c.CurrencyFrom, c.CurrencyTo, c.ExchangeRate); err != nil {
+	if _, err = stmt.Exec(e.CurrencyFrom, e.CurrencyTo, e.ExchangeRate); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
@@ -329,8 +329,8 @@ func CurrencyAdd(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
 	//TODO: add test
 }
 
-// CurrencyList returns all currency exchange rates as closure
-func CurrencyList(db *gsqlitehandler.SqliteDB) (f func() *CurrencyT, err error) {
+// ExchangeRateList returns all currency exchange rates as closure
+func ExchangeRateList(db *gsqlitehandler.SqliteDB) (f func() *ExchangeRateT, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
@@ -342,9 +342,9 @@ func CurrencyList(db *gsqlitehandler.SqliteDB) (f func() *CurrencyT, err error) 
 		return nil, errors.New(errReadingFromFile)
 	}
 
-	f = func() *CurrencyT {
+	f = func() *ExchangeRateT {
 		if rows.Next() {
-			c := new(CurrencyT)
+			c := new(ExchangeRateT)
 			rows.Scan(&c.CurrencyFrom, &c.CurrencyTo, &c.ExchangeRate)
 			return c
 		}
@@ -358,8 +358,8 @@ func CurrencyList(db *gsqlitehandler.SqliteDB) (f func() *CurrencyT, err error) 
 	//TODO: add test
 }
 
-// CurrencyForID returns pointer to CurrencyT for given currency_from and currency_to
-func CurrencyForID(db *gsqlitehandler.SqliteDB, cf string, ct string) (c *CurrencyT, err error) {
+// ExchangeRateForCurrencies returns pointer to ExchangeRateT for given currency_from and currency_to
+func ExchangeRateForCurrencies(db *gsqlitehandler.SqliteDB, cf string, ct string) (e *ExchangeRateT, err error) {
 	var stmt *sql.Stmt
 
 	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies WHERE currency_from=? AND currency_to=?;"); err != nil {
@@ -367,18 +367,18 @@ func CurrencyForID(db *gsqlitehandler.SqliteDB, cf string, ct string) (c *Curren
 	}
 	defer stmt.Close()
 
-	c = new(CurrencyT)
-	if err = stmt.QueryRow(cf, ct).Scan(&c.CurrencyFrom, &c.CurrencyTo, &c.ExchangeRate); err != nil {
-		return c, errors.New(errCurrencyNone)
+	e = new(ExchangeRateT)
+	if err = stmt.QueryRow(cf, ct).Scan(&e.CurrencyFrom, &e.CurrencyTo, &e.ExchangeRate); err != nil {
+		return e, errors.New(errCurrencyNone)
 	}
 
-	return c, nil
+	return e, nil
 	//TODO: add test
 
 }
 
-// CurrencyRemove removes given currency exchange rate
-func CurrencyRemove(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
+// ExchangeRateRemove removes given currency exchange rate
+func ExchangeRateRemove(db *gsqlitehandler.SqliteDB, e *ExchangeRateT) error {
 	var err error
 	var stmt *sql.Stmt
 
@@ -387,7 +387,7 @@ func CurrencyRemove(db *gsqlitehandler.SqliteDB, c *CurrencyT) error {
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(c.CurrencyFrom, c.CurrencyTo); err != nil {
+	if _, err = stmt.Exec(e.CurrencyFrom, e.CurrencyTo); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
