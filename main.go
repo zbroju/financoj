@@ -265,12 +265,12 @@ func CmdCategoryAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var mc *MainCategoryT
+	var mc *MainCategory
 	if mc, err = MainCategoryForName(fh, m); err != nil {
 		printError.Fatalln(err)
 	}
 
-	newCategory := &CategoryT{MainCategory: mc, Name: n, Status: ISOpen}
+	newCategory := &Category{Main: mc, Name: n, Status: ISOpen}
 	if err = CategoryAdd(fh, newCategory); err != nil {
 		printError.Fatalln(err)
 	}
@@ -307,16 +307,16 @@ func CmdCategoryEdit(c *cli.Context) error {
 	defer fh.Close()
 
 	// Prepare new values based on old ones
-	var cat *CategoryT
+	var cat *Category
 	if cat, err = CategoryForID(fh, id); err != nil {
 		printError.Fatalln(err)
 	}
 	if m := c.String(objMainCategory); m != NotSetStringValue {
-		var mcat *MainCategoryT
+		var mcat *MainCategory
 		if mcat, err = MainCategoryForName(fh, m); err != nil {
 			printError.Fatalln(err)
 		}
-		cat.MainCategory = mcat
+		cat.Main = mcat
 	}
 	if n := c.String(objCategory); n != NotSetStringValue {
 		cat.Name = n
@@ -358,7 +358,7 @@ func CmdCategoryRemove(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var cat *CategoryT
+	var cat *Category
 	if cat, err = CategoryForID(fh, id); err != nil {
 		printError.Fatalln(err)
 	}
@@ -412,15 +412,15 @@ func CmdCategoryList(c *cli.Context) error {
 	defer fh.Close()
 
 	// Build formatting strings
-	var getNextCategory func() *CategoryT
+	var getNextCategory func() *Category
 	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
 		printError.Fatalln(err)
 	}
 	lId, lType, lMCat, lCat, lStatus := utf8.RuneCountInString(HCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HCName), utf8.RuneCountInString(HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
 		lId = maxRune(strconv.FormatInt(ct.Id, 10), lId)
-		lType = maxRune(ct.MainCategory.MType.String(), lType)
-		lMCat = maxRune(ct.MainCategory.Name, lMCat)
+		lType = maxRune(ct.Main.MType.String(), lType)
+		lMCat = maxRune(ct.Main.Name, lMCat)
 		lCat = maxRune(ct.Name, lCat)
 		lStatus = maxRune(ct.Status.String(), lStatus)
 	}
@@ -433,7 +433,7 @@ func CmdCategoryList(c *cli.Context) error {
 	}
 	fmt.Fprintf(os.Stdout, lineH, HCId, HMCType, HMCName, HCName, HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
-		fmt.Fprintf(os.Stdout, lineD, ct.Id, ct.MainCategory.MType, ct.MainCategory.Name, ct.Name, ct.Status)
+		fmt.Fprintf(os.Stdout, lineD, ct.Id, ct.Main.MType, ct.Main.Name, ct.Name, ct.Status)
 	}
 
 	return nil
@@ -466,7 +466,7 @@ func CmdMainCategoryAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	m := &MainCategoryT{MType: t, Name: n, Status: ISOpen}
+	m := &MainCategory{MType: t, Name: n, Status: ISOpen}
 	if err := MainCategoryAdd(fh, m); err != nil {
 		printError.Fatalln(err)
 	}
@@ -502,7 +502,7 @@ func CmdMainCategoryEdit(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var mc *MainCategoryT
+	var mc *MainCategory
 	if mc, err = MainCategoryForID(fh, id); err != nil {
 		printError.Fatalln(err)
 	}
@@ -553,7 +553,7 @@ func CmdMainCategoryRemove(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var mc *MainCategoryT
+	var mc *MainCategory
 	if mc, err = MainCategoryForID(fh, id); err != nil {
 		printError.Fatalln(err)
 	}
@@ -604,7 +604,7 @@ func CmdMainCategoryList(c *cli.Context) error {
 	defer fh.Close()
 
 	// Build formatting strings
-	var getNextMainCategory func() *MainCategoryT
+	var getNextMainCategory func() *MainCategory
 	if getNextMainCategory, err = MainCategoryList(fh, mct, n, s); err != nil {
 		printError.Fatalln(err)
 	}
@@ -663,7 +663,7 @@ func CmdExchangeRateAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	newCurrency := &ExchangeRateT{CurrencyFrom: curFrom, CurrencyTo: curTo, ExchangeRate: rate}
+	newCurrency := &ExchangeRate{CurrencyFrom: curFrom, CurrencyTo: curTo, ExchangeRate: rate}
 	if err = ExchangeRateAdd(fh, newCurrency); err != nil {
 		printError.Fatalln(err)
 	}
@@ -706,7 +706,7 @@ func CmdExchangeRateEdit(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var e *ExchangeRateT
+	var e *ExchangeRate
 	if e, err = ExchangeRateForCurrencies(fh, cf, ct); err != nil {
 		printError.Fatalln(err)
 	}
@@ -744,7 +744,7 @@ func CmdExchangeRateList(c *cli.Context) error {
 	defer fh.Close()
 
 	// Build formatting strings
-	var getNextCurrency func() *ExchangeRateT
+	var getNextCurrency func() *ExchangeRate
 	if getNextCurrency, err = ExchangeRateList(fh); err != nil {
 		printError.Fatalln(err)
 	}
@@ -798,7 +798,7 @@ func CmdExchangeRateRemove(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	var cur *ExchangeRateT
+	var cur *ExchangeRate
 	if cur, err = ExchangeRateForCurrencies(fh, j, k); err != nil {
 		printError.Fatalln(err)
 	}
@@ -926,3 +926,5 @@ func maxRune(s string, i int) int {
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: add automatic keeping number of backup copies (the number specified in config file)
 //TODO: add export to csv any list and report
+//FIXME: make all operations on currencies case insensitive
+//FIXME: look through all functions if there is 'return error.new' and not only 'error.new'

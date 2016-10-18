@@ -13,20 +13,6 @@ const (
 	NotSetStringValue         = ""
 )
 
-// Config file settings
-const (
-	configFile = ".financojrc"
-
-	confDataFile = "DATA_FILE"
-	confCurrency = "DEFAULT_CURRENCY"
-)
-
-// DB Properties
-var dataFileProperties = map[string]string{
-	"applicationName": "financoj",
-	"databaseVersion": "2.0",
-}
-
 // Error messages
 const (
 	errMainCategoryWithIDNone        = "no main category with given ID"
