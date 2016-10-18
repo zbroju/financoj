@@ -7,7 +7,7 @@ package main
 import (
 	"fmt"
 	"github.com/urfave/cli"
-	. "github.com/zbroju/financoj/lib/financoj"
+	. "github.com/zbroju/financoj/lib"
 	"log"
 	"os"
 	"strconv"
