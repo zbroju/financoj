@@ -100,7 +100,7 @@ func CategoryRemove(db *gsqlitehandler.SqliteDB, c *Category) error {
 }
 
 // CategoryList returns all categories from file as closure
-func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryTypeT, c string, s ItemStatus) (f func() *Category, err error) {
+func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryType, c string, s ItemStatus) (f func() *Category, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 

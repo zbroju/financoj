@@ -14,7 +14,7 @@ import (
 type ExchangeRate struct {
 	CurrencyFrom string
 	CurrencyTo   string
-	ExchangeRate float64
+	Rate         float64
 }
 
 // ExchangeRateAdd add new currency exchange rate
@@ -33,7 +33,7 @@ func ExchangeRateAdd(db *gsqlitehandler.SqliteDB, e *ExchangeRate) error {
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(e.CurrencyFrom, e.CurrencyTo, e.ExchangeRate); err != nil {
+	if _, err = stmt.Exec(e.CurrencyFrom, e.CurrencyTo, e.Rate); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
@@ -51,7 +51,7 @@ func ExchangeRateEdit(db *gsqlitehandler.SqliteDB, e *ExchangeRate) error {
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(e.ExchangeRate, e.CurrencyFrom, e.CurrencyTo); err != nil {
+	if _, err = stmt.Exec(e.Rate, e.CurrencyFrom, e.CurrencyTo); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
@@ -69,7 +69,7 @@ func ExchangeRateForCurrencies(db *gsqlitehandler.SqliteDB, cf string, ct string
 	defer stmt.Close()
 
 	e = new(ExchangeRate)
-	if err = stmt.QueryRow(cf, ct).Scan(&e.CurrencyFrom, &e.CurrencyTo, &e.ExchangeRate); err != nil {
+	if err = stmt.QueryRow(cf, ct).Scan(&e.CurrencyFrom, &e.CurrencyTo, &e.Rate); err != nil {
 		return nil, errors.New(errExchangeRateNone)
 	}
 
@@ -94,7 +94,7 @@ func ExchangeRateList(db *gsqlitehandler.SqliteDB) (f func() *ExchangeRate, err 
 	f = func() *ExchangeRate {
 		if rows.Next() {
 			c := new(ExchangeRate)
-			rows.Scan(&c.CurrencyFrom, &c.CurrencyTo, &c.ExchangeRate)
+			rows.Scan(&c.CurrencyFrom, &c.CurrencyTo, &c.Rate)
 			return c
 		}
 		rows.Close()

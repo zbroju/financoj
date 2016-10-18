@@ -11,18 +11,18 @@ import (
 )
 
 // MainCategoryStatusT describes the behaviour of categories and its descendants (transactions)
-type MainCategoryTypeT int
+type MainCategoryType int
 
 const (
-	MCTUnknown  MainCategoryTypeT = -1
-	MCTUnset    MainCategoryTypeT = 0
-	MCTCost     MainCategoryTypeT = 1
-	MCTTransfer MainCategoryTypeT = 2
-	MCTIncome   MainCategoryTypeT = 3
+	MCTUnknown  MainCategoryType = -1
+	MCTUnset    MainCategoryType = 0
+	MCTCost     MainCategoryType = 1
+	MCTTransfer MainCategoryType = 2
+	MCTIncome   MainCategoryType = 3
 )
 
 // String satisfies fmt.Stringer interface in order to get human readable names
-func (mct MainCategoryTypeT) String() string {
+func (mct MainCategoryType) String() string {
 	var mctName string
 
 	switch mct {
@@ -44,7 +44,7 @@ func (mct MainCategoryTypeT) String() string {
 // MainCategory represents the basic object for main category
 type MainCategory struct {
 	Id     int64
-	MType  MainCategoryTypeT
+	MType  MainCategoryType
 	Name   string
 	Status ItemStatus
 }
@@ -159,7 +159,7 @@ func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 }
 
 // MainCategoryList returns closure which generates a sequence of Main Category objects
-func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryTypeT, n string, s ItemStatus) (f func() *MainCategory, err error) {
+func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryType, n string, s ItemStatus) (f func() *MainCategory, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 

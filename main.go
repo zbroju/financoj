@@ -389,7 +389,7 @@ func CmdCategoryList(c *cli.Context) error {
 	}
 
 	mcat := c.String(objMainCategory)
-	var mct MainCategoryTypeT
+	var mct MainCategoryType
 	if t := c.String(optMainCategoryType); t == NotSetStringValue {
 		mct = MCTUnset
 	} else {
@@ -581,7 +581,7 @@ func CmdMainCategoryList(c *cli.Context) error {
 	if f == NotSetStringValue {
 		printError.Fatalln(errMissingFileFlag)
 	}
-	var mct MainCategoryTypeT
+	var mct MainCategoryType
 	if t := c.String(optMainCategoryType); t == NotSetStringValue {
 		mct = MCTUnset
 	} else {
@@ -663,7 +663,7 @@ func CmdExchangeRateAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
-	newCurrency := &ExchangeRate{CurrencyFrom: curFrom, CurrencyTo: curTo, ExchangeRate: rate}
+	newCurrency := &ExchangeRate{CurrencyFrom: curFrom, CurrencyTo: curTo, Rate: rate}
 	if err = ExchangeRateAdd(fh, newCurrency); err != nil {
 		printError.Fatalln(err)
 	}
@@ -712,7 +712,7 @@ func CmdExchangeRateEdit(c *cli.Context) error {
 	}
 
 	// Edit exchange rate
-	e.ExchangeRate = r
+	e.Rate = r
 	if err = ExchangeRateEdit(fh, e); err != nil {
 		printError.Fatalln(err)
 	}
@@ -752,7 +752,7 @@ func CmdExchangeRateList(c *cli.Context) error {
 	for cur := getNextCurrency(); cur != nil; cur = getNextCurrency() {
 		lCurF = maxRune(cur.CurrencyFrom, lCurF)
 		lCurT = maxRune(cur.CurrencyTo, lCurT)
-		lRate = maxRune(strconv.FormatFloat(cur.ExchangeRate, 'f', -1, 64), lRate)
+		lRate = maxRune(strconv.FormatFloat(cur.Rate, 'f', -1, 64), lRate)
 	}
 	lineH := getLineFor(getHFSForText(lCurF), getHFSForText(lCurT), getHFSForNumeric(lRate))
 	lineD := getLineFor(getDFSForText(lCurF), getDFSForText(lCurT), getDFSForRates(lRate))
@@ -763,7 +763,7 @@ func CmdExchangeRateList(c *cli.Context) error {
 	}
 	fmt.Fprintf(os.Stdout, lineH, HCurF, HCurT, HCurRate)
 	for cur := getNextCurrency(); cur != nil; cur = getNextCurrency() {
-		fmt.Fprintf(os.Stdout, lineD, cur.CurrencyFrom, cur.CurrencyTo, cur.ExchangeRate)
+		fmt.Fprintf(os.Stdout, lineD, cur.CurrencyFrom, cur.CurrencyTo, cur.Rate)
 	}
 
 	return nil
@@ -824,7 +824,7 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 }
 
 // ResolveMainCategoryType returns main category type for given string
-func mainCategoryTypeForString(m string) (mct MainCategoryTypeT) {
+func mainCategoryTypeForString(m string) (mct MainCategoryType) {
 	switch m {
 	case "c", "cost", NotSetStringValue: // If null string is given, then the default value is MCT_Cost
 		mct = MCTCost

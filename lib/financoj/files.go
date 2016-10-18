@@ -12,9 +12,8 @@ import (
 )
 
 // Config file settings
+const configFile = ".financojrc"
 const (
-	configFile = ".financojrc"
-
 	confDataFile = "DATA_FILE"
 	confCurrency = "DEFAULT_CURRENCY"
 )
