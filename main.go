@@ -46,6 +46,8 @@ const (
 	errMissingCurrencyFlag       = "missing currency (from) name"
 	errMissingCurrencyToFlag     = "missing currency_to name"
 	errMissingExchangeRateFlag   = "missing exchange rate"
+	errMissingAccountFlag        = "missing account name"
+	errIncorrectAccountType      = "incorrect account type"
 )
 
 // Commands, objects and options
@@ -65,7 +67,7 @@ const (
 	optFileAlias             = "f"
 	optAll                   = "all"
 	optAllAlias              = "a"
-	optMainCategoryType      = "main_category_type"
+	optMainCategoryType      = "main-category-type"
 	optMainCategoryTypeAlias = "o"
 	optID                    = "id"
 	optIDAlias               = "i"
@@ -73,7 +75,15 @@ const (
 	optCurrencyAlias         = "j"
 	optCurrencyTo            = "currency_to"
 	optCurrencyToAlias       = "k"
+	optDescription           = "description"
+	optDescriptionAlias      = "s"
+	optInstitution           = "bank"
+	optInstitutionAlias      = "b"
+	optAccountType           = "accout-type"
+	optAccountTypeAlias      = "p"
 
+	objAccount           = "account"
+	objAccountAlias      = "a"
 	objCategory          = "category"
 	objCategoryAlias     = "c"
 	objMainCategory      = "main_category"
@@ -119,6 +129,10 @@ SUBCOMMANDS:
 	flagFile := cli.StringFlag{Name: optFile + "," + optFileAlias, Value: dataFile, Usage: "data file"}
 	flagID := cli.IntFlag{Name: optID + "," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
 	flagAll := cli.BoolFlag{Name: optAll + "," + optAllAlias, Usage: "show all elements, including removed"}
+	flagAccount := cli.StringFlag{Name: objAccount + "," + objAccountAlias, Value: NotSetStringValue, Usage: "account name"}
+	flagDescription := cli.StringFlag{Name: optDescription + "," + optDescriptionAlias, Value: NotSetStringValue, Usage: "description of the object"}
+	flagInstitution := cli.StringFlag{Name: optInstitution + "," + optInstitutionAlias, Value: NotSetStringValue, Usage: "institution (bank) where the account is located"}
+	flagAccountType := cli.StringFlag{Name: optAccountType + "," + optAccountTypeAlias, Value: NotSetStringValue, Usage: "type of account: operational/o, savings/s, properties/p, investments/i, loans/l"}
 	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
@@ -149,6 +163,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Add new currency exchange rate.",
 					Action:  CmdExchangeRateAdd},
+				{Name: objAccount,
+					Aliases: []string{objAccountAlias},
+					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType},
+					Usage:   "Add new account",
+					Action:  CmdAccountAdd},
 			},
 		},
 		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object.",
@@ -815,6 +834,53 @@ func CmdExchangeRateRemove(c *cli.Context) error {
 
 }
 
+// CmdAccountAdd adds new new account
+func CmdAccountAdd(c *cli.Context) error {
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags (file, name)
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	n := c.String(objAccount)
+	if n == NotSetStringValue {
+		printError.Fatalln(errMissingAccountFlag)
+	}
+	j := c.String(optCurrency)
+	if j == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+	t := accountTypeForString(c.String(optAccountType))
+	if t == ATUnknown {
+		printError.Fatalln(errIncorrectAccountType)
+	}
+
+	// Other flags
+	d := c.String(optDescription)
+	i := c.String(optInstitution)
+
+	// Add new account
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	a := &Account{Name: n, Description: d, Institution: i, Currency: j, AType: t, Status: ISOpen}
+	if err := AccountAdd(fh, a); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("added new account: %s (type: %s)\n", a.Name, a.AType)
+
+	return nil
+
+}
+
 // GetLoggers returns two loggers for standard formatting of messages and errors
 func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	messageLogger = log.New(os.Stdout, fmt.Sprintf("%s: ", AppName), 0)
@@ -823,7 +889,7 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	return
 }
 
-// ResolveMainCategoryType returns main category type for given string
+// mainCategoryTypeForString returns main category type for given string
 func mainCategoryTypeForString(m string) (mct MainCategoryType) {
 	switch m {
 	case "c", "cost", NotSetStringValue: // If null string is given, then the default value is MCT_Cost
@@ -837,6 +903,26 @@ func mainCategoryTypeForString(m string) (mct MainCategoryType) {
 	}
 
 	return mct
+}
+
+// accountTypeForString returns account type for given string
+func accountTypeForString(s string) (t AccountType) {
+	switch s {
+	case "o", "operational", NotSetStringValue: // If null string is given then the default value is ATTransactional
+		t = ATTransactional
+	case "s", "savings":
+		t = ATSaving
+	case "p", "properties":
+		t = ATProperty
+	case "i", "investment":
+		t = ATInvestment
+	case "l", "loans":
+		t = ATLoan
+	default:
+		t = ATUnknown
+	}
+
+	return t
 }
 
 // getLineFor returns pre-formatted line formatting string for reporting
@@ -885,7 +971,7 @@ func maxRune(s string, i int) int {
 }
 
 //DONE: init file
-//TODO: account add
+//DONE: account add
 //TODO: account edit
 //TODO: account close
 //TODO: account list
@@ -918,13 +1004,15 @@ func maxRune(s string, i int) int {
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 13/33 (39%)
+//DONE: 14/33 (42%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
 //TODO: add to main_categories column with 'coefficient', which will be used for calculations instead of signs in transactions (because of that we can have a real main category edit with correct type change)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
+//TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add automatic keeping number of backup copies (the number specified in config file)
 //TODO: add export to csv any list and report
 //FIXME: make all operations on currencies case insensitive
 //FIXME: look through all functions if there is 'return error.new' and not only 'error.new'
+//FIXME: make all object private (requires 'ObjectNew' functions)
