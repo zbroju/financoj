@@ -138,3 +138,5 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryType, c s
 	return f, nil
 	//TODO: add test
 }
+
+//FIXME: rebuild SELECT queries in all functions so that the conditions are in separated lines

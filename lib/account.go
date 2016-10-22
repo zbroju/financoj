@@ -75,3 +75,62 @@ func AccountAdd(db *gsqlitehandler.SqliteDB, a *Account) error {
 	return nil
 	//TODO: add test
 }
+
+// AccountList returns all accounts from file as closure
+func AccountList(db *gsqlitehandler.SqliteDB, n string, d string, i string, c string, t AccountType, s ItemStatus) (f func() *Account, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Parse filtering criteria
+	if n == NotSetStringValue {
+		n = noParameterValueForSQL
+	} else {
+		n = "%" + n + "%"
+	}
+	if d == NotSetStringValue {
+		d = noParameterValueForSQL
+	} else {
+		d = "%" + d + "%"
+	}
+	if i == NotSetStringValue {
+		i = noParameterValueForSQL
+	} else {
+		i = "%" + i + "%"
+	}
+	if c == NotSetStringValue {
+		c = noParameterValueForSQL
+	} else {
+		c = "%" + c + "%"
+	}
+
+	// Create and execute query
+	sqlQuery := "SELECT id, name, description, institution, currency, type, status FROM accounts WHERE 1=1 " +
+		"AND (name LIKE ? OR ?=?) " +
+		"AND (description LIKE ? OR ?=?) " +
+		"AND (institution LIKE ? OR ?=?) " +
+		"AND (currency LIKE ? OR ?=?) " +
+		"AND (type=? OR ?=?) " +
+		"AND (status=? OR ?=?) " +
+		"ORDER BY name ASC;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(n, n, noParameterValueForSQL, d, d, noParameterValueForSQL, i, i, noParameterValueForSQL, c, c, noParameterValueForSQL, t, t, ATUnset, s, s, ISUnset); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	f = func() *Account {
+		if rows.Next() {
+			a := new(Account)
+			rows.Scan(&a.Id, &a.Name, &a.Description, &a.Institution, &a.Currency, &a.AType, &a.Status)
+			return a
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}

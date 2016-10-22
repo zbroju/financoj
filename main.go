@@ -34,6 +34,14 @@ const (
 	HCurF    = "CUR_FR"
 	HCurT    = "CUR_TO"
 	HCurRate = "EX.RATE"
+
+	HAId          = "ID"
+	HAName        = "ACCOUNT"
+	HADescription = "DESCRIPTION"
+	HAInstitution = "BANK"
+	HACurrency    = "CUR"
+	HAType        = "TYPE"
+	HAStatus      = "STATUS"
 )
 
 // Errors
@@ -66,7 +74,6 @@ const (
 	optFile                  = "file"
 	optFileAlias             = "f"
 	optAll                   = "all"
-	optAllAlias              = "a"
 	optMainCategoryType      = "main-category-type"
 	optMainCategoryTypeAlias = "o"
 	optID                    = "id"
@@ -128,7 +135,7 @@ SUBCOMMANDS:
 
 	flagFile := cli.StringFlag{Name: optFile + "," + optFileAlias, Value: dataFile, Usage: "data file"}
 	flagID := cli.IntFlag{Name: optID + "," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
-	flagAll := cli.BoolFlag{Name: optAll + "," + optAllAlias, Usage: "show all elements, including removed"}
+	flagAll := cli.BoolFlag{Name: optAll, Usage: "show all elements, including removed"}
 	flagAccount := cli.StringFlag{Name: objAccount + "," + objAccountAlias, Value: NotSetStringValue, Usage: "account name"}
 	flagDescription := cli.StringFlag{Name: optDescription + "," + optDescriptionAlias, Value: NotSetStringValue, Usage: "description of the object"}
 	flagInstitution := cli.StringFlag{Name: optInstitution + "," + optInstitutionAlias, Value: NotSetStringValue, Usage: "institution (bank) where the account is located"}
@@ -136,7 +143,8 @@ SUBCOMMANDS:
 	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
-	flagCurrency := cli.StringFlag{Name: optCurrency + "," + optCurrencyAlias, Value: defaultCurrency, Usage: "currency (from)"}
+	flagCurrency := cli.StringFlag{Name: optCurrency + "," + optCurrencyAlias, Value: NotSetStringValue, Usage: "currency"}
+	flagCurrencyWithDefault := cli.StringFlag{Name: optCurrency + "," + optCurrencyAlias, Value: defaultCurrency, Usage: "currency"}
 	flagCurrencyTo := cli.StringFlag{Name: optCurrencyTo + "," + optCurrencyToAlias, Value: NotSetStringValue, Usage: "currency to"}
 	flagExchangeRate := cli.Float64Flag{Name: objExchangeRate + "," + objExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
 
@@ -160,12 +168,12 @@ SUBCOMMANDS:
 					Action:  CmdMainCategoryAdd},
 				{Name: objExchangeRate,
 					Aliases: []string{objExchangeRateAlias},
-					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo, flagExchangeRate},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Add new currency exchange rate.",
 					Action:  CmdExchangeRateAdd},
 				{Name: objAccount,
 					Aliases: []string{objAccountAlias},
-					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType},
+					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrencyWithDefault, flagAccountType},
 					Usage:   "Add new account",
 					Action:  CmdAccountAdd},
 			},
@@ -184,7 +192,7 @@ SUBCOMMANDS:
 					Action:  CmdMainCategoryEdit},
 				{Name: objExchangeRate,
 					Aliases: []string{objExchangeRateAlias},
-					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo, flagExchangeRate},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Edit currency exchange rate.",
 					Action:  CmdExchangeRateEdit},
 			},
@@ -203,7 +211,7 @@ SUBCOMMANDS:
 					Action:  CmdMainCategoryRemove},
 				{Name: objExchangeRate,
 					Aliases: []string{objExchangeRateAlias},
-					Flags:   []cli.Flag{flagFile, flagCurrency, flagCurrencyTo},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo},
 					Usage:   "Remove currency exchange rate.",
 					Action:  CmdExchangeRateRemove},
 			},
@@ -225,6 +233,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile},
 					Usage:   "List currency exchange rates.",
 					Action:  CmdExchangeRateList},
+				{Name: objAccount,
+					Aliases: []string{objAccountAlias},
+					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType, flagAll},
+					Usage:   "List accounts.",
+					Action:  CmdAccountList},
 			},
 		},
 	}
@@ -412,8 +425,7 @@ func CmdCategoryList(c *cli.Context) error {
 	if t := c.String(optMainCategoryType); t == NotSetStringValue {
 		mct = MCTUnset
 	} else {
-		mct = mainCategoryTypeForString(t)
-		if mct == MCTUnknown {
+		if mct = mainCategoryTypeForString(t); mct == MCTUnknown {
 			printError.Fatalln(errIncorrectMainCategoryType)
 		}
 	}
@@ -834,7 +846,7 @@ func CmdExchangeRateRemove(c *cli.Context) error {
 
 }
 
-// CmdAccountAdd adds new new account
+// CmdAccountAdd adds new account
 func CmdAccountAdd(c *cli.Context) error {
 	// Get loggers
 	printUserMsg, printError := getLoggers()
@@ -879,6 +891,74 @@ func CmdAccountAdd(c *cli.Context) error {
 
 	return nil
 
+}
+
+// CmdAccountList lists account fitting given criteria
+func CmdAccountList(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+
+	// Parse other flags
+	name := c.String(objAccount)
+	description := c.String(optDescription)
+	institution := c.String(optInstitution)
+	currency := c.String(optCurrency)
+	var atype AccountType
+	if t := c.String(optAccountType); t == NotSetStringValue {
+		atype = ATUnset
+	} else {
+		if atype = accountTypeForString(t); atype == ATUnknown {
+			printError.Fatalln(errIncorrectAccountType)
+		}
+	}
+	status := ISOpen
+	if s := c.Bool(optAll); s == true {
+		status = ISUnset
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Build formatting strings
+	var getNextAccount func() *Account
+	if getNextAccount, err = AccountList(fh, name, description, institution, currency, atype, status); err != nil {
+		printError.Fatalln(err)
+	}
+	lId, lN, lD, lI, lC, lT, lS := utf8.RuneCountInString(HAId), utf8.RuneCountInString(HAName), utf8.RuneCountInString(HADescription), utf8.RuneCountInString(HAInstitution), utf8.RuneCountInString(HACurrency), utf8.RuneCountInString(HAType), utf8.RuneCountInString(HAStatus)
+	for a := getNextAccount(); a != nil; a = getNextAccount() {
+		lId = maxRune(strconv.FormatInt(a.Id, 10), lId)
+		lN = maxRune(a.Name, lN)
+		lD = maxRune(a.Description, lD)
+		lI = maxRune(a.Institution, lI)
+		lC = maxRune(a.Currency, lC)
+		lT = maxRune(a.AType.String(), lT)
+		lS = maxRune(a.Status.String(), lS)
+	}
+	lineH := getLineFor(getHFSForNumeric(lId), getHFSForText(lN), getHFSForText(lT), getHFSForText(lC), getHFSForText(lI), getHFSForText(lS), getHFSForText(lD))
+	lineD := getLineFor(getDFSForID(lId), getDFSForText(lN), getDFSForText(lT), getDFSForText(lC), getDFSForText(lI), getDFSForText(lS), getDFSForText(lD))
+
+	// Print accounts
+	if getNextAccount, err = AccountList(fh, name, description, institution, currency, atype, status); err != nil {
+		printError.Fatalln(err)
+	}
+	fmt.Fprintf(os.Stdout, lineH, HAId, HAName, HAType, HACurrency, HAInstitution, HAStatus, HADescription)
+	for a := getNextAccount(); a != nil; a = getNextAccount() {
+		fmt.Fprintf(os.Stdout, lineD, a.Id, a.Name, a.AType, a.Currency, a.Institution, a.Status, a.Description)
+	}
+
+	return nil
 }
 
 // GetLoggers returns two loggers for standard formatting of messages and errors
@@ -974,7 +1054,7 @@ func maxRune(s string, i int) int {
 //DONE: account add
 //TODO: account edit
 //TODO: account close
-//TODO: account list
+//DONE: account list
 //DONE: category add
 //DONE: category edit
 //DONE: category remove
@@ -1004,7 +1084,7 @@ func maxRune(s string, i int) int {
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 14/33 (42%)
+//DONE: 15/33 (45%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
@@ -1013,6 +1093,10 @@ func maxRune(s string, i int) int {
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add automatic keeping number of backup copies (the number specified in config file)
 //TODO: add export to csv any list and report
+
 //FIXME: make all operations on currencies case insensitive
 //FIXME: look through all functions if there is 'return error.new' and not only 'error.new'
 //FIXME: make all object private (requires 'ObjectNew' functions)
+//FIXME: check if all 'list' functions respect flag --all
+//TODO: review all comments inside function bodies
+//TODO: complete function descriptions for godoc

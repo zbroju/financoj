@@ -105,6 +105,7 @@ func ExchangeRateList(db *gsqlitehandler.SqliteDB) (f func() *ExchangeRate, err 
 
 	return f, nil
 	//TODO: add test
+	//FIXME: use currencyFlag (without default value) and apply filters for currencies
 }
 
 // ExchangeRateRemove removes given currency exchange rate
