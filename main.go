@@ -214,6 +214,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo},
 					Usage:   "Remove currency exchange rate.",
 					Action:  CmdExchangeRateRemove},
+				{Name: objAccount,
+					Aliases: []string{objAccountAlias},
+					Flags:   []cli.Flag{flagFile, flagID},
+					Usage:   "Remove account.",
+					Action:  CmdAccountRemove},
 			},
 		},
 		{Name: cmdList, Aliases: []string{cmdListAlias}, Usage: "List objects on standard output.",
@@ -449,14 +454,14 @@ func CmdCategoryList(c *cli.Context) error {
 	}
 	lId, lType, lMCat, lCat, lStatus := utf8.RuneCountInString(HCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HCName), utf8.RuneCountInString(HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
-		lId = maxRune(strconv.FormatInt(ct.Id, 10), lId)
-		lType = maxRune(ct.Main.MType.String(), lType)
-		lMCat = maxRune(ct.Main.Name, lMCat)
-		lCat = maxRune(ct.Name, lCat)
-		lStatus = maxRune(ct.Status.String(), lStatus)
+		lId = maxLen(strconv.FormatInt(ct.Id, 10), lId)
+		lType = maxLen(ct.Main.MType.String(), lType)
+		lMCat = maxLen(ct.Main.Name, lMCat)
+		lCat = maxLen(ct.Name, lCat)
+		lStatus = maxLen(ct.Status.String(), lStatus)
 	}
-	lineH := getLineFor(getHFSForNumeric(lId), getHFSForText(lType), getHFSForText(lMCat), getHFSForText(lCat), getHFSForText(lStatus))
-	lineD := getLineFor(getDFSForID(lId), getDFSForText(lType), getDFSForText(lMCat), getDFSForText(lCat), getDFSForText(lStatus))
+	lineH := lineFor(hFSForNumeric(lId), hFSForText(lType), hFSForText(lMCat), hFSForText(lCat), hFSForText(lStatus))
+	lineD := lineFor(dFSForID(lId), dFSForText(lType), dFSForText(lMCat), dFSForText(lCat), dFSForText(lStatus))
 
 	// Print categories
 	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
@@ -570,7 +575,6 @@ func CmdMainCategoryRemove(c *cli.Context) error {
 	f := c.String(optFile)
 	if f == NotSetStringValue {
 		printError.Fatalln(errMissingFileFlag)
-
 	}
 	id := c.Int(optID)
 	if id == NotSetIntValue {
@@ -595,7 +599,7 @@ func CmdMainCategoryRemove(c *cli.Context) error {
 	}
 
 	// Show summary
-	printUserMsg.Printf("removed main category with id = %d\n", id)
+	printUserMsg.Printf("removed main category with id = %d\n", mc.Id)
 
 	return nil
 }
@@ -641,13 +645,13 @@ func CmdMainCategoryList(c *cli.Context) error {
 	}
 	lId, lType, lName, lStatus := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HMCStatus)
 	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
-		lId = maxRune(strconv.FormatInt(m.Id, 10), lId)
-		lType = maxRune(m.MType.String(), lType)
-		lName = maxRune(m.Name, lName)
-		lStatus = maxRune(m.Status.String(), lStatus)
+		lId = maxLen(strconv.FormatInt(m.Id, 10), lId)
+		lType = maxLen(m.MType.String(), lType)
+		lName = maxLen(m.Name, lName)
+		lStatus = maxLen(m.Status.String(), lStatus)
 	}
-	lineH := getLineFor(getHFSForNumeric(lId), getHFSForText(lType), getHFSForText(lName), getHFSForText(lStatus))
-	lineD := getLineFor(getDFSForID(lId), getDFSForText(lType), getDFSForText(lName), getDFSForText(lStatus))
+	lineH := lineFor(hFSForNumeric(lId), hFSForText(lType), hFSForText(lName), hFSForText(lStatus))
+	lineD := lineFor(dFSForID(lId), dFSForText(lType), dFSForText(lName), dFSForText(lStatus))
 
 	// Print main categories
 	if getNextMainCategory, err = MainCategoryList(fh, mct, n, s); err != nil {
@@ -781,12 +785,12 @@ func CmdExchangeRateList(c *cli.Context) error {
 	}
 	lCurF, lCurT, lRate := utf8.RuneCountInString(HCurF), utf8.RuneCountInString(HCurT), utf8.RuneCountInString(HCurRate)
 	for cur := getNextCurrency(); cur != nil; cur = getNextCurrency() {
-		lCurF = maxRune(cur.CurrencyFrom, lCurF)
-		lCurT = maxRune(cur.CurrencyTo, lCurT)
-		lRate = maxRune(strconv.FormatFloat(cur.Rate, 'f', -1, 64), lRate)
+		lCurF = maxLen(cur.CurrencyFrom, lCurF)
+		lCurT = maxLen(cur.CurrencyTo, lCurT)
+		lRate = maxLen(strconv.FormatFloat(cur.Rate, 'f', -1, 64), lRate)
 	}
-	lineH := getLineFor(getHFSForText(lCurF), getHFSForText(lCurT), getHFSForNumeric(lRate))
-	lineD := getLineFor(getDFSForText(lCurF), getDFSForText(lCurT), getDFSForRates(lRate))
+	lineH := lineFor(hFSForText(lCurF), hFSForText(lCurT), hFSForNumeric(lRate))
+	lineD := lineFor(dFSForText(lCurF), dFSForText(lCurT), getDFSForRates(lRate))
 
 	// Print currencies
 	if getNextCurrency, err = ExchangeRateList(fh); err != nil {
@@ -936,18 +940,24 @@ func CmdAccountList(c *cli.Context) error {
 	if getNextAccount, err = AccountList(fh, name, description, institution, currency, atype, status); err != nil {
 		printError.Fatalln(err)
 	}
-	lId, lN, lD, lI, lC, lT, lS := utf8.RuneCountInString(HAId), utf8.RuneCountInString(HAName), utf8.RuneCountInString(HADescription), utf8.RuneCountInString(HAInstitution), utf8.RuneCountInString(HACurrency), utf8.RuneCountInString(HAType), utf8.RuneCountInString(HAStatus)
+	lId := utf8.RuneCountInString(HAId)
+	lN := utf8.RuneCountInString(HAName)
+	lD := utf8.RuneCountInString(HADescription)
+	lI := utf8.RuneCountInString(HAInstitution)
+	lC := utf8.RuneCountInString(HACurrency)
+	lT := utf8.RuneCountInString(HAType)
+	lS := utf8.RuneCountInString(HAStatus)
 	for a := getNextAccount(); a != nil; a = getNextAccount() {
-		lId = maxRune(strconv.FormatInt(a.Id, 10), lId)
-		lN = maxRune(a.Name, lN)
-		lD = maxRune(a.Description, lD)
-		lI = maxRune(a.Institution, lI)
-		lC = maxRune(a.Currency, lC)
-		lT = maxRune(a.AType.String(), lT)
-		lS = maxRune(a.Status.String(), lS)
+		lId = maxLen(strconv.FormatInt(a.Id, 10), lId)
+		lN = maxLen(a.Name, lN)
+		lD = maxLen(a.Description, lD)
+		lI = maxLen(a.Institution, lI)
+		lC = maxLen(a.Currency, lC)
+		lT = maxLen(a.AType.String(), lT)
+		lS = maxLen(a.Status.String(), lS)
 	}
-	lineH := getLineFor(getHFSForNumeric(lId), getHFSForText(lN), getHFSForText(lT), getHFSForText(lC), getHFSForText(lI), getHFSForText(lS), getHFSForText(lD))
-	lineD := getLineFor(getDFSForID(lId), getDFSForText(lN), getDFSForText(lT), getDFSForText(lC), getDFSForText(lI), getDFSForText(lS), getDFSForText(lD))
+	lineH := lineFor(hFSForNumeric(lId), hFSForText(lN), hFSForText(lT), hFSForText(lC), hFSForText(lI), hFSForText(lS), hFSForText(lD))
+	lineD := lineFor(dFSForID(lId), dFSForText(lN), dFSForText(lT), dFSForText(lC), dFSForText(lI), dFSForText(lS), dFSForText(lD))
 
 	// Print accounts
 	if getNextAccount, err = AccountList(fh, name, description, institution, currency, atype, status); err != nil {
@@ -957,6 +967,46 @@ func CmdAccountList(c *cli.Context) error {
 	for a := getNextAccount(); a != nil; a = getNextAccount() {
 		fmt.Fprintf(os.Stdout, lineD, a.Id, a.Name, a.AType, a.Currency, a.Institution, a.Status, a.Description)
 	}
+
+	return nil
+}
+
+// CmdAccountRemove removes account with given id
+func CmdAccountRemove(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	id := c.Int(optID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var a *Account
+	if a, err = AccountForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Remove the account
+	if err = AccountRemove(fh, a); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("removed account with id = %d\n", a.Id)
 
 	return nil
 }
@@ -1006,23 +1056,23 @@ func accountTypeForString(s string) (t AccountType) {
 }
 
 // getLineFor returns pre-formatted line formatting string for reporting
-func getLineFor(fs ...string) string {
+func lineFor(fs ...string) string {
 	line := strings.Join(fs, FSSeparator) + "\n"
 	return line
 }
 
 // getHFSForText return heading formatting string for string values
-func getHFSForText(l int) string {
+func hFSForText(l int) string {
 	return fmt.Sprintf("%%-%ds", l)
 }
 
 // getHFSForNumeric return heading formatting string for numeric values
-func getHFSForNumeric(l int) string {
+func hFSForNumeric(l int) string {
 	return fmt.Sprintf("%%%ds", l)
 }
 
 // getDFSForText return data formatting string for string
-func getDFSForText(l int) string {
+func dFSForText(l int) string {
 	return fmt.Sprintf("%%-%ds", l)
 }
 
@@ -1037,12 +1087,12 @@ func getDFSForValue(l int) string {
 }
 
 // getDFSForID return data formatting string for id
-func getDFSForID(l int) string {
+func dFSForID(l int) string {
 	return fmt.Sprintf("%%%dd", l)
 }
 
 // Return the bigger number out of the two given
-func maxRune(s string, i int) int {
+func maxLen(s string, i int) int {
 	if l := utf8.RuneCountInString(s); i < l {
 		return l
 	} else {
@@ -1053,7 +1103,7 @@ func maxRune(s string, i int) int {
 //DONE: init file
 //DONE: account add
 //TODO: account edit
-//TODO: account close
+//DONE: account close
 //DONE: account list
 //DONE: category add
 //DONE: category edit
@@ -1084,7 +1134,7 @@ func maxRune(s string, i int) int {
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 15/33 (45%)
+//DONE: 16/33 (48%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)

@@ -134,3 +134,42 @@ func AccountList(db *gsqlitehandler.SqliteDB, n string, d string, i string, c st
 	return f, nil
 	//TODO: add test
 }
+
+// AccountForID returns pointer to the Account for given id
+func AccountForID(db *gsqlitehandler.SqliteDB, i int) (a *Account, err error) {
+	var stmt *sql.Stmt
+
+	sqlQuery := "SELECT id, name, description, institution, currency, type, status FROM accounts WHERE id=? AND status=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+
+	a = new(Account)
+	if err = stmt.QueryRow(i, ISOpen).Scan(&a.Id, &a.Name, &a.Description, &a.Institution, &a.Currency, &a.AType, &a.Status); err != nil {
+		return nil, errors.New(errAccountWithIDNone)
+	}
+
+	return a, nil
+	//TODO: add test
+}
+
+// AccountRemove updates given account status with ISClose
+func AccountRemove(db *gsqlitehandler.SqliteDB, a *Account) error {
+	var err error
+	var stmt *sql.Stmt
+
+	// Set correct status (ISClose)
+	sqlQuery := "UPDATE accounts SET status=? WHERE id=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(ISClose, a.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
+	//TODO: add test
+}

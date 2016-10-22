@@ -67,22 +67,24 @@ func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 	//TODO: add test
 }
 
-// MainCategoryForID returns pointer to MainCategoryT for given id
+// MainCategoryForID returns pointer to the MainCategory for given id
 func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m *MainCategory, err error) {
 	var stmt *sql.Stmt
 
 	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE id=? AND status=?;"); err != nil {
-		errors.New(errReadingFromFile)
+		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
 	m = new(MainCategory)
 	if err = stmt.QueryRow(i, ISOpen).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
-		return m, errors.New(errMainCategoryWithIDNone)
+		return nil, errors.New(errMainCategoryWithIDNone)
 	}
 
 	return m, nil
 	//TODO: add test
+	//FIXME: move all sql string to separate variable
+	//FIXME: replace all '*' in SELECT sql string to separated fields
 }
 
 // MainCategoryForName returns pointer to MainCategoryT for given (part of) name

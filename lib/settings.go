@@ -24,6 +24,8 @@ const (
 	errExchangeRateNone          = "no exchange rate for given currencies"
 	errExchangeRateAlreadyExists = "exchange rate for given currencies already exists"
 
+	errAccountWithIDNone = "no account with given ID"
+
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
 )
