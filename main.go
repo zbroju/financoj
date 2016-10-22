@@ -6,13 +6,14 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	. "github.com/zbroju/financoj/lib"
+	. "github.com/zbroju/financoj/lib/cli"
+	. "github.com/zbroju/financoj/lib/engine"
 	"os"
 )
 
 func main() {
 	// Get error logger
-	_, printError := getLoggers()
+	_, printError := GetLoggers()
 
 	// Get config settings
 	dataFile, defaultCurrency, err := GetConfigSettings()
@@ -44,118 +45,118 @@ SUBCOMMANDS:
 		cli.Author{"Marcin 'Zbroju' Zbroinski", "marcin@zbroinski.net"},
 	}
 
-	flagFile := cli.StringFlag{Name: optFile + "," + optFileAlias, Value: dataFile, Usage: "data file"}
-	flagID := cli.IntFlag{Name: optID + "," + optIDAlias, Value: NotSetIntValue, Usage: "ID"}
-	flagAll := cli.BoolFlag{Name: optAll, Usage: "show all elements, including removed"}
-	flagAccount := cli.StringFlag{Name: objAccount + "," + objAccountAlias, Value: NotSetStringValue, Usage: "account name"}
-	flagDescription := cli.StringFlag{Name: optDescription + "," + optDescriptionAlias, Value: NotSetStringValue, Usage: "description of the object"}
-	flagInstitution := cli.StringFlag{Name: optInstitution + "," + optInstitutionAlias, Value: NotSetStringValue, Usage: "institution (bank) where the account is located"}
-	flagAccountType := cli.StringFlag{Name: optAccountType + "," + optAccountTypeAlias, Value: NotSetStringValue, Usage: "type of account: operational/o, savings/s, properties/p, investments/i, loans/l"}
-	flagCategory := cli.StringFlag{Name: objCategory + "," + objCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
-	flagMainCategory := cli.StringFlag{Name: objMainCategory + "," + objMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
-	flagMainCategoryType := cli.StringFlag{Name: optMainCategoryType + "," + optMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
-	flagCurrency := cli.StringFlag{Name: optCurrency + "," + optCurrencyAlias, Value: NotSetStringValue, Usage: "currency"}
-	flagCurrencyWithDefault := cli.StringFlag{Name: optCurrency + "," + optCurrencyAlias, Value: defaultCurrency, Usage: "currency"}
-	flagCurrencyTo := cli.StringFlag{Name: optCurrencyTo + "," + optCurrencyToAlias, Value: NotSetStringValue, Usage: "currency to"}
-	flagExchangeRate := cli.Float64Flag{Name: objExchangeRate + "," + objExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
+	flagFile := cli.StringFlag{Name: OptFile + "," + OptFileAlias, Value: dataFile, Usage: "data file"}
+	flagID := cli.IntFlag{Name: OptID + "," + OptIDAlias, Value: NotSetIntValue, Usage: "ID"}
+	flagAll := cli.BoolFlag{Name: OptAll, Usage: "show all elements, including removed"}
+	flagAccount := cli.StringFlag{Name: ObjAccount + "," + ObjAccountAlias, Value: NotSetStringValue, Usage: "account name"}
+	flagDescription := cli.StringFlag{Name: OptDescription + "," + OptDescriptionAlias, Value: NotSetStringValue, Usage: "description of the object"}
+	flagInstitution := cli.StringFlag{Name: OptInstitution + "," + OptInstitutionAlias, Value: NotSetStringValue, Usage: "institution (bank) where the account is located"}
+	flagAccountType := cli.StringFlag{Name: OptAccountType + "," + OptAccountTypeAlias, Value: NotSetStringValue, Usage: "type of account: operational/o, savings/s, properties/p, investments/i, loans/l"}
+	flagCategory := cli.StringFlag{Name: ObjCategory + "," + ObjCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
+	flagMainCategory := cli.StringFlag{Name: ObjMainCategory + "," + ObjMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
+	flagMainCategoryType := cli.StringFlag{Name: OptMainCategoryType + "," + OptMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
+	flagCurrency := cli.StringFlag{Name: OptCurrency + "," + OptCurrencyAlias, Value: NotSetStringValue, Usage: "currency"}
+	flagCurrencyWithDefault := cli.StringFlag{Name: OptCurrency + "," + OptCurrencyAlias, Value: defaultCurrency, Usage: "currency"}
+	flagCurrencyTo := cli.StringFlag{Name: OptCurrencyTo + "," + OptCurrencyToAlias, Value: NotSetStringValue, Usage: "currency to"}
+	flagExchangeRate := cli.Float64Flag{Name: ObjExchangeRate + "," + ObjExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
 
 	app.Commands = []cli.Command{
-		{Name: cmdInit,
-			Aliases: []string{cmdInitAlias},
+		{Name: CmdInit,
+			Aliases: []string{CmdInitAlias},
 			Flags:   []cli.Flag{flagFile},
 			Usage:   "Init a new data file specified by the user",
 			Action:  CmdCreateNewDataFile},
-		{Name: cmdAdd, Aliases: []string{cmdAddAlias}, Usage: "Add an object.",
+		{Name: CmdAdd, Aliases: []string{CmdAddAlias}, Usage: "Add an object.",
 			Subcommands: []cli.Command{
-				{Name: objCategory,
-					Aliases: []string{objCategoryAlias},
+				{Name: ObjCategory,
+					Aliases: []string{ObjCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagCategory, flagMainCategory},
 					Usage:   "Add new category.",
 					Action:  CmdCategoryAdd},
-				{Name: objMainCategory,
-					Aliases: []string{objMainCategoryAlias},
+				{Name: ObjMainCategory,
+					Aliases: []string{ObjMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType},
 					Usage:   "Add new main category.",
 					Action:  CmdMainCategoryAdd},
-				{Name: objExchangeRate,
-					Aliases: []string{objExchangeRateAlias},
+				{Name: ObjExchangeRate,
+					Aliases: []string{ObjExchangeRateAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Add new currency exchange rate.",
 					Action:  CmdExchangeRateAdd},
-				{Name: objAccount,
-					Aliases: []string{objAccountAlias},
+				{Name: ObjAccount,
+					Aliases: []string{ObjAccountAlias},
 					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrencyWithDefault, flagAccountType},
 					Usage:   "Add new account",
 					Action:  CmdAccountAdd},
 			},
 		},
-		{Name: cmdEdit, Aliases: []string{cmdEditAlias}, Usage: "Edit an object.",
+		{Name: CmdEdit, Aliases: []string{CmdEditAlias}, Usage: "Edit an object.",
 			Subcommands: []cli.Command{
-				{Name: objCategory,
-					Aliases: []string{objCategoryAlias},
+				{Name: ObjCategory,
+					Aliases: []string{ObjCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID, flagCategory, flagMainCategory},
 					Usage:   "Edit category.",
 					Action:  CmdCategoryEdit},
-				{Name: objMainCategory,
-					Aliases: []string{objMainCategoryAlias},
+				{Name: ObjMainCategory,
+					Aliases: []string{ObjMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID, flagMainCategory, flagMainCategoryType},
 					Usage:   "Edit main category.",
 					Action:  CmdMainCategoryEdit},
-				{Name: objExchangeRate,
-					Aliases: []string{objExchangeRateAlias},
+				{Name: ObjExchangeRate,
+					Aliases: []string{ObjExchangeRateAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Edit currency exchange rate.",
 					Action:  CmdExchangeRateEdit},
-				{Name: objAccount,
-					Aliases: []string{objAccountAlias},
+				{Name: ObjAccount,
+					Aliases: []string{ObjAccountAlias},
 					Flags:   []cli.Flag{flagFile, flagID, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType},
 					Usage:   "Edit account.",
 					Action:  CmdAccountEdit},
 			},
 		},
-		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object.",
+		{Name: CmdRemove, Aliases: []string{CmdRemoveAlias}, Usage: "Remove an object.",
 			Subcommands: []cli.Command{
-				{Name: objCategory,
-					Aliases: []string{objCategoryAlias},
+				{Name: ObjCategory,
+					Aliases: []string{ObjCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove category.",
 					Action:  CmdCategoryRemove},
-				{Name: objMainCategory,
-					Aliases: []string{objMainCategoryAlias},
+				{Name: ObjMainCategory,
+					Aliases: []string{ObjMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove main category.",
 					Action:  CmdMainCategoryRemove},
-				{Name: objExchangeRate,
-					Aliases: []string{objExchangeRateAlias},
+				{Name: ObjExchangeRate,
+					Aliases: []string{ObjExchangeRateAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo},
 					Usage:   "Remove currency exchange rate.",
 					Action:  CmdExchangeRateRemove},
-				{Name: objAccount,
-					Aliases: []string{objAccountAlias},
+				{Name: ObjAccount,
+					Aliases: []string{ObjAccountAlias},
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove account.",
 					Action:  CmdAccountRemove},
 			},
 		},
-		{Name: cmdList, Aliases: []string{cmdListAlias}, Usage: "List objects on standard output.",
+		{Name: CmdList, Aliases: []string{CmdListAlias}, Usage: "List objects on standard output.",
 			Subcommands: []cli.Command{
-				{Name: objMainCategory,
-					Aliases: []string{objMainCategoryAlias},
+				{Name: ObjMainCategory,
+					Aliases: []string{ObjMainCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType, flagAll},
 					Usage:   "List main categories.",
 					Action:  CmdMainCategoryList},
-				{Name: objCategory,
-					Aliases: []string{objCategoryAlias},
+				{Name: ObjCategory,
+					Aliases: []string{ObjCategoryAlias},
 					Flags:   []cli.Flag{flagFile, flagMainCategory, flagMainCategoryType, flagCategory, flagAll},
 					Usage:   "List categories.",
 					Action:  CmdCategoryList},
-				{Name: objExchangeRate,
-					Aliases: []string{objExchangeRateAlias},
+				{Name: ObjExchangeRate,
+					Aliases: []string{ObjExchangeRateAlias},
 					Flags:   []cli.Flag{flagFile},
 					Usage:   "List currency exchange rates.",
 					Action:  CmdExchangeRateList},
-				{Name: objAccount,
-					Aliases: []string{objAccountAlias},
+				{Name: ObjAccount,
+					Aliases: []string{ObjAccountAlias},
 					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType, flagAll},
 					Usage:   "List accounts.",
 					Action:  CmdAccountList},

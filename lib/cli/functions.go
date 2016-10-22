@@ -2,11 +2,11 @@
 // Use of this source code is governed by a GNU General Public License
 // that can be found in the LICENSE file.
 
-package main
+package cli
 
 import (
 	"fmt"
-	. "github.com/zbroju/financoj/lib"
+	. "github.com/zbroju/financoj/lib/engine"
 	"log"
 	"os"
 	"strings"
@@ -14,7 +14,7 @@ import (
 )
 
 // GetLoggers returns two loggers for standard formatting of messages and errors
-func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
+func GetLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	messageLogger = log.New(os.Stdout, fmt.Sprintf("%s: ", AppName), 0)
 	errorLogger = log.New(os.Stderr, fmt.Sprintf("%s: ", AppName), 0)
 
@@ -22,7 +22,7 @@ func getLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 }
 
 // mainCategoryTypeForString returns main category type for given string
-func mainCategoryTypeForString(m string) (mct MainCategoryType) {
+func MainCategoryTypeForString(m string) (mct MainCategoryType) {
 	switch m {
 	case "c", "cost", NotSetStringValue: // If null string is given, then the default value is MCT_Cost
 		mct = MCTCost
@@ -38,7 +38,7 @@ func mainCategoryTypeForString(m string) (mct MainCategoryType) {
 }
 
 // accountTypeForString returns account type for given string
-func accountTypeForString(s string) (t AccountType) {
+func AccountTypeForString(s string) (t AccountType) {
 	switch s {
 	case "o", "operational", NotSetStringValue: // If null string is given then the default value is ATTransactional
 		t = ATTransactional
@@ -58,43 +58,43 @@ func accountTypeForString(s string) (t AccountType) {
 }
 
 // getLineFor returns pre-formatted line formatting string for reporting
-func lineFor(fs ...string) string {
+func LineFor(fs ...string) string {
 	line := strings.Join(fs, FSSeparator) + "\n"
 	return line
 }
 
 // getHFSForText return heading formatting string for string values
-func hFSForText(l int) string {
+func HFSForText(l int) string {
 	return fmt.Sprintf("%%-%ds", l)
 }
 
 // getHFSForNumeric return heading formatting string for numeric values
-func hFSForNumeric(l int) string {
+func HFSForNumeric(l int) string {
 	return fmt.Sprintf("%%%ds", l)
 }
 
 // getDFSForText return data formatting string for string
-func dFSForText(l int) string {
+func DFSForText(l int) string {
 	return fmt.Sprintf("%%-%ds", l)
 }
 
 // getDFSForRates return data formatting string for rates
-func getDFSForRates(l int) string {
+func DFSForRates(l int) string {
 	return fmt.Sprintf("%%%d.4f", l)
 }
 
 // getDFSForValue return data formatting string for values
-func getDFSForValue(l int) string {
+func DFSForValue(l int) string {
 	return fmt.Sprintf("%%%d.2f", l)
 }
 
 // getDFSForID return data formatting string for id
-func dFSForID(l int) string {
+func DFSForID(l int) string {
 	return fmt.Sprintf("%%%dd", l)
 }
 
 // Return the bigger number out of the two given
-func maxLen(s string, i int) int {
+func MaxLen(s string, i int) int {
 	if l := utf8.RuneCountInString(s); l > i {
 		return l
 	} else {
