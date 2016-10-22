@@ -154,6 +154,35 @@ func AccountForID(db *gsqlitehandler.SqliteDB, i int) (a *Account, err error) {
 	//TODO: add test
 }
 
+// AccountEdit updates account with new values.
+// All fields except ID are updated, so make sure you pass old values in other fields.
+func AccountEdit(db *gsqlitehandler.SqliteDB, a *Account) error {
+	var err error
+	var stmt *sql.Stmt
+
+	sqlQuery := "UPDATE accounts SET " +
+		"name=? " +
+		",description=? " +
+		",institution=? " +
+		",currency=? " +
+		",type=? " +
+		",status=? " +
+		"WHERE id=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		//return errors.New(errWritingToFile)
+		return err
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(a.Name, a.Description, a.Institution, a.Currency, a.AType, a.Status, a.Id); err != nil {
+		//return errors.New(errWritingToFile)
+		return err
+	}
+
+	return nil
+	//TODO: add test
+}
+
 // AccountRemove updates given account status with ISClose
 func AccountRemove(db *gsqlitehandler.SqliteDB, a *Account) error {
 	var err error

@@ -195,6 +195,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCurrencyTo, flagExchangeRate},
 					Usage:   "Edit currency exchange rate.",
 					Action:  CmdExchangeRateEdit},
+				{Name: objAccount,
+					Aliases: []string{objAccountAlias},
+					Flags:   []cli.Flag{flagFile, flagID, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType},
+					Usage:   "Edit account.",
+					Action:  CmdAccountEdit},
 			},
 		},
 		{Name: cmdRemove, Aliases: []string{cmdRemoveAlias}, Usage: "Remove an object.",
@@ -365,7 +370,7 @@ func CmdCategoryEdit(c *cli.Context) error {
 	}
 
 	// Show summary
-	printUserMsg.Printf("changed details of category with id = %d\n", id)
+	printUserMsg.Printf("changed details of category with id = %d\n", cat.Id)
 
 	return nil
 }
@@ -971,6 +976,68 @@ func CmdAccountList(c *cli.Context) error {
 	return nil
 }
 
+// CmdAccountEdit updates account with new values
+func CmdAccountEdit(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := getLoggers()
+
+	// Check obligatory flags
+	f := c.String(optFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	id := c.Int(optID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Prepare new values based on old ones
+	var a *Account
+	if a, err = AccountForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+
+	if n := c.String(objAccount); n != NotSetStringValue {
+		a.Name = n
+	}
+	if d := c.String(optDescription); d != NotSetStringValue {
+		a.Description = d
+	}
+	if i := c.String(optInstitution); i != NotSetStringValue {
+		a.Institution = i
+	}
+	if j := c.String(optCurrency); j != NotSetStringValue {
+		a.Currency = j
+	}
+	if ts := c.String(optAccountType); ts != NotSetStringValue {
+		if at := accountTypeForString(ts); at == ATUnknown {
+			printError.Fatalln(errIncorrectAccountType)
+		} else {
+			a.AType = at
+		}
+	}
+
+	// Execute the changes
+	if err = AccountEdit(fh, a); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("changed details of account with id = %d\n", a.Id)
+
+	return nil
+}
+
 // CmdAccountRemove removes account with given id
 func CmdAccountRemove(c *cli.Context) error {
 	var err error
@@ -1093,7 +1160,7 @@ func dFSForID(l int) string {
 
 // Return the bigger number out of the two given
 func maxLen(s string, i int) int {
-	if l := utf8.RuneCountInString(s); i < l {
+	if l := utf8.RuneCountInString(s); l > i {
 		return l
 	} else {
 		return i
@@ -1102,7 +1169,7 @@ func maxLen(s string, i int) int {
 
 //DONE: init file
 //DONE: account add
-//TODO: account edit
+//DONE: account edit
 //DONE: account close
 //DONE: account list
 //DONE: category add
@@ -1134,7 +1201,7 @@ func maxLen(s string, i int) int {
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 16/33 (48%)
+//DONE: 17/33 (51%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
