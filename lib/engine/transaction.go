@@ -14,7 +14,7 @@ import (
 // Transaction represents the basic object for transaction
 type Transaction struct {
 	Id          int64
-	Date         time.Time
+	Date        time.Time
 	Category    *Category
 	Account     *Account
 	Value       float64
@@ -23,7 +23,7 @@ type Transaction struct {
 
 func TransactionNew() *Transaction {
 	t := new(Transaction)
-	t.Date=time.Now()
+	t.Date = time.Now()
 	t.Category = new(Category)
 	t.Account = new(Account)
 

@@ -844,7 +844,7 @@ func CmdTransactionAdd(c *cli.Context) error {
 	// Get loggers
 	printUserMsg, printError := GetLoggers()
 
-	// Check obligatory flags (file, name)
+	// Check obligatory flags
 	f := c.String(OptFile)
 	if f == NotSetStringValue {
 		printError.Fatalln(errMissingFileFlag)
@@ -880,15 +880,11 @@ func CmdTransactionAdd(c *cli.Context) error {
 			printError.Fatalln(err)
 		}
 	}
-	if ct, err := CategoryForName(fh, cn); err != nil {
+	if t.Category, err = CategoryForName(fh, cn); err != nil {
 		printError.Fatalln(err)
-	} else {
-		t.Category = ct
 	}
-	if a, err := AccountForName(fh, an); err != nil {
+	if t.Account, err = AccountForName(fh, an); err != nil {
 		printError.Fatalln(err)
-	} else {
-		t.Account = a
 	}
 	t.Value = v * t.Category.Main.MType.Factor()
 	t.Description = d
