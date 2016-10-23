@@ -10,6 +10,7 @@ import (
 	. "github.com/zbroju/financoj/lib/engine"
 	"os"
 	"strconv"
+	"time"
 	"unicode/utf8"
 )
 
@@ -51,11 +52,11 @@ func CmdCategoryAdd(c *cli.Context) error {
 	}
 	n := c.String(ObjCategory)
 	if n == NotSetStringValue {
-		printError.Fatalln(errMissingCategory)
+		printError.Fatalln(errMissingCategoryFlag)
 	}
 	m := c.String(ObjMainCategory)
 	if m == NotSetStringValue {
-		printError.Fatalln(errMissingMainCategory)
+		printError.Fatalln(errMissingMainCategoryFlag)
 	}
 
 	// Add new category
@@ -251,7 +252,7 @@ func CmdMainCategoryAdd(c *cli.Context) error {
 	}
 	n := c.String(ObjMainCategory)
 	if n == NotSetStringValue {
-		printError.Fatalln(errMissingMainCategory)
+		printError.Fatalln(errMissingMainCategoryFlag)
 	}
 	t := MainCategoryTypeForString(c.String(OptMainCategoryType))
 	if t == MCTUnknown {
@@ -832,6 +833,73 @@ func CmdAccountRemove(c *cli.Context) error {
 
 	// Show summary
 	printUserMsg.Printf("removed account with id = %d\n", a.Id)
+
+	return nil
+}
+
+// CmdTransactionAdd adds new transaction
+func CmdTransactionAdd(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags (file, name)
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	d := c.String(OptDescription)
+	if d == NotSetStringValue {
+		printError.Fatalln(errMissingDescriptionFlag)
+	}
+	v := c.Float64(OptValue)
+	if v == NotSetFloatValue {
+		printError.Fatalln(errMissingValueFlag)
+	}
+	an := c.String(ObjAccount)
+	if an == NotSetStringValue {
+		printError.Fatalln(errMissingAccountFlag)
+	}
+	cn := c.String(ObjCategory)
+	if cn == NotSetStringValue {
+		printError.Fatalln(errMissingCategoryFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create the transaction object
+	t := TransactionNew()
+	if td := c.String(OptDate); td != NotSetStringValue {
+		if t.Date, err = time.Parse(DateFormat, td); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	if ct, err := CategoryForName(fh, cn); err != nil {
+		printError.Fatalln(err)
+	} else {
+		t.Category = ct
+	}
+	if a, err := AccountForName(fh, an); err != nil {
+		printError.Fatalln(err)
+	} else {
+		t.Account = a
+	}
+	t.Value = v * t.Category.Main.MType.Factor()
+	t.Description = d
+
+	// Add transaction
+	if err = TransactionAdd(fh, t); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("add new transaction\n")
 
 	return nil
 }

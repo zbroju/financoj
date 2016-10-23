@@ -19,7 +19,7 @@ func (is ItemStatus) String() string {
 
 	switch is {
 	case ISUnset:
-		s = "unset"
+		s = "not set"
 	case ISOpen:
 		s = "active"
 	case ISClose:

@@ -37,14 +37,16 @@ const (
 const (
 	errMissingFileFlag           = "missing information about data file"
 	errMissingIDFlag             = "missing ID"
-	errMissingCategory           = "missing category name"
-	errMissingMainCategory       = "missing main category name"
+	errMissingCategoryFlag       = "missing category name"
+	errMissingMainCategoryFlag   = "missing main category name"
 	errIncorrectMainCategoryType = "incorrect main category type"
 	errMissingCurrencyFlag       = "missing currency (from) name"
 	errMissingCurrencyToFlag     = "missing currency_to name"
 	errMissingExchangeRateFlag   = "missing exchange rate"
 	errMissingAccountFlag        = "missing account name"
 	errIncorrectAccountType      = "incorrect account type"
+	errMissingDescriptionFlag    = "missing description"
+	errMissingValueFlag          = "missing value"
 )
 
 // Commands, objects and options
@@ -77,6 +79,10 @@ const (
 	OptInstitutionAlias      = "b"
 	OptAccountType           = "accout-type"
 	OptAccountTypeAlias      = "p"
+	OptValue                 = "value"
+	OptValueAlias            = "v"
+	OptDate                  = "date"
+	OptDateAlias             = "d"
 
 	ObjAccount           = "account"
 	ObjAccountAlias      = "a"
@@ -86,4 +92,6 @@ const (
 	ObjMainCategoryAlias = "m"
 	ObjExchangeRate      = "rate"
 	ObjExchangeRateAlias = "r"
+	ObjTransaction       = "transaction"
+	ObjTransactionAlias  = "t"
 )

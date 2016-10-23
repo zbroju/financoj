@@ -154,6 +154,42 @@ func AccountForID(db *gsqlitehandler.SqliteDB, i int) (a *Account, err error) {
 	//TODO: add test
 }
 
+// AccountForName returns pointer to Account for given (part of) name
+func AccountForName(db *gsqlitehandler.SqliteDB, n string) (a *Account, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	n = "%" + n + "%"
+	sqlQuery := "SELECT id, name, description, institution, currency, type, status FROM accounts WHERE name LIKE ? AND status=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+
+	a = new(Account)
+	if rows, err = stmt.Query(n, ISOpen); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	defer rows.Close()
+
+	var noOfAccounts int
+	for rows.Next() {
+		noOfAccounts++
+		rows.Scan(&a.Id, &a.Name, &a.Description, &a.Institution, &a.Currency, &a.AType, &a.Status)
+	}
+
+	switch noOfAccounts {
+	case 0:
+		return nil, errors.New(errAccountForNameNone)
+	case 1:
+		return a, nil
+	default:
+		return nil, errors.New(errAccountNameAmbiguous)
+	}
+
+	//TODO: add test
+}
+
 // AccountEdit updates account with new values.
 // All fields except ID are updated, so make sure you pass old values in other fields.
 func AccountEdit(db *gsqlitehandler.SqliteDB, a *Account) error {

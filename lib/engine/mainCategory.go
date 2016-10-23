@@ -41,6 +41,22 @@ func (mct MainCategoryType) String() string {
 	return mctName
 }
 
+// Factor returns coefficient for transaction values
+func (mct MainCategoryType) Factor() float64 {
+	var factor float64
+
+	switch mct {
+	case MCTIncome, MCTTransfer:
+		factor = 1.0
+	case MCTCost:
+		factor = -1.0
+	default:
+		factor = 0.0
+	}
+
+	return factor
+}
+
 // MainCategory represents the basic object for main category
 type MainCategory struct {
 	Id     int64
@@ -116,7 +132,7 @@ func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategory
 	case 1:
 		return m, nil
 	default:
-		return nil, errors.New(errMainCategoryWithNameAmbiguous)
+		return nil, errors.New(errMainCategoryNameAmbiguous)
 	}
 
 	//TODO: add test

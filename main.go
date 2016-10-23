@@ -59,6 +59,8 @@ SUBCOMMANDS:
 	flagCurrencyWithDefault := cli.StringFlag{Name: OptCurrency + "," + OptCurrencyAlias, Value: defaultCurrency, Usage: "currency"}
 	flagCurrencyTo := cli.StringFlag{Name: OptCurrencyTo + "," + OptCurrencyToAlias, Value: NotSetStringValue, Usage: "currency to"}
 	flagExchangeRate := cli.Float64Flag{Name: ObjExchangeRate + "," + ObjExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
+	flagValue := cli.Float64Flag{Name: OptValue + "," + OptValueAlias, Value: NotSetFloatValue, Usage: "value"}
+	flagDate := cli.StringFlag{Name: OptDate + "," + OptDateAlias, Value: NotSetStringValue, Usage: "date"}
 
 	app.Commands = []cli.Command{
 		{Name: CmdInit,
@@ -88,6 +90,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrencyWithDefault, flagAccountType},
 					Usage:   "Add new account",
 					Action:  CmdAccountAdd},
+				{Name: ObjTransaction,
+					Aliases: []string{ObjTransactionAlias},
+					Flags:   []cli.Flag{flagFile, flagDescription, flagValue, flagAccount, flagCategory, flagDate},
+					Usage:   "Add new transaction.",
+					Action:  CmdTransactionAdd},
 			},
 		},
 		{Name: CmdEdit, Aliases: []string{CmdEditAlias}, Usage: "Edit an object.",
@@ -184,7 +191,7 @@ SUBCOMMANDS:
 //DONE: main category edit
 //DONE: main category remove
 //DONE: main category list
-//TODO: transaction add
+//DONE: transaction add
 //TODO: transaction edit
 //TODO: transaction remove
 //TODO: transaction list
@@ -201,7 +208,7 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 17/33 (51%)
+//DONE: 18/33 (54%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
@@ -217,3 +224,5 @@ SUBCOMMANDS:
 //FIXME: check if all 'list' functions respect flag --all
 //TODO: review all comments inside function bodies
 //TODO: complete function descriptions for godoc
+//TODO: add default account (especially to add transaction, but think about others)
+//FIXME: change 'errMissing*Flag' to map and create function to easily check missing flags
