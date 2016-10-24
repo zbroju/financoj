@@ -32,6 +32,8 @@ const (
 	errAccountForNameNone   = "no account with given name"
 	errAccountNameAmbiguous = "given account name is ambiguous"
 
+	errTransactionWithIDNone = "no transaction with given ID"
+
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
 )

@@ -899,3 +899,43 @@ func CmdTransactionAdd(c *cli.Context) error {
 
 	return nil
 }
+
+// CmdTransactionRemove removes transaction with given id
+func CmdTransactionRemove(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	id := c.Int(OptID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var t *Transaction
+	if t, err = TransactionForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Remove the transaction
+	if err = TransactionRemove(fh, t); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("removed transaction with id = %d\n", t.Id)
+
+	return nil
+}

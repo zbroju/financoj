@@ -44,12 +44,12 @@ func CategoryAdd(db *gsqlitehandler.SqliteDB, c *Category) error {
 	//TODO: add test
 }
 
-// CategoryForID returns pointer to CategoryT for given id
+// CategoryForID returns pointer to Category for given id
 func CategoryForID(db *gsqlitehandler.SqliteDB, i int) (c *Category, err error) {
 	var stmt *sql.Stmt
 
 	if stmt, err = db.Handler.Prepare("SELECT c.id, c.name, c.status, m.id, m.type, m.name, m.status FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id WHERE c.id=? AND c.status=?;"); err != nil {
-		errors.New(errReadingFromFile)
+		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
