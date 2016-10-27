@@ -61,6 +61,8 @@ SUBCOMMANDS:
 	flagExchangeRate := cli.Float64Flag{Name: ObjExchangeRate + "," + ObjExchangeRateAlias, Value: NotSetFloatValue, Usage: "currency exchange rate"}
 	flagValue := cli.Float64Flag{Name: OptValue + "," + OptValueAlias, Value: NotSetFloatValue, Usage: "value"}
 	flagDate := cli.StringFlag{Name: OptDate + "," + OptDateAlias, Value: NotSetStringValue, Usage: "date"}
+	flagDateFrom := cli.StringFlag{Name: OptDateFrom, Value: NotSetStringValue, Usage: "date from"}
+	flagDateTo := cli.StringFlag{Name: OptDateTo, Value: NotSetStringValue, Usage: "date to"}
 
 	app.Commands = []cli.Command{
 		{Name: CmdInit,
@@ -172,6 +174,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType, flagAll},
 					Usage:   "List accounts.",
 					Action:  CmdAccountList},
+				{Name: ObjTransaction,
+					Aliases: []string{ObjTransactionAlias},
+					Flags:   []cli.Flag{flagFile, flagDateFrom, flagDateTo, flagAccount, flagDescription, flagCategory, flagMainCategory},
+					Usage:   "List transactions",
+					Action:  CmdTransactionList},
 			},
 		},
 	}
@@ -199,7 +206,7 @@ SUBCOMMANDS:
 //DONE: transaction add
 //TODO: transaction edit
 //DONE: transaction remove
-//TODO: transaction list
+//DONE: transaction list
 //TODO: budget add
 //TODO: budget edit
 //TODO: budget remove
@@ -213,7 +220,7 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 18/33 (54%)
+//DONE: 20/33 (60%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)

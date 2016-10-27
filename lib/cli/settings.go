@@ -31,6 +31,11 @@ const (
 	HACurrency    = "CUR"
 	HAType        = "TYPE"
 	HAStatus      = "STATUS"
+
+	HTId          = "ID"
+	HTDate        = "DATE"
+	HTValue       = "VALUE"
+	HTDescription = "DESCRIPTION"
 )
 
 // Errors
@@ -71,7 +76,7 @@ const (
 	OptIDAlias               = "i"
 	OptCurrency              = "currency"
 	OptCurrencyAlias         = "j"
-	OptCurrencyTo            = "currency_to"
+	OptCurrencyTo            = "currency-to"
 	OptCurrencyToAlias       = "k"
 	OptDescription           = "description"
 	OptDescriptionAlias      = "s"
@@ -83,6 +88,8 @@ const (
 	OptValueAlias            = "v"
 	OptDate                  = "date"
 	OptDateAlias             = "d"
+	OptDateFrom              = "date-from"
+	OptDateTo                = "date-to"
 
 	ObjAccount           = "account"
 	ObjAccountAlias      = "a"

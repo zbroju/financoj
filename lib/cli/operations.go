@@ -429,7 +429,7 @@ func CmdMainCategoryList(c *cli.Context) error {
 	return nil
 }
 
-// CmdExchangeRateAdd adds new currency echchange rate
+// CmdExchangeRateAdd adds new currency exchange rate
 func CmdExchangeRateAdd(c *cli.Context) error {
 	var err error
 
@@ -896,6 +896,104 @@ func CmdTransactionAdd(c *cli.Context) error {
 
 	// Show summary
 	printUserMsg.Printf("add new transaction\n")
+
+	return nil
+}
+
+// CmdTransactionList prints transactions on standard output
+func CmdTransactionList(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Get filtering criteria
+	var dateFrom time.Time
+	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+		if dateFrom, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dateFrom = time.Time{}
+	}
+	var dateTo time.Time
+	if ds := c.String(OptDateTo); ds != NotSetStringValue {
+		if dateTo, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dateTo = time.Time{}
+	}
+	var account *Account
+	if as := c.String(ObjAccount); as != NotSetStringValue {
+		if account, err = AccountForName(fh, as); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	description := c.String(OptDescription)
+	var category *Category
+	if cs := c.String(ObjCategory); cs != NotSetStringValue {
+		if category, err = CategoryForName(fh, cs); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	var mainCategory *MainCategory
+	if ms := c.String(ObjMainCategory); ms != NotSetStringValue {
+		if mainCategory, err = MainCategoryForName(fh, ms); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+
+	// Build formatting strings
+	var getNextTransaction func() *Transaction
+	if getNextTransaction, err = TransactionList(fh, dateFrom, dateTo, account, description, category, mainCategory); err != nil {
+		printError.Fatalln(err)
+	}
+	lId := utf8.RuneCountInString(HTId)
+	lDate := utf8.RuneCountInString(HTDate)
+	lAccount := utf8.RuneCountInString(HAName)
+	lType := utf8.RuneCountInString(HMCType)
+	lMCat := utf8.RuneCountInString(HMCName)
+	lCat := utf8.RuneCountInString(HCName)
+	lValue := utf8.RuneCountInString(HTValue)
+	lCur := utf8.RuneCountInString(HACurrency)
+	lDesc := utf8.RuneCountInString(HTDescription)
+
+	for t := getNextTransaction(); t != nil; t = getNextTransaction() {
+		lId = MaxLen(strconv.FormatInt(t.Id, 10), lId)
+		lDate = MaxLen(t.Date.Format(DateFormat), lDate)
+		lAccount = MaxLen(t.Account.Name, lAccount)
+		lType = MaxLen(t.Category.Main.MType.String(), lType)
+		lMCat = MaxLen(t.Category.Main.Name, lMCat)
+		lCat = MaxLen(t.Category.Name, lCat)
+		lValue = MaxLen(strconv.FormatFloat(t.Value, 'f', 2, 64), lValue)
+		lCur = MaxLen(t.Account.Currency, lCur)
+		lDesc = MaxLen(t.Description, lDesc)
+	}
+	lineH := LineFor(HFSForNumeric(lId), HFSForText(lDate), HFSForText(lAccount), HFSForText(lType), HFSForText(lMCat), HFSForText(lCat), HFSForNumeric(lValue), HFSForText(lCur), HFSForText(lDesc))
+	lineD := LineFor(DFSForID(lId), DFSForText(lDate), DFSForText(lAccount), DFSForText(lType), DFSForText(lMCat), DFSForText(lCat), DFSForValue(lValue), DFSForText(lCur), DFSForText(lDesc))
+
+	// Print transactions
+	if getNextTransaction, err = TransactionList(fh, dateFrom, dateTo, account, description, category, mainCategory); err != nil {
+		printError.Fatalln(err)
+	}
+	fmt.Fprintf(os.Stdout, lineH, HTId, HTDate, HAName, HMCType, HMCName, HCName, HTValue, HACurrency, HTDescription)
+	for t := getNextTransaction(); t != nil; t = getNextTransaction() {
+		fmt.Fprintf(os.Stdout, lineD, t.Id, t.Date.Format(DateFormat), t.Account.Name, t.Category.Main.MType, t.Category.Main.Name, t.Category.Name, t.Value, t.Account.Currency, t.Description)
+	}
 
 	return nil
 }
