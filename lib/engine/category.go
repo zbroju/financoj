@@ -141,12 +141,12 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryType, c s
 	var rows *sql.Rows
 	//FIXME: change parameter so that there is the object of MainCategory and not string
 	if m == NotSetStringValue {
-		m = noParameterValueForSQL
+		m = noStringParamForSQL
 	} else {
 		m = "%" + m + "%"
 	}
 	if c == NotSetStringValue {
-		c = noParameterValueForSQL
+		c = noStringParamForSQL
 	} else {
 		c = "%" + c + "%"
 	}
@@ -155,7 +155,7 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryType, c s
 		return nil, errors.New(errReadingFromFile)
 	}
 
-	if rows, err = stmt.Query(m, m, noParameterValueForSQL, t, t, MCTUnset, c, c, noParameterValueForSQL, s, s, ISUnset); err != nil {
+	if rows, err = stmt.Query(m, m, noStringParamForSQL, t, t, MCTUnset, c, c, noStringParamForSQL, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 

@@ -66,7 +66,7 @@ func TransactionForID(db *gsqlitehandler.SqliteDB, i int) (t *Transaction, err e
 		return nil, errors.New(errTransactionWithIDNone)
 	}
 	if t.Date, err = time.Parse(DateFormat, tmpDate); err != nil {
-		return nil, errors.New(errReadingFromFile)
+		return nil, err
 	}
 
 	return t, nil
@@ -79,7 +79,7 @@ func TransactionList(db *gsqlitehandler.SqliteDB, dateF, dateT time.Time, a *Acc
 	var rows *sql.Rows
 
 	// Prepare filtering parameters
-	df, dt := noParameterValueForSQL, noParameterValueForSQL
+	df, dt := noStringParamForSQL, noStringParamForSQL
 	if !dateF.IsZero() {
 		df = dateF.Format(DateFormat)
 	}
@@ -87,21 +87,27 @@ func TransactionList(db *gsqlitehandler.SqliteDB, dateF, dateT time.Time, a *Acc
 		dt = dateT.Format(DateFormat)
 	}
 	if description == NotSetStringValue {
-		description = noParameterValueForSQL
+		description = noStringParamForSQL
 	} else {
 		description = "%" + description + "%"
 	}
-	var aId int
+	var aId int64
 	if a == nil {
-		aId = NotSetIntValue
+		aId = noIntParamForSQL
+	} else {
+		aId = a.Id
 	}
-	var cId int
+	var cId int64
 	if c == nil {
-		cId = NotSetIntValue
+		cId = noIntParamForSQL
+	} else {
+		cId = c.Id
 	}
-	var mId int
+	var mId int64
 	if m == nil {
-		mId = NotSetIntValue
+		mId = noIntParamForSQL
+	} else {
+		mId = m.Id
 	}
 
 	// Prepare query
@@ -110,7 +116,7 @@ func TransactionList(db *gsqlitehandler.SqliteDB, dateF, dateT time.Time, a *Acc
 		return nil, errors.New(errReadingFromFile)
 	}
 
-	if rows, err = stmt.Query(df, df, noParameterValueForSQL, dt, dt, noParameterValueForSQL, aId, aId, NotSetIntValue, description, description, noParameterValueForSQL, cId, cId, NotSetIntValue, mId, mId, NotSetIntValue); err != nil {
+	if rows, err = stmt.Query(df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, aId, aId, NotSetIntValue, description, description, noStringParamForSQL, cId, cId, NotSetIntValue, mId, mId, NotSetIntValue); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 

@@ -182,7 +182,7 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryType, n string,
 	var rows *sql.Rows
 
 	if n == NotSetStringValue {
-		n = noParameterValueForSQL
+		n = noStringParamForSQL
 	} else {
 		n = "%" + n + "%"
 	}
@@ -190,7 +190,7 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryType, n string,
 	if stmt, err = db.Handler.Prepare("SELECT id, type, name, status FROM main_categories WHERE (type=? OR ?=?) AND (name LIKE ? OR ?=?) AND (status=? or ?=?) ORDER BY type, name;"); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-	if rows, err = stmt.Query(t, t, MCTUnset, n, n, noParameterValueForSQL, s, s, ISUnset); err != nil {
+	if rows, err = stmt.Query(t, t, MCTUnset, n, n, noStringParamForSQL, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 

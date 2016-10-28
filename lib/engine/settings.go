@@ -40,5 +40,6 @@ const (
 
 // Other constants
 const (
-	noParameterValueForSQL = "NOT_SET_PARAMETER_VALUE"
+	noStringParamForSQL = "NOT_SET_PARAMETER_VALUE"
+	noIntParamForSQL    = 0
 )

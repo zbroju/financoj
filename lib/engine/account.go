@@ -83,22 +83,22 @@ func AccountList(db *gsqlitehandler.SqliteDB, n string, d string, i string, c st
 
 	// Parse filtering criteria
 	if n == NotSetStringValue {
-		n = noParameterValueForSQL
+		n = noStringParamForSQL
 	} else {
 		n = "%" + n + "%"
 	}
 	if d == NotSetStringValue {
-		d = noParameterValueForSQL
+		d = noStringParamForSQL
 	} else {
 		d = "%" + d + "%"
 	}
 	if i == NotSetStringValue {
-		i = noParameterValueForSQL
+		i = noStringParamForSQL
 	} else {
 		i = "%" + i + "%"
 	}
 	if c == NotSetStringValue {
-		c = noParameterValueForSQL
+		c = noStringParamForSQL
 	} else {
 		c = "%" + c + "%"
 	}
@@ -115,7 +115,7 @@ func AccountList(db *gsqlitehandler.SqliteDB, n string, d string, i string, c st
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-	if rows, err = stmt.Query(n, n, noParameterValueForSQL, d, d, noParameterValueForSQL, i, i, noParameterValueForSQL, c, c, noParameterValueForSQL, t, t, ATUnset, s, s, ISUnset); err != nil {
+	if rows, err = stmt.Query(n, n, noStringParamForSQL, d, d, noStringParamForSQL, i, i, noStringParamForSQL, c, c, noStringParamForSQL, t, t, ATUnset, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
