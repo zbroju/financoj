@@ -7,7 +7,7 @@ package cli
 import (
 	"fmt"
 	"github.com/urfave/cli"
-	. "github.com/zbroju/financoj/lib/engine"
+	. "github.com/zbroju/financoj/lib"
 	"os"
 	"strconv"
 	"time"

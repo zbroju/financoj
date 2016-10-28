@@ -6,7 +6,7 @@ package cli
 
 import (
 	"fmt"
-	. "github.com/zbroju/financoj/lib/engine"
+	. "github.com/zbroju/financoj/lib"
 	"log"
 	"os"
 	"strings"

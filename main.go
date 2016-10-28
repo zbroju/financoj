@@ -6,8 +6,8 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	. "github.com/zbroju/financoj/lib/cli"
-	. "github.com/zbroju/financoj/lib/engine"
+	. "github.com/zbroju/financoj/cmd"
+	. "github.com/zbroju/financoj/lib"
 	"os"
 )
 
@@ -238,3 +238,4 @@ SUBCOMMANDS:
 //TODO: complete function descriptions for godoc
 //TODO: add default account (especially to add transaction, but think about others)
 //FIXME: change 'errMissing*Flag' to map and create function to easily check missing flags
+//FIXME: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
