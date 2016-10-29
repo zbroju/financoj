@@ -886,7 +886,7 @@ func CmdTransactionAdd(c *cli.Context) error {
 	if t.Account, err = AccountForName(fh, an); err != nil {
 		printError.Fatalln(err)
 	}
-	t.Value = v * t.Category.Main.MType.Factor()
+	t.SValue(v)
 	t.Description = d
 
 	// Add transaction

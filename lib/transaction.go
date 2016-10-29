@@ -30,6 +30,10 @@ func TransactionNew() *Transaction {
 	return t
 }
 
+func (t *Transaction)SValue(v float64){
+	t.Value=v*t.Category.Main.MType.Factor()
+}
+
 // TransactionAdd adds new transaction t
 func TransactionAdd(db *gsqlitehandler.SqliteDB, t *Transaction) error {
 	var err error
