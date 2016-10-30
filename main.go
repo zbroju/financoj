@@ -121,6 +121,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagID, flagAccount, flagDescription, flagInstitution, flagCurrency, flagAccountType},
 					Usage:   "Edit account.",
 					Action:  CmdAccountEdit},
+				{Name: ObjTransaction,
+					Aliases: []string{ObjTransactionAlias},
+					Flags:   []cli.Flag{flagFile, flagID, flagDate, flagCategory, flagAccount, flagValue, flagDescription},
+					Usage:   "Edit transaction.",
+					Action:  CmdTransactionEdit},
 			},
 		},
 		{Name: CmdRemove, Aliases: []string{CmdRemoveAlias}, Usage: "Remove an object.",
@@ -204,7 +209,7 @@ SUBCOMMANDS:
 //DONE: main category remove
 //DONE: main category list
 //DONE: transaction add
-//TODO: transaction edit
+//DONE: transaction edit
 //DONE: transaction remove
 //DONE: transaction list
 //TODO: budget add
@@ -220,7 +225,7 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 20/33 (60%)
+//DONE: 21/33 (63%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)

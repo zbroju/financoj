@@ -1004,6 +1004,69 @@ func CmdTransactionList(c *cli.Context) error {
 	return nil
 }
 
+// CmdTransactionEdit updates transaction with new values
+func CmdTransactionEdit(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+
+	}
+	id := c.Int(OptID)
+	if id == NotSetIntValue {
+		printError.Fatalln(errMissingIDFlag)
+	}
+
+	// Open data file and get original main category
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var t *Transaction
+	if t, err = TransactionForID(fh, id); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Edit transaction
+	if ds := c.String(OptDate); ds != NotSetStringValue {
+		if t.Date, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	if cs := c.String(ObjCategory); cs != NotSetStringValue {
+		if t.Category, err = CategoryForName(fh, cs); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	if as := c.String(ObjAccount); as != NotSetStringValue {
+		if t.Account, err = AccountForName(fh, as); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	if vf := c.Float64(OptValue); vf != NotSetFloatValue {
+		t.Value = vf
+	}
+	if descr := c.String(OptDescription); descr != NotSetStringValue {
+		t.Description = descr
+	}
+
+	if err = TransactionEdit(fh, t); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("changed details of transaction with id = %d\n", id)
+
+	return nil
+}
+
 // CmdTransactionRemove removes transaction with given id
 func CmdTransactionRemove(c *cli.Context) error {
 	var err error

@@ -109,12 +109,12 @@ func CategoryEdit(db *gsqlitehandler.SqliteDB, c *Category) error {
 	var stmt *sql.Stmt
 
 	if stmt, err = db.Handler.Prepare("UPDATE categories SET main_category_id=?, name=?, status=? WHERE id=?;"); err != nil {
-		errors.New(errWritingToFile)
+		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
 
 	if _, err = stmt.Exec(c.Main.Id, c.Name, c.Status, c.Id); err != nil {
-		errors.New(errWritingToFile)
+		return errors.New(errWritingToFile)
 	}
 
 	return nil

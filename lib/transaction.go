@@ -17,13 +17,13 @@ type Transaction struct {
 	Date     time.Time
 	Category *Category
 	Account  *Account
-	// Value holds the values with the same sign as user typed it.
-	// The same goes to database file.
+
+	// Value holds the values with the same sign as user typed it. The same goes to database file.
 	// To classify transaction as cost, income (i.e. negative or positive value) you need to check
 	// the transactions main category (attribute of category) type factor.
 	// To get transaction value with sign use the method GetSValue().
 	// This principle is important in order to correctly re-classify transactions in case their
-	// categories or main categories change.
+	// categories and/or main categories change.
 	Value       float64
 	Description string
 }
@@ -126,7 +126,8 @@ func TransactionList(db *gsqlitehandler.SqliteDB, dateF, dateT time.Time, a *Acc
 	// Prepare query
 	sqlQuery := "SELECT t.id, t.date, t.description, t.value, a.id, a.name, a.description, a.institution, a.currency, a.type, a.status, c.id, c.name, c.status, m.id, m.name, m.status, mt.id, mt.name, mt.factor " +
 		"FROM transactions t INNER JOIN accounts a ON t.account_id=a.id INNER JOIN categories c ON t.category_id=c.id INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types mt on m.type_id=mt.id " +
-		"WHERE (t.date>=? OR ?=?) AND (t.date<=? OR ?=?) AND (a.id=? OR ?=?) AND (t.description LIKE ? OR ?=?) AND (c.id=? OR ?=?) AND (m.id=? OR ?=?);"
+		"WHERE (t.date>=? OR ?=?) AND (t.date<=? OR ?=?) AND (a.id=? OR ?=?) AND (t.description LIKE ? OR ?=?) AND (c.id=? OR ?=?) AND (m.id=? OR ?=?) " +
+		"ORDER BY t.date, t.id;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
@@ -153,6 +154,28 @@ func TransactionList(db *gsqlitehandler.SqliteDB, dateF, dateT time.Time, a *Acc
 	}
 
 	return f, nil
+	//TODO: add test
+}
+
+// TransactionEdit updates transaction with new values.
+// All fields are updated, so make sure you pass old values in argument t.
+func TransactionEdit(db *gsqlitehandler.SqliteDB, t *Transaction) error {
+	var err error
+	var stmt *sql.Stmt
+
+	sqlQuery := "UPDATE transactions " +
+		"SET date=?, account_id=?, description=?, value=?, category_id=? " +
+		"WHERE id=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(t.Date.Format(DateFormat), t.Account.Id, t.Description, t.Value, t.Category.Id, t.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
 	//TODO: add test
 }
 
