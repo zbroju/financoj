@@ -74,7 +74,7 @@ func CategoryForName(db *gsqlitehandler.SqliteDB, n string) (c *Category, err er
 		"FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types t ON m.type_id=t.id " +
 		"WHERE c.name LIKE ? AND c.status=?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
-		errors.New(errReadingFromFile)
+		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 

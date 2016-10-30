@@ -64,7 +64,7 @@ func ExchangeRateForCurrencies(db *gsqlitehandler.SqliteDB, cf string, ct string
 	var stmt *sql.Stmt
 
 	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies WHERE currency_from=? AND currency_to=?;"); err != nil {
-		errors.New(errReadingFromFile)
+		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 

@@ -162,7 +162,7 @@ func AccountForName(db *gsqlitehandler.SqliteDB, n string) (a *Account, err erro
 	n = "%" + n + "%"
 	sqlQuery := "SELECT id, name, description, institution, currency, type, status FROM accounts WHERE name LIKE ? AND status=?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
-		errors.New(errReadingFromFile)
+		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 

@@ -236,7 +236,6 @@ SUBCOMMANDS:
 //TODO: add export to csv any list and report
 
 //FIXME: make all operations on currencies case insensitive
-//FIXME: look through all functions if there is 'return error.new' and not only 'error.new'
 //FIXME: make all object private (requires 'ObjectNew' functions)
 //FIXME: check if all 'list' functions respect flag --all
 //TODO: review all comments inside function bodies
