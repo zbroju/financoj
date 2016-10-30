@@ -20,7 +20,7 @@ type Category struct {
 
 func CategoryNew() *Category {
 	c := new(Category)
-	c.Main = new(MainCategory)
+	c.Main = MainCategoryNew()
 
 	return c
 }
@@ -48,13 +48,16 @@ func CategoryAdd(db *gsqlitehandler.SqliteDB, c *Category) error {
 func CategoryForID(db *gsqlitehandler.SqliteDB, i int) (c *Category, err error) {
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("SELECT c.id, c.name, c.status, m.id, m.type, m.name, m.status FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id WHERE c.id=? AND c.status=?;"); err != nil {
+	sqlQuery := "SELECT c.id, c.name, c.status, m.id, m.name, m.status, t.id, t.name, t.factor " +
+		"FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types t ON m.type_id=t.id " +
+		"WHERE c.id=? AND c.status=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
 	c = CategoryNew()
-	if err = stmt.QueryRow(i, ISOpen).Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.MType, &c.Main.Name, &c.Main.Status); err != nil {
+	if err = stmt.QueryRow(i, ISOpen).Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.Name, &c.Main.Status, &c.Main.MType.Id, &c.Main.MType.Name, &c.Main.MType.Factor); err != nil {
 		return nil, errors.New(errCategoryWithIDNone)
 	}
 	return c, nil
@@ -67,7 +70,9 @@ func CategoryForName(db *gsqlitehandler.SqliteDB, n string) (c *Category, err er
 	var rows *sql.Rows
 
 	n = "%" + n + "%"
-	sqlQuery := "SELECT c.id, c.name, c.status, m.id, m.type, m.name, m.status FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id WHERE c.name LIKE ? AND c.status=?;"
+	sqlQuery := "SELECT c.id, c.name, c.status, m.id, m.name, m.status, t.id, t.name, t.factor " +
+		"FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types t ON m.type_id=t.id " +
+		"WHERE c.name LIKE ? AND c.status=?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		errors.New(errReadingFromFile)
 	}
@@ -82,7 +87,7 @@ func CategoryForName(db *gsqlitehandler.SqliteDB, n string) (c *Category, err er
 	var noOfCategories int
 	for rows.Next() {
 		noOfCategories++
-		rows.Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.MType, &c.Main.Name, &c.Main.Status)
+		rows.Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.Name, &c.Main.Status, &c.Main.MType.Id, &c.Main.MType.Name, &c.Main.MType.Factor)
 	}
 
 	switch noOfCategories {
@@ -136,14 +141,15 @@ func CategoryRemove(db *gsqlitehandler.SqliteDB, c *Category) error {
 }
 
 // CategoryList returns all categories from file as closure
-func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryType, c string, s ItemStatus) (f func() *Category, err error) {
+func CategoryList(db *gsqlitehandler.SqliteDB, m *MainCategory, c string, s ItemStatus) (f func() *Category, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
-	//FIXME: change parameter so that there is the object of MainCategory and not string
-	if m == NotSetStringValue {
-		m = noStringParamForSQL
+
+	var mId int64
+	if m == nil {
+		mId = noIntParamForSQL
 	} else {
-		m = "%" + m + "%"
+		mId = m.Id
 	}
 	if c == NotSetStringValue {
 		c = noStringParamForSQL
@@ -151,18 +157,21 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryType, c s
 		c = "%" + c + "%"
 	}
 
-	if stmt, err = db.Handler.Prepare("SELECT c.id, c.name, c.status, m.id, m.type, m.name,m.status FROM categories c INNER JOIN main_categories m on c.main_category_id=m.id WHERE (m.name LIKE ? OR ?=?) AND (m.type=? OR ?=?) AND (c.name LIKE ? OR ?=?) AND (c.status=? or ?=?) ORDER BY m.type, m.name, c.name;"); err != nil {
+	sqlQuery := "SELECT c.id, c.name, c.status, m.id, m.name, m.status, t.id, t.name, t.factor " +
+		"FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types t ON m.type_id=t.id " +
+		"WHERE (m.id=? OR ?=?) AND (c.name LIKE ? OR ?=?) AND (c.status=? or ?=?) ORDER BY m.type_id, m.name, c.name;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
-	if rows, err = stmt.Query(m, m, noStringParamForSQL, t, t, MCTUnset, c, c, noStringParamForSQL, s, s, ISUnset); err != nil {
+	if rows, err = stmt.Query(mId, mId, noIntParamForSQL, c, c, noStringParamForSQL, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
 	f = func() *Category {
 		if rows.Next() {
 			c := CategoryNew()
-			rows.Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.MType, &c.Main.Name, &c.Main.Status)
+			rows.Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.Name, &c.Main.Status, &c.Main.MType.Id, &c.Main.MType.Name, &c.Main.MType.Factor)
 			return c
 		}
 		rows.Close()
@@ -175,4 +184,4 @@ func CategoryList(db *gsqlitehandler.SqliteDB, m string, t MainCategoryType, c s
 	//TODO: add test
 }
 
-//FIXME: rebuild SELECT queries in all functions so that the conditions are in separated lines
+//FIXME: make sure all 'list' functions are consistent with 'LIKE' or '=' for other objects, e.g. LIKE name vs name=?

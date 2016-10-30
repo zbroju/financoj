@@ -21,22 +21,6 @@ func GetLoggers() (messageLogger *log.Logger, errorLogger *log.Logger) {
 	return
 }
 
-// mainCategoryTypeForString returns main category type for given string
-func MainCategoryTypeForString(m string) (mct MainCategoryType) {
-	switch m {
-	case "c", "cost", NotSetStringValue: // If null string is given, then the default value is MCT_Cost
-		mct = MCTCost
-	case "i", "income":
-		mct = MCTIncome
-	case "t", "transfer":
-		mct = MCTTransfer
-	default:
-		mct = MCTUnknown
-	}
-
-	return mct
-}
-
 // accountTypeForString returns account type for given string
 func AccountTypeForString(s string) (t AccountType) {
 	switch s {

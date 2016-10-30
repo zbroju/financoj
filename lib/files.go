@@ -5,6 +5,7 @@
 package engine
 
 import (
+	"fmt"
 	"github.com/zbroju/gprops"
 	"github.com/zbroju/gsqlitehandler"
 	"os"
@@ -57,9 +58,14 @@ func CreateNewDataFile(db *gsqlitehandler.SqliteDB) error {
 		"CREATE TABLE transactions (id INTEGER PRIMARY KEY, date TEXT, account_id INTEGER, description TEXT, value REAL, category_id INTEGER);" +
 		"CREATE TABLE budgets (year INTEGER, month INTEGER, category_id INTEGER, value REAL, currency TEXT, PRIMARY KEY (YEAR, MONTH, CATEGORY_ID));" +
 		"CREATE TABLE categories (id INTEGER PRIMARY KEY, main_category_id INTEGER, name TEXT, status INTEGER);" +
-		"CREATE TABLE main_categories (id INTEGER PRIMARY KEY, type INTEGER, name TEXT, status INTEGER);"
-
-	err := db.CreateNew(sqlCreateTables)
+		"CREATE TABLE main_categories (id INTEGER PRIMARY KEY, type_id INTEGER, name TEXT, status INTEGER);" +
+		"CREATE TABLE main_categories_types (id INTEGER PRIMARY KEY, name TEXT, factor INTEGER);"
+	sqlInsertMainCategoryTypes := fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Unknown', 0);", MCTUnknown)
+	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Not set', 0);", MCTUnset)
+	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Cost', -1);", MCTCost)
+	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Transfer', 1);", MCTTransfer)
+	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Income', 1);", MCTIncome)
+	err := db.CreateNew(sqlCreateTables + sqlInsertMainCategoryTypes)
 
 	return err
 	//TODO: add test

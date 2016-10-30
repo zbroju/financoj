@@ -23,7 +23,7 @@ const (
 	ATLoan          = 5
 )
 
-// String satisfies fmt.Stringer interface in order to get human readambe names of account type
+// String satisfies fmt.Stringer interface in order to get human readable names of account type
 func (at AccountType) String() string {
 	var name string
 
@@ -205,14 +205,12 @@ func AccountEdit(db *gsqlitehandler.SqliteDB, a *Account) error {
 		",status=? " +
 		"WHERE id=?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
-		//return errors.New(errWritingToFile)
-		return err
+		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
 
 	if _, err = stmt.Exec(a.Name, a.Description, a.Institution, a.Currency, a.AType, a.Status, a.Id); err != nil {
-		//return errors.New(errWritingToFile)
-		return err
+		return errors.New(errWritingToFile)
 	}
 
 	return nil

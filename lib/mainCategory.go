@@ -10,59 +10,20 @@ import (
 	"github.com/zbroju/gsqlitehandler"
 )
 
-// MainCategoryStatusT describes the behaviour of categories and its descendants (transactions)
-type MainCategoryType int
-
-const (
-	MCTUnknown  MainCategoryType = -1
-	MCTUnset    MainCategoryType = 0
-	MCTCost     MainCategoryType = 1
-	MCTTransfer MainCategoryType = 2
-	MCTIncome   MainCategoryType = 3
-)
-
-// String satisfies fmt.Stringer interface in order to get human readable names
-func (mct MainCategoryType) String() string {
-	var mctName string
-
-	switch mct {
-	case MCTUnknown:
-		mctName = "unknown"
-	case MCTUnset:
-		mctName = "not set"
-	case MCTIncome:
-		mctName = "income"
-	case MCTCost:
-		mctName = "cost"
-	case MCTTransfer:
-		mctName = "transfer"
-	}
-
-	return mctName
-}
-
-// Factor returns coefficient for transaction values
-func (mct MainCategoryType) Factor() float64 {
-	var factor float64
-
-	switch mct {
-	case MCTIncome, MCTTransfer:
-		factor = 1.0
-	case MCTCost:
-		factor = -1.0
-	default:
-		factor = 0.0
-	}
-
-	return factor
-}
-
 // MainCategory represents the basic object for main category
 type MainCategory struct {
 	Id     int64
-	MType  MainCategoryType
+	MType  *MainCategoryType
 	Name   string
 	Status ItemStatus
+}
+
+// MainCategoryNew returns pointer to newly created MainCategory object
+func MainCategoryNew() *MainCategory {
+	m := new(MainCategory)
+	m.MType = new(MainCategoryType)
+
+	return m
 }
 
 // MainCategoryAdd adds new main category with type t and name n
@@ -70,12 +31,17 @@ func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 	var err error
 	var stmt *sql.Stmt
 
+	if m.MType == nil {
+		t := new(MainCategoryType)
+		t.Id = MCTCost
+	}
+
 	if stmt, err = db.Handler.Prepare("INSERT INTO main_categories VALUES (NULL, ?, ?, ?);"); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(m.MType, m.Name, m.Status); err != nil {
+	if _, err = stmt.Exec(m.MType.Id, m.Name, m.Status); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
@@ -87,13 +53,16 @@ func MainCategoryAdd(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m *MainCategory, err error) {
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE id=? AND status=?;"); err != nil {
+	sqlQuery := "SELECT m.id, m.name, m.status, t.id, t.name, t.factor " +
+		"FROM main_categories m INNER JOIN main_categories_types t ON m.type_id=t.id " +
+		"WHERE m.id=? AND m.status=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
-	m = new(MainCategory)
-	if err = stmt.QueryRow(i, ISOpen).Scan(&m.Id, &m.MType, &m.Name, &m.Status); err != nil {
+	m = MainCategoryNew()
+	if err = stmt.QueryRow(i, ISOpen).Scan(&m.Id, &m.Name, &m.Status, &m.MType.Id, &m.MType.Name, &m.MType.Factor); err != nil {
 		return nil, errors.New(errMainCategoryWithIDNone)
 	}
 
@@ -109,12 +78,16 @@ func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategory
 	var rows *sql.Rows
 
 	n = "%" + n + "%"
-	if stmt, err = db.Handler.Prepare("SELECT * FROM main_categories WHERE name LIKE ? AND status=?;"); err != nil {
-		errors.New(errReadingFromFile)
+
+	sqlQuery := "SELECT m.id, m.name, m.status, t.id, t.name, t.factor " +
+		"FROM main_categories m INNER JOIN main_categories_types t ON m.type_id=t.id " +
+		"WHERE m.name LIKE ? AND m.status=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
-	m = new(MainCategory)
+	m = MainCategoryNew()
 	if rows, err = stmt.Query(n, ISOpen); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
@@ -123,7 +96,7 @@ func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategory
 	var noOfMainCategories int
 	for rows.Next() {
 		noOfMainCategories++
-		rows.Scan(&m.Id, &m.MType, &m.Name, &m.Status)
+		rows.Scan(&m.Id, &m.Name, &m.Status, &m.MType.Id, &m.MType.Name, &m.MType.Factor)
 	}
 
 	switch noOfMainCategories {
@@ -144,12 +117,13 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 	var err error
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("UPDATE main_categories SET type=?, name=?, status=? WHERE id=?;"); err != nil {
+	sqlQuery := "UPDATE main_categories SET type_id=?, name=?, status=? WHERE id=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
 
-	if _, err = stmt.Exec(m.MType, m.Name, m.Status, m.Id); err != nil {
+	if _, err = stmt.Exec(m.MType.Id, m.Name, m.Status, m.Id); err != nil {
 		return errors.New(errWritingToFile)
 	}
 
@@ -177,7 +151,7 @@ func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 }
 
 // MainCategoryList returns closure which generates a sequence of Main Category objects
-func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryType, n string, s ItemStatus) (f func() *MainCategory, err error) {
+func MainCategoryList(db *gsqlitehandler.SqliteDB, t *MainCategoryType, n string, s ItemStatus) (f func() *MainCategory, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
@@ -186,18 +160,27 @@ func MainCategoryList(db *gsqlitehandler.SqliteDB, t MainCategoryType, n string,
 	} else {
 		n = "%" + n + "%"
 	}
+	var tId int
+	if t == nil {
+		tId = noIntParamForSQL
+	} else {
+		tId = t.Id
+	}
 
-	if stmt, err = db.Handler.Prepare("SELECT id, type, name, status FROM main_categories WHERE (type=? OR ?=?) AND (name LIKE ? OR ?=?) AND (status=? or ?=?) ORDER BY type, name;"); err != nil {
+	sqlQuery := "SELECT m.id, m.name, m.status, t.id, t.name, t.factor " +
+		"FROM main_categories m INNER JOIN main_categories_types t ON m.type_id=t.id " +
+		"WHERE (m.type_id=? OR ?=?) AND (m.name LIKE ? OR ?=?) AND (m.status=? or ?=?) ORDER BY t.id, m.name;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-	if rows, err = stmt.Query(t, t, MCTUnset, n, n, noStringParamForSQL, s, s, ISUnset); err != nil {
+	if rows, err = stmt.Query(tId, tId, noIntParamForSQL, n, n, noStringParamForSQL, s, s, ISUnset); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
 	f = func() *MainCategory {
 		if rows.Next() {
-			m := new(MainCategory)
-			rows.Scan(&m.Id, &m.MType, &m.Name, &m.Status)
+			m := MainCategoryNew()
+			rows.Scan(&m.Id, &m.Name, &m.Status, &m.MType.Id, &m.MType.Name, &m.MType.Factor)
 			return m
 		}
 		rows.Close()

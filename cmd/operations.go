@@ -189,15 +189,7 @@ func CmdCategoryList(c *cli.Context) error {
 		printError.Fatalln(errMissingFileFlag)
 	}
 
-	mcat := c.String(ObjMainCategory)
-	var mct MainCategoryType
-	if t := c.String(OptMainCategoryType); t == NotSetStringValue {
-		mct = MCTUnset
-	} else {
-		if mct = MainCategoryTypeForString(t); mct == MCTUnknown {
-			printError.Fatalln(errIncorrectMainCategoryType)
-		}
-	}
+	mn := c.String(ObjMainCategory)
 	cat := c.String(ObjCategory)
 	s := ISOpen
 	if a := c.Bool(OptAll); a == true {
@@ -211,15 +203,22 @@ func CmdCategoryList(c *cli.Context) error {
 	}
 	defer fh.Close()
 
+	var mcat *MainCategory
+	if mn != NotSetStringValue {
+		if mcat, err = MainCategoryForName(fh, mn); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+
 	// Build formatting strings
 	var getNextCategory func() *Category
-	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
+	if getNextCategory, err = CategoryList(fh, mcat, cat, s); err != nil {
 		printError.Fatalln(err)
 	}
 	lId, lType, lMCat, lCat, lStatus := utf8.RuneCountInString(HCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HCName), utf8.RuneCountInString(HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
 		lId = MaxLen(strconv.FormatInt(ct.Id, 10), lId)
-		lType = MaxLen(ct.Main.MType.String(), lType)
+		lType = MaxLen(ct.Main.MType.Name, lType)
 		lMCat = MaxLen(ct.Main.Name, lMCat)
 		lCat = MaxLen(ct.Name, lCat)
 		lStatus = MaxLen(ct.Status.String(), lStatus)
@@ -228,12 +227,12 @@ func CmdCategoryList(c *cli.Context) error {
 	lineD := LineFor(DFSForID(lId), DFSForText(lType), DFSForText(lMCat), DFSForText(lCat), DFSForText(lStatus))
 
 	// Print categories
-	if getNextCategory, err = CategoryList(fh, mcat, mct, cat, s); err != nil {
+	if getNextCategory, err = CategoryList(fh, mcat, cat, s); err != nil {
 		printError.Fatalln(err)
 	}
 	fmt.Fprintf(os.Stdout, lineH, HCId, HMCType, HMCName, HCName, HMCStatus)
 	for ct := getNextCategory(); ct != nil; ct = getNextCategory() {
-		fmt.Fprintf(os.Stdout, lineD, ct.Id, ct.Main.MType, ct.Main.Name, ct.Name, ct.Status)
+		fmt.Fprintf(os.Stdout, lineD, ct.Id, ct.Main.MType.Name, ct.Main.Name, ct.Name, ct.Status)
 	}
 
 	return nil
@@ -241,6 +240,8 @@ func CmdCategoryList(c *cli.Context) error {
 
 // CmdMainCategoryAdd adds new main category
 func CmdMainCategoryAdd(c *cli.Context) error {
+	var err error
+
 	// Get loggers
 	printUserMsg, printError := GetLoggers()
 
@@ -254,10 +255,7 @@ func CmdMainCategoryAdd(c *cli.Context) error {
 	if n == NotSetStringValue {
 		printError.Fatalln(errMissingMainCategoryFlag)
 	}
-	t := MainCategoryTypeForString(c.String(OptMainCategoryType))
-	if t == MCTUnknown {
-		printError.Fatalln(errIncorrectMainCategoryType)
-	}
+	tn := c.String(OptMainCategoryType)
 
 	// Add new main category
 	fh := GetDataFileHandler(f)
@@ -266,13 +264,24 @@ func CmdMainCategoryAdd(c *cli.Context) error {
 	}
 	defer fh.Close()
 
+	var t *MainCategoryType
+	if tn != NotSetStringValue {
+		if t, err = MainCategoryTypeForName(fh, tn); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		if t, err = MainCategoryTypeForID(fh, MCTCost); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+
 	m := &MainCategory{MType: t, Name: n, Status: ISOpen}
 	if err := MainCategoryAdd(fh, m); err != nil {
 		printError.Fatalln(err)
 	}
 
 	// Show summary
-	printUserMsg.Printf("added new main category: %s (type: %s)\n", n, t)
+	printUserMsg.Printf("added new main category: %s (type: %s)\n", n, t.Name)
 
 	return nil
 }
@@ -309,11 +318,9 @@ func CmdMainCategoryEdit(c *cli.Context) error {
 
 	// Edit main category
 	if t := c.String(OptMainCategoryType); t != NotSetStringValue {
-		mct := MainCategoryTypeForString(t)
-		if mct == MCTUnknown {
-			printError.Fatalln(errIncorrectMainCategoryType)
+		if mc.MType, err = MainCategoryTypeForName(fh, t); err != nil {
+			printError.Fatalln(err)
 		}
-		mc.MType = mct
 	}
 	if n := c.String(ObjMainCategory); n != NotSetStringValue {
 		mc.Name = n
@@ -380,20 +387,6 @@ func CmdMainCategoryList(c *cli.Context) error {
 	if f == NotSetStringValue {
 		printError.Fatalln(errMissingFileFlag)
 	}
-	var mct MainCategoryType
-	if t := c.String(OptMainCategoryType); t == NotSetStringValue {
-		mct = MCTUnset
-	} else {
-		mct = MainCategoryTypeForString(t)
-		if mct == MCTUnknown {
-			printError.Fatalln(errIncorrectMainCategoryType)
-		}
-	}
-	n := c.String(ObjMainCategory)
-	s := ISOpen
-	if a := c.Bool(OptAll); a == true {
-		s = ISUnset
-	}
 
 	// Open data file
 	fh := GetDataFileHandler(f)
@@ -401,6 +394,19 @@ func CmdMainCategoryList(c *cli.Context) error {
 		printError.Fatalln(err)
 	}
 	defer fh.Close()
+
+	// Create filters
+	var mct *MainCategoryType
+	if t := c.String(OptMainCategoryType); t != NotSetStringValue {
+		if mct, err = MainCategoryTypeForName(fh, t); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	n := c.String(ObjMainCategory)
+	s := ISOpen
+	if a := c.Bool(OptAll); a == true {
+		s = ISUnset
+	}
 
 	// Build formatting strings
 	var getNextMainCategory func() *MainCategory
@@ -410,7 +416,7 @@ func CmdMainCategoryList(c *cli.Context) error {
 	lId, lType, lName, lStatus := utf8.RuneCountInString(HMCId), utf8.RuneCountInString(HMCType), utf8.RuneCountInString(HMCName), utf8.RuneCountInString(HMCStatus)
 	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
 		lId = MaxLen(strconv.FormatInt(m.Id, 10), lId)
-		lType = MaxLen(m.MType.String(), lType)
+		lType = MaxLen(m.MType.Name, lType)
 		lName = MaxLen(m.Name, lName)
 		lStatus = MaxLen(m.Status.String(), lStatus)
 	}
@@ -423,7 +429,7 @@ func CmdMainCategoryList(c *cli.Context) error {
 	}
 	fmt.Fprintf(os.Stdout, lineH, HMCId, HMCType, HMCName, HMCStatus)
 	for m := getNextMainCategory(); m != nil; m = getNextMainCategory() {
-		fmt.Fprintf(os.Stdout, lineD, m.Id, m.MType, m.Name, m.Status)
+		fmt.Fprintf(os.Stdout, lineD, m.Id, m.MType.Name, m.Name, m.Status)
 	}
 
 	return nil
@@ -886,7 +892,7 @@ func CmdTransactionAdd(c *cli.Context) error {
 	if t.Account, err = AccountForName(fh, an); err != nil {
 		printError.Fatalln(err)
 	}
-	t.SValue(v)
+	t.Value = v
 	t.Description = d
 
 	// Add transaction
@@ -976,10 +982,10 @@ func CmdTransactionList(c *cli.Context) error {
 		lId = MaxLen(strconv.FormatInt(t.Id, 10), lId)
 		lDate = MaxLen(t.Date.Format(DateFormat), lDate)
 		lAccount = MaxLen(t.Account.Name, lAccount)
-		lType = MaxLen(t.Category.Main.MType.String(), lType)
+		lType = MaxLen(t.Category.Main.MType.Name, lType)
 		lMCat = MaxLen(t.Category.Main.Name, lMCat)
 		lCat = MaxLen(t.Category.Name, lCat)
-		lValue = MaxLen(strconv.FormatFloat(t.Value, 'f', 2, 64), lValue)
+		lValue = MaxLen(strconv.FormatFloat(t.GetSValue(), 'f', 2, 64), lValue)
 		lCur = MaxLen(t.Account.Currency, lCur)
 		lDesc = MaxLen(t.Description, lDesc)
 	}
@@ -992,7 +998,7 @@ func CmdTransactionList(c *cli.Context) error {
 	}
 	fmt.Fprintf(os.Stdout, lineH, HTId, HTDate, HAName, HMCType, HMCName, HCName, HTValue, HACurrency, HTDescription)
 	for t := getNextTransaction(); t != nil; t = getNextTransaction() {
-		fmt.Fprintf(os.Stdout, lineD, t.Id, t.Date.Format(DateFormat), t.Account.Name, t.Category.Main.MType, t.Category.Main.Name, t.Category.Name, t.Value, t.Account.Currency, t.Description)
+		fmt.Fprintf(os.Stdout, lineD, t.Id, t.Date.Format(DateFormat), t.Account.Name, t.Category.Main.MType.Name, t.Category.Main.Name, t.Category.Name, t.GetSValue(), t.Account.Currency, t.Description)
 	}
 
 	return nil
