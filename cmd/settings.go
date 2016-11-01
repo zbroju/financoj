@@ -52,6 +52,7 @@ const (
 	errIncorrectAccountType      = "incorrect account type"
 	errMissingDescriptionFlag    = "missing description"
 	errMissingValueFlag          = "missing value"
+	errMissingPeriodFlag         = "missing period"
 )
 
 // Commands, objects and options
@@ -90,6 +91,8 @@ const (
 	OptDateAlias             = "d"
 	OptDateFrom              = "date-from"
 	OptDateTo                = "date-to"
+	OptPeriod                = "period"
+	OptPeriodAlias           = "e"
 
 	ObjAccount           = "account"
 	ObjAccountAlias      = "a"
@@ -101,4 +104,6 @@ const (
 	ObjExchangeRateAlias = "r"
 	ObjTransaction       = "transaction"
 	ObjTransactionAlias  = "t"
+	ObjBudget            = "budget"
+	ObjBudgetAlias       = "b"
 )

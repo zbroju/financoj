@@ -63,6 +63,7 @@ SUBCOMMANDS:
 	flagDate := cli.StringFlag{Name: OptDate + "," + OptDateAlias, Value: NotSetStringValue, Usage: "date"}
 	flagDateFrom := cli.StringFlag{Name: OptDateFrom, Value: NotSetStringValue, Usage: "date from"}
 	flagDateTo := cli.StringFlag{Name: OptDateTo, Value: NotSetStringValue, Usage: "date to"}
+	flagPeriod := cli.StringFlag{Name: OptPeriod + "," + OptPeriodAlias, Value: NotSetStringValue, Usage: "year-month period (yyyy-mm)"}
 
 	app.Commands = []cli.Command{
 		{Name: CmdInit,
@@ -97,6 +98,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagDescription, flagValue, flagAccount, flagCategory, flagDate},
 					Usage:   "Add new transaction.",
 					Action:  CmdTransactionAdd},
+				{Name: ObjBudget,
+					Aliases: []string{ObjBudgetAlias},
+					Flags:   []cli.Flag{flagFile, flagPeriod, flagCategory, flagValue, flagCurrencyWithDefault},
+					Usage:   "Add new budget.",
+					Action:  CmdBudgetAdd},
 			},
 		},
 		{Name: CmdEdit, Aliases: []string{CmdEditAlias}, Usage: "Edit an object.",
@@ -212,7 +218,7 @@ SUBCOMMANDS:
 //DONE: transaction edit
 //DONE: transaction remove
 //DONE: transaction list
-//TODO: budget add
+//DONE: budget add
 //TODO: budget edit
 //TODO: budget remove
 //TODO: budget list
@@ -225,7 +231,7 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 21/33 (63%)
+//DONE: 22/33 (66%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)

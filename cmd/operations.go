@@ -276,7 +276,7 @@ func CmdMainCategoryAdd(c *cli.Context) error {
 	}
 
 	m := &MainCategory{MType: t, Name: n, Status: ISOpen}
-	if err := MainCategoryAdd(fh, m); err != nil {
+	if err = MainCategoryAdd(fh, m); err != nil {
 		printError.Fatalln(err)
 	}
 
@@ -1103,6 +1103,63 @@ func CmdTransactionRemove(c *cli.Context) error {
 
 	// Show summary
 	printUserMsg.Printf("removed transaction with id = %d\n", t.Id)
+
+	return nil
+}
+
+// CmdBudgetAdd adds new budget
+func CmdBudgetAdd(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags (file, name)
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	p := c.String(OptPeriod)
+	if p == NotSetStringValue {
+		printError.Fatalln(errMissingPeriodFlag)
+	}
+	cat := c.String(ObjCategory)
+	if cat == NotSetStringValue {
+		printError.Fatalln(errMissingCategoryFlag)
+	}
+	v := c.Float64(OptValue)
+	if v == NotSetFloatValue {
+		printError.Fatalln(errMissingValueFlag)
+	}
+	cur := c.String(OptCurrency)
+	if cur == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+
+	// Open data file and validate parameters
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	b := BudgetNew()
+	if b.Period, err = BPeriodParse(p); err != nil {
+		printError.Fatalln(err)
+	}
+	if b.Category, err = CategoryForName(fh, cat); err != nil {
+		printError.Fatalln(err)
+	}
+	b.Value = v
+	b.Currency = cur
+
+	// Add new budget
+	if err = BudgetAdd(fh, b); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("added new budget\n")
 
 	return nil
 }
