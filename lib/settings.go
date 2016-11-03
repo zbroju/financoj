@@ -34,6 +34,8 @@ const (
 
 	errTransactionWithIDNone = "no transaction with given ID"
 
+	errBudgetNone = "no budget"
+
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
 )
