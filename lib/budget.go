@@ -66,3 +66,23 @@ func BudgetGet(db *gsqlitehandler.SqliteDB, p *BPeriod, c *Category) (b *Budget,
 	return b, nil
 	//TODO: add test
 }
+
+// BudgetRemove removes given Budget from file
+func BudgetRemove(db *gsqlitehandler.SqliteDB, b *Budget) error {
+	var err error
+	var stmt *sql.Stmt
+
+	// Remove budget
+	sqlQuery := "DELETE FROM budgets WHERE year=? AND month=? AND category_id=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(b.Period.Year, b.Period.Month, b.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
+	//TODO add test
+}

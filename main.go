@@ -161,6 +161,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagID},
 					Usage:   "Remove transaction.",
 					Action:  CmdTransactionRemove},
+				{Name: ObjBudget,
+					Aliases: []string{ObjBudgetAlias},
+					Flags:   []cli.Flag{flagFile, flagPeriod, flagCategory},
+					Usage:   "Remove budget.",
+					Action:  CmdBudgetRemove},
 			},
 		},
 		{Name: CmdList, Aliases: []string{CmdListAlias}, Usage: "List objects on standard output.",
@@ -220,7 +225,7 @@ SUBCOMMANDS:
 //DONE: transaction list
 //DONE: budget add
 //TODO: budget edit
-//TODO: budget remove
+//DONE: budget remove
 //TODO: budget list
 //TODO: report accounts balance
 //TODO: report budget categories
