@@ -132,6 +132,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagID, flagDate, flagCategory, flagAccount, flagValue, flagDescription},
 					Usage:   "Edit transaction.",
 					Action:  CmdTransactionEdit},
+				{Name: ObjBudget,
+					Aliases: []string{ObjBudgetAlias},
+					Flags:   []cli.Flag{flagFile, flagPeriod, flagCategory, flagValue, flagCurrency},
+					Usage:   "Edit budget.",
+					Action:  CmdBudgetEdit},
 			},
 		},
 		{Name: CmdRemove, Aliases: []string{CmdRemoveAlias}, Usage: "Remove an object.",
@@ -224,7 +229,7 @@ SUBCOMMANDS:
 //DONE: transaction remove
 //DONE: transaction list
 //DONE: budget add
-//TODO: budget edit
+//DONE: budget edit
 //DONE: budget remove
 //TODO: budget list
 //TODO: report accounts balance
@@ -236,7 +241,7 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 22/33 (66%)
+//DONE: 24/33 (72%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
@@ -245,6 +250,7 @@ SUBCOMMANDS:
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add automatic keeping number of backup copies (the number specified in config file)
 //TODO: add export to csv any list and report
+//TODO: add transaction halfsplit when transaction is equally split into two categories
 
 //FIXME: make all operations on currencies case insensitive
 //FIXME: make all object private (requires 'ObjectNew' functions)

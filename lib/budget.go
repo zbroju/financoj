@@ -86,3 +86,22 @@ func BudgetRemove(db *gsqlitehandler.SqliteDB, b *Budget) error {
 	return nil
 	//TODO add test
 }
+
+// BudgetEdit updates budget with new values.
+// All fields are updated, so make sure you pass old values in argument 'b'.
+func BudgetEdit(db *gsqlitehandler.SqliteDB, b *Budget) error {
+	var err error
+	var stmt *sql.Stmt
+
+	sqlQuery := "UPDATE budgets SET value=?, currency=? WHERE year=? AND month=? AND category_id=?;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(b.Value, b.Currency, b.Period.Year, b.Period.Month, b.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	return nil
+}

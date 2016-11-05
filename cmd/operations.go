@@ -1217,4 +1217,64 @@ func CmdBudgetRemove(c *cli.Context) error {
 	return nil
 }
 
+// CmdBudgetEdit updates budget with new values
+func CmdBudgetEdit(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	ps := c.String(OptPeriod)
+	if ps == NotSetStringValue {
+		printError.Fatalln(errMissingPeriodFlag)
+	}
+	cs := c.String(ObjCategory)
+	if cs == NotSetStringValue {
+		printError.Fatalln(errMissingCategoryFlag)
+	}
+
+	// Open data file and validate parameters
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	var p *BPeriod
+	if p, err = BPeriodParse(ps); err != nil {
+		printError.Fatalln(err)
+	}
+	var cat *Category
+	if cat, err = CategoryForName(fh, cs); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Find the budget and remove it
+	var b *Budget
+	if b, err = BudgetGet(fh, p, cat); err != nil {
+		printError.Fatalln(err)
+	}
+	if v := c.Float64(OptValue); v != NotSetFloatValue {
+		b.Value = v
+	}
+	if cur := c.String(OptCurrency); cur != NotSetStringValue {
+		b.Currency = cur
+	}
+
+	// Edit budget
+	if err = BudgetEdit(fh, b); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("updated budget with new values")
+
+	return nil
+}
+
 //FIXME: make user messages more verbose (good example: BudgetRemove)
