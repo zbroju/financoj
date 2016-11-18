@@ -1144,7 +1144,7 @@ func CmdBudgetAdd(c *cli.Context) error {
 	defer fh.Close()
 
 	b := BudgetNew()
-	if b.Period, err = BPeriodParse(p); err != nil {
+	if b.Period, err = BPeriodParseYM(p); err != nil {
 		printError.Fatalln(err)
 	}
 	if b.Category, err = CategoryForName(fh, cat); err != nil {
@@ -1194,7 +1194,7 @@ func CmdBudgetRemove(c *cli.Context) error {
 	defer fh.Close()
 
 	var p *BPeriod
-	if p, err = BPeriodParse(ps); err != nil {
+	if p, err = BPeriodParseYM(ps); err != nil {
 		printError.Fatalln(err)
 	}
 	var cat *Category
@@ -1246,7 +1246,7 @@ func CmdBudgetEdit(c *cli.Context) error {
 	defer fh.Close()
 
 	var p *BPeriod
-	if p, err = BPeriodParse(ps); err != nil {
+	if p, err = BPeriodParseYM(ps); err != nil {
 		printError.Fatalln(err)
 	}
 	var cat *Category
@@ -1273,6 +1273,73 @@ func CmdBudgetEdit(c *cli.Context) error {
 
 	// Show summary
 	printUserMsg.Printf("updated budget with new values")
+
+	return nil
+}
+
+// CmdBudgetList prints budgets on standard output
+func CmdBudgetList(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Get filtering criteria
+	var p *BPeriod
+	if p, err = BPeriodParseYOrYM(OptPeriod); err != nil {
+		printError.Fatalln(err)
+	}
+	var ct *Category
+	if cs := c.String(ObjCategory); cs != NotSetStringValue {
+		if ct, err = CategoryForName(fh, cs); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+
+	// Build formatting strings
+	var getNextBudget func() *Budget
+	if getNextBudget, err = BudgetList(fh, p, ct); err != nil {
+		printError.Fatalln(err)
+	}
+	lP := utf8.RuneCountInString(HBPeriod)
+	lT := utf8.RuneCountInString(HMCType)
+	lMC := utf8.RuneCountInString(HMCName)
+	lC := utf8.RuneCountInString(HCName)
+	lL := utf8.RuneCountInString(HBLimit)
+	lCur := utf8.RuneCountInString(HBCurrency)
+
+	for b := getNextBudget(); b != nil; b = getNextBudget() {
+		lP = MaxLen(b.Period.String(), lP)
+		lT = MaxLen(b.Category.Main.MType.Name, lT)
+		lMC = MaxLen(b.Category.Main.Name, lMC)
+		lC = MaxLen(b.Category.Name, lC)
+		lL = MaxLen(strconv.FormatFloat(b.Value, 'f', 2, 64), lL)
+		lCur = MaxLen(b.Currency, lCur)
+	}
+	lineH := LineFor(HFSForText(lP), HFSForText(lT), HFSForText(lMC), HFSForText(lC), HFSForNumeric(lL), HFSForText(lCur))
+	LineD := LineFor(DFSForText(lP), DFSForText(lT), DFSForText(lMC), DFSForText(lC), DFSForValue(lL), DFSForText(lCur))
+
+	// Print budgets
+	if getNextBudget, err = BudgetList(fh, p, ct); err != nil {
+		printError.Fatalln(err)
+	}
+	fmt.Fprintf(os.Stdout, lineH, HBPeriod, HMCType, HMCName, HCName, HBLimit, HBCurrency)
+	for b := getNextBudget(); b != nil; b = getNextBudget() {
+		fmt.Fprintf(os.Stdout, LineD, b.Period, b.Category.Main.MType.Name, b.Category.Main.Name, b.Category.Name, b.Value, b.Currency)
+	}
 
 	return nil
 }

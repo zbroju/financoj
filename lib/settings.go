@@ -12,7 +12,8 @@ const (
 	NotSetFloatValue  float64 = 0.0
 	NotSetStringValue         = ""
 
-	DateFormat = "2006-01-02"
+	DateFormat    = "2006-01-02"
+	DateSeparator = "-"
 )
 
 // Error messages

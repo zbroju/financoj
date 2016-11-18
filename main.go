@@ -198,8 +198,13 @@ SUBCOMMANDS:
 				{Name: ObjTransaction,
 					Aliases: []string{ObjTransactionAlias},
 					Flags:   []cli.Flag{flagFile, flagDateFrom, flagDateTo, flagAccount, flagDescription, flagCategory, flagMainCategory},
-					Usage:   "List transactions",
+					Usage:   "List transactions.",
 					Action:  CmdTransactionList},
+				{Name: ObjBudget,
+					Aliases: []string{ObjBudgetAlias},
+					Flags:   []cli.Flag{flagFile, flagPeriod, flagCategory},
+					Usage:   "List budgets.",
+					Action:  CmdBudgetList},
 			},
 		},
 	}
@@ -231,7 +236,7 @@ SUBCOMMANDS:
 //DONE: budget add
 //DONE: budget edit
 //DONE: budget remove
-//TODO: budget list
+//DONE: budget list
 //TODO: report accounts balance
 //TODO: report budget categories
 //TODO: report assets summary

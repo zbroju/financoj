@@ -105,3 +105,54 @@ func BudgetEdit(db *gsqlitehandler.SqliteDB, b *Budget) error {
 
 	return nil
 }
+
+// BudgetList returns budgets from file as closure
+func BudgetList(db *gsqlitehandler.SqliteDB, p *BPeriod, c *Category) (f func() *Budget, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	var y, m int64
+	if p == nil {
+		y, m = noIntParamForSQL, noIntParamForSQL
+	} else {
+		y = p.Year
+		if p.Month == int64(NotSetIntValue) {
+			m = noIntParamForSQL
+		} else {
+			m = p.Month
+		}
+	}
+	var cId int64
+	if c == nil {
+		cId = noIntParamForSQL
+	} else {
+		cId = c.Id
+	}
+
+	sqlQuery := "SELECT b.year, b.month, b.value * t.factor as value, b.currency, c.id, c.name, c.status, m.id, m.name, m.status, t.id, t.name, t.factor " +
+		"FROM budgets b INNER JOIN categories c ON b.category_id=c.id INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types t ON m.type_id=t.id " +
+		"WHERE (b.year=? OR ?=?) AND (b.month=? OR ?=?) AND (c.id=? OR ?=?) " +
+		"ORDER BY b.year, b.month, t.name, m.name, c.name;"
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	if rows, err = stmt.Query(y, y, noIntParamForSQL, m, m, noIntParamForSQL, cId, cId, noIntParamForSQL); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	f = func() *Budget {
+		if rows.Next() {
+			b := BudgetNew()
+			rows.Scan(&b.Period.Year, &b.Period.Month, &b.Value, &b.Currency, &b.Category.Id, &b.Category.Name, &b.Category.Status, &b.Category.Main.Id, &b.Category.Main.Name, &b.Category.Main.Status, &b.Category.Main.MType.Id, &b.Category.Main.MType.Name, &b.Category.Main.MType.Factor)
+			return b
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}

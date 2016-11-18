@@ -36,6 +36,10 @@ const (
 	HTDate        = "DATE"
 	HTValue       = "VALUE"
 	HTDescription = "DESCRIPTION"
+
+	HBPeriod   = "PERIOD"
+	HBLimit    = "LIMIT"
+	HBCurrency = "CUR"
 )
 
 // Errors

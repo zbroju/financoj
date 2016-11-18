@@ -9,12 +9,14 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // Local errors
 const (
-	errMonthIncorrect = "month is not correct"
-	errYearIncorrect  = "year is not correct"
+	errPeriodIncorrect = "given period is not correct"
+	errMonthIncorrect  = "month is not correct"
+	errYearIncorrect   = "year is not correct"
 )
 
 // Basic type for keeping budget period (year-month).
@@ -45,7 +47,7 @@ func incorrectMonth(m int64) error {
 
 // String satisfies fmt.Stringer interface in order to get human readable names.
 func (p *BPeriod) String() string {
-	return fmt.Sprintf("%04d-%02d", p.Year, p.Month)
+	return fmt.Sprintf("%04d%s%02d", p.Year, DateSeparator, p.Month)
 }
 
 // Set verifies if year y and month m are within their ranges and assigns it to the budgeting period fields.
@@ -62,11 +64,10 @@ func (p *BPeriod) Set(y, m int64) error {
 	return nil
 }
 
-// Parse converts string (expected format: yyyy-mm) to year and month and after verification if they are within
-// their ranges assign them to the budgeting period fields.
-func BPeriodParse(s string) (b *BPeriod, err error) {
-
-	sarr := strings.SplitN(s, "-", 2)
+// BPeriodParseYM converts string (expected format: yyyy-mm) to year and month and after verification if they are within
+// their ranges assign them to the budget period fields.
+func BPeriodParseYM(s string) (b *BPeriod, err error) {
+	sarr := strings.SplitN(s, DateSeparator, 2)
 
 	var y, m int64
 	if y, err = strconv.ParseInt(sarr[0], 10, 64); err != nil {
@@ -85,6 +86,27 @@ func BPeriodParse(s string) (b *BPeriod, err error) {
 	b = new(BPeriod)
 	b.Year = y
 	b.Month = m
+
+	return b, nil
+}
+
+// BPeriodParseYOrYM converts string (expected format: yyyy-mm or yyyy) to year and month or to year only and after verification if they are within
+// their ranges assign them to the budget period fields.
+func BPeriodParseYOrYM(s string) (b *BPeriod, err error) {
+	switch utf8.RuneCountInString(s) {
+	case 4:
+		var y int64
+		if y, err = strconv.ParseInt(s, 10, 64); err == nil {
+			if err = incorrectYear(y); err != nil {
+				b = new(BPeriod)
+				b.Year = y
+			}
+		}
+	case 6, 7:
+		b, err = BPeriodParseYM(s)
+	default:
+		err = errors.New(errPeriodIncorrect)
+	}
 
 	return b, nil
 }
