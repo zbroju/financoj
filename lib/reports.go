@@ -1,0 +1,87 @@
+// Written 2016 by Marcin 'Zbroju' Zbroinski.
+// Use of this source code is governed by a GNU General Public License
+// that can be found in the LICENSE file.
+
+package engine
+
+import (
+	"database/sql"
+	"errors"
+	"github.com/zbroju/gsqlitehandler"
+	"time"
+)
+
+// AccountBalanceEntry represents one line of the report
+type AccountBalanceEntry struct {
+	Account *Account
+	Value   float64
+}
+
+func AccountBalanceEntryNew() *AccountBalanceEntry {
+	e := new(AccountBalanceEntry)
+	e.Account = new(Account)
+
+	return e
+}
+
+func ReportAccountBalance(db *gsqlitehandler.SqliteDB, d time.Time) (f func() *AccountBalanceEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Prepare query
+	sqlQuery := `
+SELECT
+	a.id
+	, a.name
+	, a.description
+	, a.institution
+	, a.currency
+	, a.type
+	, a.status
+	, sum(t.value * mct.factor) as value
+FROM
+	transactions t
+	INNER JOIN accounts a ON t.account_id = a.id
+	INNER JOIN categories c ON t.category_id = c.id
+	INNER JOIN main_categories mc ON c.main_category_id = mc.id
+	INNER JOIN main_categories_types mct ON mc.type_id = mct.id
+WHERE
+	t.date<=?
+	AND a.status=?
+GROUP BY
+	a.id
+	, a.name
+	, a.description
+	, a.institution
+	, a.currency
+	, a.type
+	, a.status
+ORDER BY
+	a.type
+	, a.name
+;
+`
+	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	if rows, err = stmt.Query(d.Format(DateFormat), ISOpen); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *AccountBalanceEntry {
+		if rows.Next() {
+			e := AccountBalanceEntryNew()
+			rows.Scan(&e.Account.Id, &e.Account.Name, &e.Account.Description, &e.Account.Institution, &e.Account.Currency, &e.Account.AType, &e.Account.Status, &e.Value)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}

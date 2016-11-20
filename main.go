@@ -54,7 +54,7 @@ SUBCOMMANDS:
 	flagAccountType := cli.StringFlag{Name: OptAccountType + "," + OptAccountTypeAlias, Value: NotSetStringValue, Usage: "type of account: operational/o, savings/s, properties/p, investments/i, loans/l"}
 	flagCategory := cli.StringFlag{Name: ObjCategory + "," + ObjCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
 	flagMainCategory := cli.StringFlag{Name: ObjMainCategory + "," + ObjMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
-	flagMainCategoryType := cli.StringFlag{Name: OptMainCategoryType + "," + OptMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (c/cost, t/transfer, i/income)"}
+	flagMainCategoryType := cli.StringFlag{Name: OptMainCategoryType + "," + OptMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (cost, transfer, income)"}
 	flagCurrency := cli.StringFlag{Name: OptCurrency + "," + OptCurrencyAlias, Value: NotSetStringValue, Usage: "currency"}
 	flagCurrencyWithDefault := cli.StringFlag{Name: OptCurrency + "," + OptCurrencyAlias, Value: defaultCurrency, Usage: "currency"}
 	flagCurrencyTo := cli.StringFlag{Name: OptCurrencyTo + "," + OptCurrencyToAlias, Value: NotSetStringValue, Usage: "currency to"}
@@ -207,6 +207,15 @@ SUBCOMMANDS:
 					Action:  CmdBudgetList},
 			},
 		},
+		{Name: CmdReport, Aliases: []string{CmdReportAlias}, Usage: "Prints report.",
+			Subcommands: []cli.Command{
+				{Name: ObjReportAccountBalance,
+					Aliases: []string{ObjReportAccountBalanceAlias},
+					Flags:   []cli.Flag{flagFile, flagDate},
+					Usage:   "Accounts balance on given date (or today if date flag missing).",
+					Action:  RepAccountBalance},
+			},
+		},
 	}
 
 	app.Run(os.Args)
@@ -237,7 +246,7 @@ SUBCOMMANDS:
 //DONE: budget edit
 //DONE: budget remove
 //DONE: budget list
-//TODO: report accounts balance
+//DONE: report accounts balance
 //TODO: report budget categories
 //TODO: report assets summary
 //TODO: report budget main categories
@@ -246,7 +255,7 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 24/33 (72%)
+//DONE: 26/33 (78%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)

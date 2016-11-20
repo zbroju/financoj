@@ -1345,3 +1345,4 @@ func CmdBudgetList(c *cli.Context) error {
 }
 
 //FIXME: make user messages more verbose (good example: BudgetRemove)
+//FIXME: split operations file into separate files, one for each object

@@ -67,10 +67,12 @@ const (
 	CmdAddAlias    = "A"
 	CmdEdit        = "edit"
 	CmdEditAlias   = "E"
-	CmdRemove      = "remove"
-	CmdRemoveAlias = "R"
+	CmdRemove      = "delete"
+	CmdRemoveAlias = "D"
 	CmdList        = "list"
 	CmdListAlias   = "L"
+	CmdReport      = "report"
+	CmdReportAlias = "R"
 
 	OptFile                  = "file"
 	OptFileAlias             = "f"
@@ -110,4 +112,7 @@ const (
 	ObjTransactionAlias  = "t"
 	ObjBudget            = "budget"
 	ObjBudgetAlias       = "b"
+
+	ObjReportAccountBalance      = "account-balance"
+	ObjReportAccountBalanceAlias = "ab"
 )
