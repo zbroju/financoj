@@ -93,7 +93,6 @@ type BudgetCategoriesEntry struct {
 	Limit      float64
 	Actual     float64
 	Difference float64
-	Currency   string
 }
 
 func BudgetCategoriesEntryNew() *BudgetCategoriesEntry {
@@ -113,14 +112,14 @@ func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency st
 		if stmt, err = db.Handler.Prepare(SQL_REPORT_BUDGET_CATEGORIES_YEARLY); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
-		if rows, err = stmt.Query(currency, strconv.Itoa(y), y, MCTTransfer, currency, currency, currency, y, currency, currency, strconv.Itoa(y)); err != nil {
+		if rows, err = stmt.Query(strconv.Itoa(y), y, MCTTransfer, currency, currency, currency, y, currency, currency, strconv.Itoa(y)); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 	} else {
 		if stmt, err = db.Handler.Prepare(SQL_REPORT_BUDGET_CATEGORIES_MONTHLY); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
-		if rows, err = stmt.Query(currency, strconv.Itoa(y), strconv.Itoa(m), y, m, MCTTransfer, currency, currency, y, m, currency, currency, strconv.Itoa(y), strconv.Itoa(m)); err != nil {
+		if rows, err = stmt.Query(strconv.Itoa(y), strconv.Itoa(m), y, m, MCTTransfer, currency, currency, y, m, currency, currency, strconv.Itoa(y), strconv.Itoa(m)); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 	}
@@ -129,7 +128,7 @@ func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency st
 	f = func() *BudgetCategoriesEntry {
 		if rows.Next() {
 			e := BudgetCategoriesEntryNew()
-			rows.Scan(&e.Category.Main.Id, &e.Category.Main.Name, &e.Category.Main.Status, &e.Category.Main.MType.Id, &e.Category.Main.MType.Name, &e.Category.Main.MType.Factor, &e.Category.Id, &e.Category.Name, &e.Category.Status, &e.Limit, &e.Actual, &e.Difference, &e.Currency)
+			rows.Scan(&e.Category.Main.Id, &e.Category.Main.Name, &e.Category.Main.Status, &e.Category.Main.MType.Id, &e.Category.Main.MType.Name, &e.Category.Main.MType.Factor, &e.Category.Id, &e.Category.Name, &e.Category.Status, &e.Limit, &e.Actual, &e.Difference)
 			return e
 		}
 		rows.Close()

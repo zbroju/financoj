@@ -8,20 +8,19 @@ package engine
 // for given month.
 //
 // Parameters
-// 1 - reporting currency (string)
-// 2 - year (string)
-// 3 - month (string)
-// 4 - year (int)
-// 5 - month (int)
-// 6 - Main Category Type Transfer (int)
-// 7- reporting currency (string)
-// 8 - reporting currency (string)
-// 9 - year (int)
-// 10 - month (int)
+// 1 - year (string)
+// 2 - month (string)
+// 3 - year (int)
+// 4 - month (int)
+// 5 - Main Category Type Transfer (int)
+// 6- reporting currency (string)
+// 7 - reporting currency (string)
+// 8 - year (int)
+// 9 - month (int)
+// 10 - reporting currency (string)
 // 11 - reporting currency (string)
-// 12 - reporting currency (string)
-// 13 - year (string)
-// 14 - month (string)
+// 12 - year (string)
+// 13 - month (string)
 const SQL_REPORT_BUDGET_CATEGORIES_MONTHLY string = `
 select
     m.id
@@ -36,7 +35,6 @@ select
     , coalesce(b.budget,0.0) budgetLimit
     , coalesce(ta.actual,0.0) actualValue
     , coalesce(ta.actual,0.0) - coalesce(b.budget,0.0) as difference
-    , ? as currency
 from
     -- list of categories which have either budget or transactions
     (select
@@ -111,17 +109,16 @@ order by
 // for given year.
 //
 // Parameters
-// 1 - reporting currency (string)
-// 2 - year (string)
-// 3 - year (int)
-// 4 - Main Category Type Transfer (int)
+// 1 - year (string)
+// 2 - year (int)
+// 3 - Main Category Type Transfer (int)
+// 4 - reporting currency (string)
 // 5 - reporting currency (string)
 // 6 - reporting currency (string)
-// 7 - reporting currency (string)
-// 8 - year (int)
+// 7 - year (int)
+// 8 - reporting currency (string)
 // 9 - reporting currency (string)
-// 10 - reporting currency (string)
-// 11 - year (string)
+// 10 - year (string)
 const SQL_REPORT_BUDGET_CATEGORIES_YEARLY string = `
 select
     m.id
@@ -136,7 +133,6 @@ select
     , coalesce(b.budget,0.0) budgetLimit
     , coalesce(ta.actual,0.0) actualValue
     , coalesce(ta.actual,0.0) - coalesce(b.budget,0.0) as difference
-    , ? as currency
 from
     -- list of categories which have either budget or transactions
     (select

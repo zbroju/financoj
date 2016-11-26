@@ -122,7 +122,6 @@ func RepBudgetCategories(c *cli.Context) error {
 	lBL := utf8.RuneCountInString(HBLimit)
 	lTV := utf8.RuneCountInString(HTValue)
 	lD := utf8.RuneCountInString(HBDifference)
-	lCur := utf8.RuneCountInString(HBCurrency)
 	for e := getNextEntry(); e != nil; e = getNextEntry() {
 		lMT = MaxLen(e.Category.Main.MType.Name, lMT)
 		lMN = MaxLen(e.Category.Main.Name, lMN)
@@ -130,14 +129,13 @@ func RepBudgetCategories(c *cli.Context) error {
 		lBL = MaxLen(strconv.FormatFloat(e.Limit, 'f', 2, 64), lBL)
 		lTV = MaxLen(strconv.FormatFloat(e.Actual, 'f', 2, 64), lTV)
 		lD = MaxLen(strconv.FormatFloat(e.Difference, 'f', 2, 64), lD)
-		lCur = MaxLen(e.Currency, lCur)
 	}
-	lineH := LineFor(NotSetStringValue, HFSForText(lMN), HFSForText(lCN), HFSForNumeric(lBL), HFSForText(lCur), HFSForNumeric(lTV), HFSForText(lCur), HFSForNumeric(lD), HFSForText(lCur))
-	lineD := LineFor(NotSetStringValue, DFSForText(lMN), DFSForText(lCN), DFSForValue(lBL), DFSForText(lCur), DFSForValue(lTV), DFSForText(lCur), DFSForValue(lD), DFSForText(lCur))
-	lineS := LineFor(DFSForText(2*utf8.RuneCountInString(FSSeparator)+lMN+lCN), DFSForValue(lBL), DFSForText(lCur), DFSForValue(lTV), DFSForText(lCur), DFSForValue(lD), DFSForText(lCur))
+	lineH := LineFor(NotSetStringValue, HFSForText(lMN), HFSForText(lCN), HFSForNumeric(lBL), HFSForNumeric(lTV),HFSForNumeric(lD))
+	lineD := LineFor(NotSetStringValue, DFSForText(lMN), DFSForText(lCN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
+	lineS := LineFor(DFSForText(2*utf8.RuneCountInString(FSSeparator)+lMN+lCN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
 
 	// Print report
-	fmt.Fprintf(os.Stdout, "Budget report for %s:\n", p)
+	fmt.Fprintf(os.Stdout, "Budget report for %s (in %s):\n", p,currency)
 
 	if getNextEntry, err = ReportBudgetCategories(fh, p, currency); err != nil {
 		printError.Fatalln(err)
@@ -148,18 +146,18 @@ func RepBudgetCategories(c *cli.Context) error {
 	for e := getNextEntry(); e != nil; e = getNextEntry() {
 		if currentType != e.Category.Main.MType.Name {
 			if !beginning {
-				fmt.Fprintf(os.Stdout, lineS, currentType, subtotalLimit, e.Currency, subtotalValue, e.Currency, subtotalDifference, e.Currency)
+				fmt.Fprintf(os.Stdout, lineS, currentType, subtotalLimit, subtotalValue, subtotalDifference)
 			}
 			currentType = e.Category.Main.MType.Name
 			fmt.Fprintf(os.Stdout, "\n%s\n", currentType)
-			fmt.Fprintf(os.Stdout, lineH, HMCName, HCName, HBLimit, HBCurrency, HTValue, HBCurrency, HBDifference, HBCurrency)
+			fmt.Fprintf(os.Stdout, lineH, HMCName, HCName, HBLimit, HTValue, HBDifference)
 
 			beginning = false
 			subtotalLimit = NotSetFloatValue
 			subtotalValue = NotSetFloatValue
 			subtotalDifference = NotSetFloatValue
 		}
-		fmt.Fprintf(os.Stdout, lineD, e.Category.Main.Name, e.Category.Name, e.Limit, e.Currency, e.Actual, e.Currency, e.Difference, e.Currency)
+		fmt.Fprintf(os.Stdout, lineD, e.Category.Main.Name, e.Category.Name, e.Limit, e.Actual, e.Difference)
 		subtotalLimit += e.Limit
 		subtotalValue += e.Actual
 		subtotalDifference += e.Difference
@@ -167,9 +165,9 @@ func RepBudgetCategories(c *cli.Context) error {
 		totalValue += e.Actual
 		totalDifference += e.Difference
 	}
-	fmt.Fprintf(os.Stdout, lineS, currentType, subtotalLimit, currency, subtotalValue, currency, subtotalDifference, currency)
+	fmt.Fprintf(os.Stdout, lineS, currentType, subtotalLimit, subtotalValue, subtotalDifference)
 	fmt.Fprint(os.Stdout, "\n")
-	fmt.Fprintf(os.Stdout, lineS, "TOTAL", totalLimit, currency, totalValue, currency, totalDifference, currency)
+	fmt.Fprintf(os.Stdout, lineS, "TOTAL", totalLimit, totalValue, totalDifference)
 
 	return nil
 }

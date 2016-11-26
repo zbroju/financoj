@@ -280,3 +280,4 @@ SUBCOMMANDS:
 //FIXME: change 'errMissing*Flag' to map and create function to easily check missing flags
 //FIXME: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
 //FIXME: move all sql queries to separate file and format them so that they are readable
+//FIXME: add function all_currencies_available and put it in a condition in reportBudgetCategories
