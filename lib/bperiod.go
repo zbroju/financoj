@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -47,7 +48,12 @@ func incorrectMonth(m int64) error {
 
 // String satisfies fmt.Stringer interface in order to get human readable names.
 func (p *BPeriod) String() string {
-	return fmt.Sprintf("%04d%s%02d", p.Year, DateSeparator, p.Month)
+	if p.Month == int64(NotSetIntValue) {
+		return fmt.Sprintf("%04d", p.Year)
+	} else {
+		return fmt.Sprintf("%04d%s%02d", p.Year, DateSeparator, p.Month)
+	}
+
 }
 
 // Set verifies if year y and month m are within their ranges and assigns it to the budgeting period fields.
@@ -97,7 +103,7 @@ func BPeriodParseYOrYM(s string) (b *BPeriod, err error) {
 	case 4:
 		var y int64
 		if y, err = strconv.ParseInt(s, 10, 64); err == nil {
-			if err = incorrectYear(y); err != nil {
+			if err = incorrectYear(y); err == nil {
 				b = new(BPeriod)
 				b.Year = y
 			}
@@ -107,6 +113,25 @@ func BPeriodParseYOrYM(s string) (b *BPeriod, err error) {
 	default:
 		err = errors.New(errPeriodIncorrect)
 	}
+
+	return b, nil
+}
+
+func BPeriodCurrent() (b *BPeriod, err error) {
+	d := time.Now()
+	y := int64(d.Year())
+	m := int64(d.Month())
+
+	if err = incorrectYear(y); err != nil {
+		return nil, err
+	}
+	if err = incorrectMonth(m); err != nil {
+		return nil, err
+	}
+
+	b = new(BPeriod)
+	b.Year = y
+	b.Month = m
 
 	return b, nil
 }

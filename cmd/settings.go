@@ -37,9 +37,10 @@ const (
 	HTValue       = "VALUE"
 	HTDescription = "DESCRIPTION"
 
-	HBPeriod   = "PERIOD"
-	HBLimit    = "LIMIT"
-	HBCurrency = "CUR"
+	HBPeriod     = "PERIOD"
+	HBLimit      = "LIMIT"
+	HBCurrency   = "CUR"
+	HBDifference = "DIFFERENCE"
 )
 
 // Errors
@@ -113,6 +114,8 @@ const (
 	ObjBudget            = "budget"
 	ObjBudgetAlias       = "b"
 
-	ObjReportAccountBalance      = "account-balance"
-	ObjReportAccountBalanceAlias = "ab"
+	ObjReportAccountBalance        = "account-balance"
+	ObjReportAccountBalanceAlias   = "ab"
+	ObjReportBudgetCategories      = "budget-categories"
+	ObjReportBudgetCategoriesAlias = "bc"
 )

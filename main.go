@@ -214,6 +214,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagDate},
 					Usage:   "Accounts balance on given date (or today if date flag missing).",
 					Action:  RepAccountBalance},
+				{Name: ObjReportBudgetCategories,
+					Aliases: []string{ObjReportBudgetCategoriesAlias},
+					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
+					Usage:   "Budget categories for given year or year-month (or current month if period flag is missing).",
+					Action:  RepBudgetCategories},
 			},
 		},
 	}
@@ -247,7 +252,7 @@ SUBCOMMANDS:
 //DONE: budget remove
 //DONE: budget list
 //DONE: report accounts balance
-//TODO: report budget categories
+//DONE: report budget categories
 //TODO: report assets summary
 //TODO: report budget main categories
 //TODO: report categories balance
@@ -255,7 +260,7 @@ SUBCOMMANDS:
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 26/33 (78%)
+//DONE: 27/33 (81%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
@@ -274,3 +279,4 @@ SUBCOMMANDS:
 //TODO: add default account (especially to add transaction, but think about others)
 //FIXME: change 'errMissing*Flag' to map and create function to easily check missing flags
 //FIXME: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
+//FIXME: move all sql queries to separate file and format them so that they are readable

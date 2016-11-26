@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/zbroju/gsqlitehandler"
+	"strconv"
 	"time"
 )
 
@@ -74,6 +75,61 @@ ORDER BY
 		if rows.Next() {
 			e := AccountBalanceEntryNew()
 			rows.Scan(&e.Account.Id, &e.Account.Name, &e.Account.Description, &e.Account.Institution, &e.Account.Currency, &e.Account.AType, &e.Account.Status, &e.Value)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
+// BudgetCategoryEntry represents one line of the report
+type BudgetCategoriesEntry struct {
+	Category   *Category
+	Limit      float64
+	Actual     float64
+	Difference float64
+	Currency   string
+}
+
+func BudgetCategoriesEntryNew() *BudgetCategoriesEntry {
+	e := new(BudgetCategoriesEntry)
+	e.Category = CategoryNew()
+
+	return e
+}
+
+func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency string) (f func() *BudgetCategoriesEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	y := int(p.Year)
+	m := int(p.Month)
+	if m == NotSetIntValue {
+		if stmt, err = db.Handler.Prepare(SQL_REPORT_BUDGET_CATEGORIES_YEARLY); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+		if rows, err = stmt.Query(currency, strconv.Itoa(y), y, MCTTransfer, currency, currency, currency, y, currency, currency, strconv.Itoa(y)); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+	} else {
+		if stmt, err = db.Handler.Prepare(SQL_REPORT_BUDGET_CATEGORIES_MONTHLY); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+		if rows, err = stmt.Query(currency, strconv.Itoa(y), strconv.Itoa(m), y, m, MCTTransfer, currency, currency, y, m, currency, currency, strconv.Itoa(y), strconv.Itoa(m)); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+	}
+
+	// Create closure
+	f = func() *BudgetCategoriesEntry {
+		if rows.Next() {
+			e := BudgetCategoriesEntryNew()
+			rows.Scan(&e.Category.Main.Id, &e.Category.Main.Name, &e.Category.Main.Status, &e.Category.Main.MType.Id, &e.Category.Main.MType.Name, &e.Category.Main.MType.Factor, &e.Category.Id, &e.Category.Name, &e.Category.Status, &e.Limit, &e.Actual, &e.Difference, &e.Currency)
 			return e
 		}
 		rows.Close()
