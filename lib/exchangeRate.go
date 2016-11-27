@@ -28,7 +28,7 @@ func ExchangeRateAdd(db *gsqlitehandler.SqliteDB, e *ExchangeRate) error {
 	}
 
 	// Add new currency exchange rate
-	if stmt, err = db.Handler.Prepare("INSERT into currencies VALUES (?, ?, round(?,4));"); err != nil {
+	if stmt, err = db.Handler.Prepare("INSERT into currencies VALUES (upper(?), upper(?), round(?,4));"); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
@@ -46,7 +46,7 @@ func ExchangeRateEdit(db *gsqlitehandler.SqliteDB, e *ExchangeRate) error {
 	var err error
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("UPDATE currencies SET exchange_rate=round(?,4) WHERE currency_from=? AND currency_to=?;"); err != nil {
+	if stmt, err = db.Handler.Prepare("UPDATE currencies SET exchange_rate=round(?,4) WHERE currency_from=upper(?) AND currency_to=upper(?);"); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
@@ -63,7 +63,7 @@ func ExchangeRateEdit(db *gsqlitehandler.SqliteDB, e *ExchangeRate) error {
 func ExchangeRateForCurrencies(db *gsqlitehandler.SqliteDB, cf string, ct string) (e *ExchangeRate, err error) {
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies WHERE currency_from=? AND currency_to=?;"); err != nil {
+	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies WHERE currency_from=upper(?) AND currency_to=upper(?);"); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
@@ -113,7 +113,7 @@ func ExchangeRateRemove(db *gsqlitehandler.SqliteDB, e *ExchangeRate) error {
 	var err error
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("DELETE FROM currencies WHERE currency_from=? AND currency_to=?;"); err != nil {
+	if stmt, err = db.Handler.Prepare("DELETE FROM currencies WHERE currency_from=upper(?) AND currency_to=upper(?);"); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()

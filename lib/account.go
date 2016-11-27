@@ -63,7 +63,7 @@ func AccountAdd(db *gsqlitehandler.SqliteDB, a *Account) error {
 	var err error
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("INSERT INTO accounts VALUES (NULL, ?, ?, ?, ?, ?, ?);"); err != nil {
+	if stmt, err = db.Handler.Prepare("INSERT INTO accounts VALUES (NULL, ?, ?, ?, upper(?), ?, ?);"); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
@@ -200,7 +200,7 @@ func AccountEdit(db *gsqlitehandler.SqliteDB, a *Account) error {
 		"name=? " +
 		",description=? " +
 		",institution=? " +
-		",currency=? " +
+		",currency=upper(?) " +
 		",type=? " +
 		",status=? " +
 		"WHERE id=?;"

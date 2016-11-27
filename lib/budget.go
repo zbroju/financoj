@@ -32,7 +32,7 @@ func BudgetAdd(db *gsqlitehandler.SqliteDB, b *Budget) error {
 	var err error
 	var stmt *sql.Stmt
 
-	sqlQuery := "INSERT INTO budgets VALUES (?, ?, ?, round(?,2), ?);"
+	sqlQuery := "INSERT INTO budgets VALUES (?, ?, ?, round(?,2), upper(?));"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return errors.New(errWritingToFile)
 	}
@@ -93,7 +93,7 @@ func BudgetEdit(db *gsqlitehandler.SqliteDB, b *Budget) error {
 	var err error
 	var stmt *sql.Stmt
 
-	sqlQuery := "UPDATE budgets SET value=?, currency=? WHERE year=? AND month=? AND category_id=?;"
+	sqlQuery := "UPDATE budgets SET value=?, currency=upper(?) WHERE year=? AND month=? AND category_id=?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return errors.New(errWritingToFile)
 	}

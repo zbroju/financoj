@@ -21,7 +21,7 @@ package engine
 // 11 - reporting currency (string)
 // 12 - year (string)
 // 13 - month (string)
-const SQL_REPORT_BUDGET_CATEGORIES_MONTHLY string = `
+const sqlReportBudgetCategoriesMonthly string = `
 select
     m.id
     , m.name
@@ -68,10 +68,9 @@ from
         select
             category_id
             ,value * mt.factor * cur.exchange_rate as budget
-            ,currency
         from
             budgets
-            inner join (select currency_from, exchange_rate from currencies where currency_to=? union select ?, 1) cur on budgets.currency=cur.currency_from
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on budgets.currency=cur.currency_from
             inner join categories c on category_id=c.id
             inner join main_categories m on c.main_category_id=m.id
             inner join main_categories_types mt on m.type_id=mt.id
@@ -88,7 +87,7 @@ from
         from
            transactions t
             inner join accounts a on t.account_id=a.id
-            inner join (select currency_from, exchange_rate from currencies where currency_to=? union select ?, 1) cur on a.currency=cur.currency_from
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
             inner join categories c on t.category_id=c.id
             inner join main_categories m on c.main_category_id=m.id
             inner join main_categories_types mt on m.type_id=mt.id
@@ -114,12 +113,11 @@ order by
 // 3 - Main Category Type Transfer (int)
 // 4 - reporting currency (string)
 // 5 - reporting currency (string)
-// 6 - reporting currency (string)
-// 7 - year (int)
+// 6 - year (int)
+// 7 - reporting currency (string)
 // 8 - reporting currency (string)
-// 9 - reporting currency (string)
-// 10 - year (string)
-const SQL_REPORT_BUDGET_CATEGORIES_YEARLY string = `
+// 9 - year (string)
+const sqlReportBudgetCategoriesYearly string = `
 select
     m.id
     , m.name
@@ -164,10 +162,9 @@ from
         select
             category_id
             ,sum(value * mt.factor * cur.exchange_rate) as budget
-            ,?
         from
             budgets
-            inner join (select currency_from, exchange_rate from currencies where currency_to=? union select ?, 1) cur on budgets.currency=cur.currency_from
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on budgets.currency=cur.currency_from
             inner join categories c on category_id=c.id
             inner join main_categories m on c.main_category_id=m.id
             inner join main_categories_types mt on m.type_id=mt.id
@@ -185,7 +182,7 @@ from
         from
            transactions t
             inner join accounts a on t.account_id=a.id
-            inner join (select currency_from, exchange_rate from currencies where currency_to=? union select ?, 1) cur on a.currency=cur.currency_from
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
             inner join categories c on t.category_id=c.id
             inner join main_categories m on c.main_category_id=m.id
             inner join main_categories_types mt on m.type_id=mt.id

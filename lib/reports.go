@@ -109,14 +109,14 @@ func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency st
 	y := int(p.Year)
 	m := int(p.Month)
 	if m == NotSetIntValue {
-		if stmt, err = db.Handler.Prepare(SQL_REPORT_BUDGET_CATEGORIES_YEARLY); err != nil {
+		if stmt, err = db.Handler.Prepare(sqlReportBudgetCategoriesYearly); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
-		if rows, err = stmt.Query(strconv.Itoa(y), y, MCTTransfer, currency, currency, currency, y, currency, currency, strconv.Itoa(y)); err != nil {
+		if rows, err = stmt.Query(strconv.Itoa(y), y, MCTTransfer, currency, currency, y, currency, currency, strconv.Itoa(y)); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 	} else {
-		if stmt, err = db.Handler.Prepare(SQL_REPORT_BUDGET_CATEGORIES_MONTHLY); err != nil {
+		if stmt, err = db.Handler.Prepare(sqlReportBudgetCategoriesMonthly); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 		if rows, err = stmt.Query(strconv.Itoa(y), strconv.Itoa(m), y, m, MCTTransfer, currency, currency, y, m, currency, currency, strconv.Itoa(y), strconv.Itoa(m)); err != nil {

@@ -130,12 +130,12 @@ func RepBudgetCategories(c *cli.Context) error {
 		lTV = MaxLen(strconv.FormatFloat(e.Actual, 'f', 2, 64), lTV)
 		lD = MaxLen(strconv.FormatFloat(e.Difference, 'f', 2, 64), lD)
 	}
-	lineH := LineFor(NotSetStringValue, HFSForText(lMN), HFSForText(lCN), HFSForNumeric(lBL), HFSForNumeric(lTV),HFSForNumeric(lD))
+	lineH := LineFor(NotSetStringValue, HFSForText(lMN), HFSForText(lCN), HFSForNumeric(lBL), HFSForNumeric(lTV), HFSForNumeric(lD))
 	lineD := LineFor(NotSetStringValue, DFSForText(lMN), DFSForText(lCN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
 	lineS := LineFor(DFSForText(2*utf8.RuneCountInString(FSSeparator)+lMN+lCN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
 
 	// Print report
-	fmt.Fprintf(os.Stdout, "Budget report for %s (in %s):\n", p,currency)
+	fmt.Fprintf(os.Stdout, "Budget report for %s (in %s):\n", p, currency)
 
 	if getNextEntry, err = ReportBudgetCategories(fh, p, currency); err != nil {
 		printError.Fatalln(err)
