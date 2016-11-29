@@ -10,9 +10,9 @@ import (
 	. "github.com/zbroju/financoj/lib"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
-	"strings"
 )
 
 func RepAccountBalance(c *cli.Context) error {
@@ -123,14 +123,29 @@ func RepBudgetCategories(c *cli.Context) error {
 	lBL := utf8.RuneCountInString(HBLimit)
 	lTV := utf8.RuneCountInString(HTValue)
 	lD := utf8.RuneCountInString(HBDifference)
+	var sumLimit, sumActual, sumDifference float64
+	var currentType string
 	for e := getNextEntry(); e != nil; e = getNextEntry() {
 		lMT = MaxLen(e.Category.Main.MType.Name, lMT)
 		lMN = MaxLen(e.Category.Main.Name, lMN)
 		lCN = MaxLen(e.Category.Name, lCN)
-		lBL = MaxLen(strconv.FormatFloat(e.Limit, 'f', 2, 64), lBL)
-		lTV = MaxLen(strconv.FormatFloat(e.Actual, 'f', 2, 64), lTV)
-		lD = MaxLen(strconv.FormatFloat(e.Difference, 'f', 2, 64), lD)
+		if currentType != e.Category.Main.MType.Name {
+			lBL = MaxLen(strconv.FormatFloat(sumLimit, 'f', 2, 64), lBL)
+			lTV = MaxLen(strconv.FormatFloat(sumActual, 'f', 2, 64), lTV)
+			lD = MaxLen(strconv.FormatFloat(sumDifference, 'f', 2, 64), lD)
+			sumLimit = 0
+			sumActual = 0
+			sumDifference = 0
+			currentType = e.Category.Main.MType.Name
+		}
+		sumLimit += e.Limit
+		sumActual += e.Actual
+		sumDifference += e.Difference
 	}
+	lBL = MaxLen(strconv.FormatFloat(sumLimit, 'f', 2, 64), lBL)
+	lTV = MaxLen(strconv.FormatFloat(sumActual, 'f', 2, 64), lTV)
+	lD = MaxLen(strconv.FormatFloat(sumDifference, 'f', 2, 64), lD)
+
 	lineH := LineFor(NotSetStringValue, HFSForText(lMN), HFSForText(lCN), HFSForNumeric(lBL), HFSForNumeric(lTV), HFSForNumeric(lD))
 	lineD := LineFor(NotSetStringValue, DFSForText(lMN), DFSForText(lCN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
 	lineS := LineFor(DFSForText(2*utf8.RuneCountInString(FSSeparator)+lMN+lCN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
@@ -141,7 +156,7 @@ func RepBudgetCategories(c *cli.Context) error {
 	if getNextEntry, err = ReportBudgetCategories(fh, p, currency); err != nil {
 		printError.Fatalln(err)
 	}
-	var currentType string
+	currentType = NotSetStringValue
 	var subtotalLimit, subtotalValue, subtotalDifference, totalLimit, totalValue, totalDifference float64
 	beginning := true
 	for e := getNextEntry(); e != nil; e = getNextEntry() {
@@ -172,4 +187,3 @@ func RepBudgetCategories(c *cli.Context) error {
 
 	return nil
 }
-
