@@ -13,7 +13,7 @@ package engine
 // 3 - year (int)
 // 4 - month (int)
 // 5 - Main Category Type Transfer (int)
-// 6- reporting currency (string)
+// 6 - reporting currency (string)
 // 7 - reporting currency (string)
 // 8 - year (int)
 // 9 - month (int)
@@ -196,4 +196,36 @@ order by
 	, m.name
 	, c.name
 ;
+`
+
+// sqlReportMissingCurrenciesForTransactions is SQL string to get all currencies used in transactions where there is no exchange rate.
+//
+// Parameters:
+// 1 - currency (string)
+// 2 - currency (string)
+// 3 - currency (string)
+const sqlReportMissingCurrenciesForTransactions string = `
+select currency || '-' || upper(?) as cur_to
+from
+(select distinct a.currency from transactions t inner join accounts a on t.account_id=a.id where a.currency<>upper(?)) uc
+left join (select currency_from from currencies where currency_to=upper(?)) ac on uc.currency=ac.currency_from
+where
+ac.currency_from is null
+;
+`
+
+// sqlReportMissingCurrenciesForBudgets is SQL string to get all currencies used in transactions where there is no exchange rate.
+//
+// Parameters:
+// 1 - currency (string)
+// 2 - currency (string)
+// 3 - currency (string)
+const sqlReportMissingCurrenciesForBudgets string = `
+select currency || '-' || upper(?) as cur_to
+from
+	(select distinct currency from budgets where currency<>upper(?)) uc
+	left join (select currency_from from currencies where currency_to=upper(?)) ac on uc.currency=ac.currency_from
+where
+	ac.currency_from is null;
+
 `

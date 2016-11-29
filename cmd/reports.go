@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 	"unicode/utf8"
+	"strings"
 )
 
 func RepAccountBalance(c *cli.Context) error {
@@ -135,7 +136,7 @@ func RepBudgetCategories(c *cli.Context) error {
 	lineS := LineFor(DFSForText(2*utf8.RuneCountInString(FSSeparator)+lMN+lCN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
 
 	// Print report
-	fmt.Fprintf(os.Stdout, "Budget report for %s (in %s):\n", p, currency)
+	fmt.Fprintf(os.Stdout, "Budget report for %s (in %s):\n", p, strings.ToUpper(currency))
 
 	if getNextEntry, err = ReportBudgetCategories(fh, p, currency); err != nil {
 		printError.Fatalln(err)
@@ -171,3 +172,4 @@ func RepBudgetCategories(c *cli.Context) error {
 
 	return nil
 }
+

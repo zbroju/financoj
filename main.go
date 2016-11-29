@@ -271,7 +271,6 @@ SUBCOMMANDS:
 //TODO: add export to csv any list and report
 //TODO: add transaction halfsplit when transaction is equally split into two categories
 
-//FIXME: make all operations on currencies case insensitive
 //FIXME: make all object private (requires 'ObjectNew' functions)
 //FIXME: check if all 'list' functions respect flag --all
 //TODO: review all comments inside function bodies

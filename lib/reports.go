@@ -9,7 +9,13 @@ import (
 	"errors"
 	"github.com/zbroju/gsqlitehandler"
 	"strconv"
+	"strings"
 	"time"
+)
+
+// Error messages
+const (
+	errReportMissingCurrencies string = "missing currency exchange rate(s) for: "
 )
 
 // AccountBalanceEntry represents one line of the report
@@ -124,6 +130,22 @@ func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency st
 		}
 	}
 
+	// Check if we have all necessary currency exchange rates
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	if s, err := missingCurrenciesForBudgets(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+
 	// Create closure
 	f = func() *BudgetCategoriesEntry {
 		if rows.Next() {
@@ -138,5 +160,55 @@ func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency st
 	}
 
 	return f, nil
+	//TODO: add test
+}
+
+// missingCurrenciesForTransactions returns list of missing currency exchange rates for transactions
+// or empty slice if all the currencies exist
+func missingCurrenciesForTransactions(db *gsqlitehandler.SqliteDB, c string) (l []string, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	if stmt, err = db.Handler.Prepare(sqlReportMissingCurrenciesForTransactions); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+	if rows, err = stmt.Query(c, c, c); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var s string
+		rows.Scan(&s)
+		l = append(l, s)
+	}
+
+	return l, nil
+	//TODO: add test
+}
+
+// missingCurrenciesForBudgets returns list of missing currency exchange rates for budgets
+// or empty slice if all the currencies exist
+func missingCurrenciesForBudgets(db *gsqlitehandler.SqliteDB, c string) (l []string, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	if stmt, err = db.Handler.Prepare(sqlReportMissingCurrenciesForBudgets); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	defer stmt.Close()
+	if rows, err = stmt.Query(c, c, c); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var s string
+		rows.Scan(&s)
+		l = append(l, s)
+	}
+
+	return l, nil
 	//TODO: add test
 }
