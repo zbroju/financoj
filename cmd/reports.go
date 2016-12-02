@@ -45,7 +45,7 @@ func RepAccountBalance(c *cli.Context) error {
 	}
 
 	// Build formatting strings
-	var getNextEntry func() *AccountBalanceEntry
+	var getNextEntry func() *AccountBalanceReportEntry
 	if getNextEntry, err = ReportAccountBalance(fh, bDate); err != nil {
 		printError.Fatalln(err)
 	}
@@ -113,7 +113,7 @@ func RepBudgetCategories(c *cli.Context) error {
 	}
 
 	// Build formatting strings
-	var getNextEntry func() *BudgetCategoriesEntry
+	var getNextEntry func() *BudgetCategoriesReportEntry
 	if getNextEntry, err = ReportBudgetCategories(fh, p, currency); err != nil {
 		printError.Fatalln(err)
 	}
@@ -174,6 +174,113 @@ func RepBudgetCategories(c *cli.Context) error {
 			subtotalDifference = NotSetFloatValue
 		}
 		fmt.Fprintf(os.Stdout, lineD, e.Category.Main.Name, e.Category.Name, e.Limit, e.Actual, e.Difference)
+		subtotalLimit += e.Limit
+		subtotalValue += e.Actual
+		subtotalDifference += e.Difference
+		totalLimit += e.Limit
+		totalValue += e.Actual
+		totalDifference += e.Difference
+	}
+	fmt.Fprintf(os.Stdout, lineS, currentType, subtotalLimit, subtotalValue, subtotalDifference)
+	fmt.Fprint(os.Stdout, "\n")
+	fmt.Fprintf(os.Stdout, lineS, "TOTAL", totalLimit, totalValue, totalDifference)
+
+	return nil
+}
+
+func RepBudgetMainCategories(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create filters
+	var p *BPeriod
+	if ps := c.String(OptPeriod); ps != NotSetStringValue {
+		if p, err = BPeriodParseYOrYM(ps); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		if p, err = BPeriodCurrent(); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	currency := c.String(OptCurrency)
+	if currency == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+
+	// Build formatting strings
+	var getNextEntry func() *BudgetMainCategoryReportEntry
+	if getNextEntry, err = ReportBudgetMainCategories(fh, p, currency); err != nil {
+		printError.Fatalln(err)
+	}
+	lMT := utf8.RuneCountInString(HMCType)
+	lMN := utf8.RuneCountInString(HMCName)
+	lBL := utf8.RuneCountInString(HBLimit)
+	lTV := utf8.RuneCountInString(HTValue)
+	lD := utf8.RuneCountInString(HBDifference)
+	var sumLimit, sumActual, sumDifference float64
+	var currentType string
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		lMT = MaxLen(e.MainCategory.MType.Name, lMT)
+		lMN = MaxLen(e.MainCategory.Name, lMN)
+		if currentType != e.MainCategory.MType.Name {
+			lBL = MaxLen(strconv.FormatFloat(sumLimit, 'f', 2, 64), lBL)
+			lTV = MaxLen(strconv.FormatFloat(sumActual, 'f', 2, 64), lTV)
+			lD = MaxLen(strconv.FormatFloat(sumDifference, 'f', 2, 64), lD)
+			sumLimit = 0
+			sumActual = 0
+			sumDifference = 0
+			currentType = e.MainCategory.MType.Name
+		}
+		sumLimit += e.Limit
+		sumActual += e.Actual
+		sumDifference += e.Difference
+	}
+	lBL = MaxLen(strconv.FormatFloat(sumLimit, 'f', 2, 64), lBL)
+	lTV = MaxLen(strconv.FormatFloat(sumActual, 'f', 2, 64), lTV)
+	lD = MaxLen(strconv.FormatFloat(sumDifference, 'f', 2, 64), lD)
+
+	lineH := LineFor(NotSetStringValue, HFSForText(lMN), HFSForNumeric(lBL), HFSForNumeric(lTV), HFSForNumeric(lD))
+	lineD := LineFor(NotSetStringValue, DFSForText(lMN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
+	lineS := LineFor(DFSForText(utf8.RuneCountInString(FSSeparator)+lMN), DFSForValue(lBL), DFSForValue(lTV), DFSForValue(lD))
+
+	// Print report
+	fmt.Fprintf(os.Stdout, "Budget report for %s (in %s):\n", p, strings.ToUpper(currency))
+	if getNextEntry, err = ReportBudgetMainCategories(fh, p, currency); err != nil {
+		printError.Fatalln(err)
+	}
+	currentType = NotSetStringValue
+	var subtotalLimit, subtotalValue, subtotalDifference, totalLimit, totalValue, totalDifference float64
+	beginning := true
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		if currentType != e.MainCategory.MType.Name {
+			if !beginning {
+				fmt.Fprintf(os.Stdout, lineS, currentType, subtotalLimit, subtotalValue, subtotalDifference)
+			}
+			currentType = e.MainCategory.MType.Name
+			fmt.Fprintf(os.Stdout, "\n%s\n", currentType)
+			fmt.Fprintf(os.Stdout, lineH, HMCName, HBLimit, HTValue, HBDifference)
+			beginning = false
+			subtotalLimit = NotSetFloatValue
+			subtotalValue = NotSetFloatValue
+			subtotalDifference = NotSetFloatValue
+		}
+		fmt.Fprintf(os.Stdout, lineD, e.MainCategory.Name, e.Limit, e.Actual, e.Difference)
 		subtotalLimit += e.Limit
 		subtotalValue += e.Actual
 		subtotalDifference += e.Difference

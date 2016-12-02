@@ -39,6 +39,8 @@ const (
 
 	errWritingToFile   = "error writing to file"
 	errReadingFromFile = "error reading from file"
+
+	errReportMissingCurrencies string = "missing currency exchange rate(s) for: "
 )
 
 // Other constants

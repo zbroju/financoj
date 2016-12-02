@@ -219,6 +219,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
 					Usage:   "Budget categories for given year or year-month (or current month if period flag is missing).",
 					Action:  RepBudgetCategories},
+				{Name: ObjReportBudgetMainCategories,
+					Aliases: []string{ObjReportBudgetMainCategoriesAlias},
+					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
+					Usage:   "Budget main categories for given year or year-month (or current month if period flag is missing).",
+					Action:  RepBudgetMainCategories},
 			},
 		},
 	}
@@ -254,29 +259,27 @@ SUBCOMMANDS:
 //DONE: report accounts balance
 //DONE: report budget categories
 //TODO: report assets summary
-//TODO: report budget main categories
+//DONE: report budget main categories
 //TODO: report categories balance
 //TODO: report main categories balance
 //TODO: report transaction balance
 //TODO: report net value
 //
-//DONE: 27/33 (81%)
+//DONE: 28/33 (84%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
-//TODO: add to main_categories column with 'coefficient', which will be used for calculations instead of signs in transactions (because of that we can have a real main category edit with correct type change)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add automatic keeping number of backup copies (the number specified in config file)
 //TODO: add export to csv any list and report
-//TODO: add transaction halfsplit when transaction is equally split into two categories
+//TODO: add transaction split when transaction is equally split into two categories
 
 //FIXME: make all object private (requires 'ObjectNew' functions)
 //FIXME: check if all 'list' functions respect flag --all
-//TODO: review all comments inside function bodies
+//TODO: review all comments inside function bodies and make them more verbose
 //TODO: complete function descriptions for godoc
 //TODO: add default account (especially to add transaction, but think about others)
 //FIXME: change 'errMissing*Flag' to map and create function to easily check missing flags
 //FIXME: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
 //FIXME: move all sql queries to separate file and format them so that they are readable
-//FIXME: add function all_currencies_available and put it in a condition in reportBudgetCategories

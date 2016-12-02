@@ -198,6 +198,167 @@ order by
 ;
 `
 
+// sqlReportBudgetMainCategoriesMonthly is SQL string to get budget values vs actual transactions value on main category granularity
+// for given month.
+//
+// Parameters
+// 1 - year (string)
+// 2 - month (string)
+// 3 - year (int)
+// 4 - month (int)
+// 5 - main category transfer id (int)
+// 6 - currency_to (string)
+// 7 - currency_to (string)
+// 8 - year (int)
+// 9 - month (int)
+// 10 - year (string)
+// 11 - month (string)
+// 12 - currency_to (string)
+// 13 - currency_to (string)
+const sqlReportBudgetMainCategoriesMonthly string = `
+select
+    lmc.id
+    , lmc.name
+    , lmc.status
+    , mct.id
+    , mct.name
+    , mct.factor
+    , coalesce(b.budget,0.0) budgetLimit
+    , coalesce(ta.actual,0.0) actualValue
+    , coalesce(ta.actual,0.0) - coalesce(b.budget,0.0) as difference
+from
+    -- list of main categories which have either budget or transactions
+    (select
+    	mc.*
+    from
+        main_categories mc inner join categories c on mc.id=c.main_category_id inner join (select * from transactions where strftime('%Y',date)=? and strftime('%m',date)=?) t on c.id=t.category_id
+    union
+    select
+        mb.*
+    from
+        main_categories mb inner join categories c on mb.id=c.main_category_id inner join (select * from budgets where year=? and month=?) b on c.id=b.category_id
+) lmc
+
+    -- main categories types
+    inner join (select * from main_categories_types where id<>?) mct on lmc.type_id=mct.id
+
+    -- budget details
+    left join (
+        select
+            m.id
+            ,sum(value * mt.factor * cur.exchange_rate) as budget
+        from
+            budgets
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on budgets.currency=cur.currency_from
+            inner join categories c on category_id=c.id
+            inner join main_categories m on c.main_category_id=m.id
+            inner join main_categories_types mt on m.type_id=mt.id
+        where
+            year=?
+            and month=?
+        group by
+            m.id
+    ) b on lmc.id=b.id
+
+    -- actual transactions
+    left join (
+        select
+            m.id
+            ,sum(t.value * mt.factor * cur.exchange_rate) as actual
+        from
+           (select * from transactions where strftime('%Y',date)=? and strftime('%m',date)=?) t
+            inner join accounts a on t.account_id=a.id
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+            inner join categories c on t.category_id=c.id
+            inner join main_categories m on c.main_category_id=m.id
+            inner join main_categories_types mt on m.type_id=mt.id
+        group by
+            m.id
+    ) ta on lmc.id=ta.id
+order by
+	mct.factor DESC
+	,lmc.name
+;
+`
+
+// sqlReportBudgetMainCategoriesYearly is SQL string to get budget values vs actual transactions value on main category granularity
+// for given year.
+//
+// Parameters
+// 1 - year (string)
+// 2 - year (int)
+// 3 - main category type transfer (int)
+// 4 - currency_to (string)
+// 5 - currency_to (string)
+// 6 - year (int)
+// 7 - year (string)
+// 8 - currency_to (string)
+// 9 - currency_to (string)
+const sqlReportBudgetMainCategoriesYearly string = `
+select
+    lmc.id
+    , lmc.name
+    , lmc.status
+    , mct.id
+    , mct.name
+    , mct.factor
+    , coalesce(b.budget,0.0) budgetLimit
+    , coalesce(ta.actual,0.0) actualValue
+    , coalesce(ta.actual,0.0) - coalesce(b.budget,0.0) as difference
+from
+    -- list of main categories which have either budget or transactions
+    (select
+    	mc.*
+    from
+        main_categories mc inner join categories c on mc.id=c.main_category_id inner join (select * from transactions where strftime('%Y',date)=?) t on c.id=t.category_id
+    union
+    select
+        mb.*
+    from
+        main_categories mb inner join categories c on mb.id=c.main_category_id inner join (select * from budgets where year=?) b on c.id=b.category_id
+) lmc
+
+    -- main categories types
+    inner join (select * from main_categories_types where id<>?) mct on lmc.type_id=mct.id
+
+    -- budget details
+    left join (
+        select
+            m.id
+            ,sum(value * mt.factor * cur.exchange_rate) as budget
+        from
+            budgets
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on budgets.currency=cur.currency_from
+            inner join categories c on category_id=c.id
+            inner join main_categories m on c.main_category_id=m.id
+            inner join main_categories_types mt on m.type_id=mt.id
+        where
+            year=?
+        group by
+            m.id
+    ) b on lmc.id=b.id
+
+    -- actual transactions
+    left join (
+        select
+            m.id
+            ,sum(t.value * mt.factor * cur.exchange_rate) as actual
+        from
+           (select * from transactions where strftime('%Y',date)=?) t
+            inner join accounts a on t.account_id=a.id
+            inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+            inner join categories c on t.category_id=c.id
+            inner join main_categories m on c.main_category_id=m.id
+            inner join main_categories_types mt on m.type_id=mt.id
+        group by
+            m.id
+    ) ta on lmc.id=ta.id
+order by
+	mct.factor DESC
+	,lmc.name
+;
+`
+
 // sqlReportMissingCurrenciesForTransactions is SQL string to get all currencies used in transactions where there is no exchange rate.
 //
 // Parameters:

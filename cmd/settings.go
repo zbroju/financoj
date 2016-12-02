@@ -114,8 +114,10 @@ const (
 	ObjBudget            = "budget"
 	ObjBudgetAlias       = "b"
 
-	ObjReportAccountBalance        = "account-balance"
-	ObjReportAccountBalanceAlias   = "ab"
-	ObjReportBudgetCategories      = "budget-categories"
-	ObjReportBudgetCategoriesAlias = "bc"
+	ObjReportAccountBalance            = "account-balance"
+	ObjReportAccountBalanceAlias       = "ab"
+	ObjReportBudgetCategories          = "budget-categories"
+	ObjReportBudgetCategoriesAlias     = "bc"
+	ObjReportBudgetMainCategories      = "budget-main-categories"
+	ObjReportBudgetMainCategoriesAlias = "bmc"
 )

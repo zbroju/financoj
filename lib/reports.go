@@ -13,25 +13,20 @@ import (
 	"time"
 )
 
-// Error messages
-const (
-	errReportMissingCurrencies string = "missing currency exchange rate(s) for: "
-)
-
 // AccountBalanceEntry represents one line of the report
-type AccountBalanceEntry struct {
+type AccountBalanceReportEntry struct {
 	Account *Account
 	Value   float64
 }
 
-func AccountBalanceEntryNew() *AccountBalanceEntry {
-	e := new(AccountBalanceEntry)
+func AccountBalanceReportEntryNew() *AccountBalanceReportEntry {
+	e := new(AccountBalanceReportEntry)
 	e.Account = new(Account)
 
 	return e
 }
 
-func ReportAccountBalance(db *gsqlitehandler.SqliteDB, d time.Time) (f func() *AccountBalanceEntry, err error) {
+func ReportAccountBalance(db *gsqlitehandler.SqliteDB, d time.Time) (f func() *AccountBalanceReportEntry, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
@@ -77,9 +72,9 @@ ORDER BY
 	}
 
 	// Create closure
-	f = func() *AccountBalanceEntry {
+	f = func() *AccountBalanceReportEntry {
 		if rows.Next() {
-			e := AccountBalanceEntryNew()
+			e := AccountBalanceReportEntryNew()
 			rows.Scan(&e.Account.Id, &e.Account.Name, &e.Account.Description, &e.Account.Institution, &e.Account.Currency, &e.Account.AType, &e.Account.Status, &e.Value)
 			return e
 		}
@@ -94,21 +89,21 @@ ORDER BY
 }
 
 // BudgetCategoryEntry represents one line of the report
-type BudgetCategoriesEntry struct {
+type BudgetCategoriesReportEntry struct {
 	Category   *Category
 	Limit      float64
 	Actual     float64
 	Difference float64
 }
 
-func BudgetCategoriesEntryNew() *BudgetCategoriesEntry {
-	e := new(BudgetCategoriesEntry)
+func BudgetCategoriesReportEntryNew() *BudgetCategoriesReportEntry {
+	e := new(BudgetCategoriesReportEntry)
 	e.Category = CategoryNew()
 
 	return e
 }
 
-func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency string) (f func() *BudgetCategoriesEntry, err error) {
+func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency string) (f func() *BudgetCategoriesReportEntry, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
@@ -147,10 +142,80 @@ func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency st
 	}
 
 	// Create closure
-	f = func() *BudgetCategoriesEntry {
+	f = func() *BudgetCategoriesReportEntry {
 		if rows.Next() {
-			e := BudgetCategoriesEntryNew()
+			e := BudgetCategoriesReportEntryNew()
 			rows.Scan(&e.Category.Main.Id, &e.Category.Main.Name, &e.Category.Main.Status, &e.Category.Main.MType.Id, &e.Category.Main.MType.Name, &e.Category.Main.MType.Factor, &e.Category.Id, &e.Category.Name, &e.Category.Status, &e.Limit, &e.Actual, &e.Difference)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
+// BudgetMainCategoryEntry represents one line of the report
+type BudgetMainCategoryReportEntry struct {
+	MainCategory *MainCategory
+	Limit        float64
+	Actual       float64
+	Difference   float64
+}
+
+func BudgetMainCategoryReportEntryNew() *BudgetMainCategoryReportEntry {
+	e := new(BudgetMainCategoryReportEntry)
+	e.MainCategory = MainCategoryNew()
+
+	return e
+}
+
+func ReportBudgetMainCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency string) (f func() *BudgetMainCategoryReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	y := int(p.Year)
+	m := int(p.Month)
+	if m == NotSetIntValue {
+		if stmt, err = db.Handler.Prepare(sqlReportBudgetMainCategoriesYearly); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+		if rows, err = stmt.Query(strconv.Itoa(y), y, MCTTransfer, currency, currency, y, strconv.Itoa(y), currency, currency); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+	} else {
+		if stmt, err = db.Handler.Prepare(sqlReportBudgetMainCategoriesMonthly); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+		if rows, err = stmt.Query(strconv.Itoa(y), strconv.Itoa(m), y, m, MCTTransfer, currency, currency, y, m, strconv.Itoa(y), strconv.Itoa(m), currency, currency); err != nil {
+			return nil, errors.New(errReadingFromFile)
+		}
+	}
+
+	// Check if we have all necessary currency exchange rates
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	if s, err := missingCurrenciesForBudgets(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+
+	// Create closure
+	f = func() *BudgetMainCategoryReportEntry {
+		if rows.Next() {
+			e := BudgetMainCategoryReportEntryNew()
+			rows.Scan(&e.MainCategory.Id, &e.MainCategory.Name, &e.MainCategory.Status, &e.MainCategory.MType.Id, &e.MainCategory.MType.Name, &e.MainCategory.MType.Factor, &e.Limit, &e.Actual, &e.Difference)
 			return e
 		}
 		rows.Close()
