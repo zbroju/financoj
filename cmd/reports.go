@@ -77,6 +77,105 @@ func RepAccountBalance(c *cli.Context) error {
 	return nil
 }
 
+func RepTransactionBalance(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	cur := c.String(OptCurrency)
+	if cur == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create filters
+	var df time.Time
+	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+		if df, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		df = time.Time{}
+	}
+	var dt time.Time
+	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+		if dt, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dt = time.Time{}
+	}
+	var a *Account
+	if as := c.String(ObjAccount); as != NotSetStringValue {
+		if a, err = AccountForName(fh, as); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	var cat *Category
+	if cs := c.String(ObjCategory); cs != NotSetStringValue {
+		if cat, err = CategoryForName(fh, cs); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	var mcat *MainCategory
+	if ms := c.String(ObjMainCategory); ms != NotSetStringValue {
+		if mcat, err = MainCategoryForName(fh, ms); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+
+	// Build formatting strings
+	var getNextEntry func() *TransactionBalanceReportEntry
+	if getNextEntry, err = ReportTransactionBalance(fh, cur, df, dt, a, cat, mcat); err != nil {
+		printError.Fatalln(err)
+	}
+	lD := utf8.RuneCountInString(HTDate)
+	lMC := utf8.RuneCountInString(HMCName)
+	lC := utf8.RuneCountInString(HCName)
+	lA := utf8.RuneCountInString(HAName)
+	lV := utf8.RuneCountInString(HTValue)
+	lDesc := utf8.RuneCountInString(HTDescription)
+	var sumValue float64
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		lD = MaxLen(e.Transaction.Date.Format(DateFormat), lD)
+		lMC = MaxLen(e.Transaction.Category.Main.Name, lMC)
+		lC = MaxLen(e.Transaction.Category.Name, lC)
+		lA = MaxLen(e.Transaction.Account.Name, lA)
+		sumValue += e.Balance
+		lV = MaxLen(strconv.FormatFloat(sumValue, 'f', 2, 64), lV)
+		lDesc = MaxLen(e.Transaction.Description, lDesc)
+	}
+	lineH := LineFor(HFSForText(lD), HFSForText(lMC), HFSForText(lC), HFSForText(lA), HFSForNumeric(lV), HFSForText(lDesc))
+	lineD := LineFor(DFSForText(lD), DFSForText(lMC), DFSForText(lC), DFSForText(lA), DFSForValue(lV), DFSForText(lDesc))
+
+	// Print report
+	fmt.Fprintf(os.Stdout, "Transactions balance (in %s):\n", strings.ToUpper(cur))
+	fmt.Fprint(os.Stdout, "\n")
+	fmt.Fprintf(os.Stdout, lineH, HTDate, HMCName, HCName, HAName, HTValue, HTDescription)
+	if getNextEntry, err = ReportTransactionBalance(fh, cur, df, dt, a, cat, mcat); err != nil {
+		printError.Fatalln(err)
+	}
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		fmt.Fprintf(os.Stdout, lineD, e.Transaction.Date.Format(DateFormat), e.Transaction.Category.Main.Name, e.Transaction.Category.Name, e.Transaction.Account.Name, e.Balance, e.Transaction.Description)
+	}
+	fmt.Fprint(os.Stdout, "\n")
+	fmt.Fprintf(os.Stdout, lineD, "Total:", NotSetStringValue, NotSetStringValue, NotSetStringValue, sumValue, strings.ToUpper(cur))
+
+	return nil
+}
+
 func RepBudgetCategories(c *cli.Context) error {
 	var err error
 

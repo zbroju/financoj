@@ -4,7 +4,71 @@
 
 package engine
 
-// SQL_REPORT_BUDGET_CATEGORIES_MONTHLY is SQL string to get budget values vs actual transactions value on category granularity
+// sqlReportTransactionsBalance is SQL string to get transactions values recalculated to one currency.
+//
+// Parameters
+// 1 - currency_to (string)
+// 2 - currency_to (string)
+// 3 - date_from (string)
+// 4 - date_from (string)
+// 5 - noStringParamForSQL
+// 6 - date_to (string)
+// 7 - date_to (string)
+// 8 - noStringParamForSQL
+// 9 - account_id (int)
+// 10 - account_id (int)
+// 11 - noIntParamForSQL
+// 12 - category_id (int)
+// 13 - category_id (int)
+// 14 - noIntParamForSQL
+// 15 - main_category_id (int)
+// 16 - main_category_id (int)
+// 17 - noIntParamForSQL
+// 18 - main_category_type (int)
+// 19 - main_category_type (int)
+// 20 - noIntParamForSQL
+const sqlReportTransactionsBalance = `
+select
+    t.id
+    ,t.date
+    ,t.description
+    ,t.value
+    ,a.id
+    ,a.name
+    ,a.description
+    ,a.institution
+    ,a.currency
+    ,a.type
+    ,a.status
+    ,c.id
+    ,c.name
+    ,c.status
+    ,m.id
+    ,m.name
+    ,m.status
+    ,mt.id
+    ,mt.name
+    ,mt.factor
+    ,mt.factor * t.value * cur.exchange_rate as balance
+from
+    transactions t
+    inner join accounts a on t.account_id=a.id
+    inner join categories c on t.category_id=c.id
+    inner join main_categories m on c.main_category_id=m.id
+    inner join main_categories_types mt on m.type_id=mt.id
+    inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+where 1=1
+    and (t.date>=? or ?=?)
+    and (t.date<=? or ?=?)
+    and (a.id=? or ?=?)
+    and (c.id=? or ?=?)
+    and (m.id=? or ?=?)
+order by
+    t.date
+;
+`
+
+// sqlReportBudgetCategoriesMonthly is SQL string to get budget values vs actual transactions value on category granularity
 // for given month.
 //
 // Parameters
@@ -104,7 +168,7 @@ order by
 ;
 `
 
-// SQL_REPORT_BUDGET_CATEGORIES_YEARLY is SQL string to get budget values vs actual transactions value on category granularity
+// sqlReportBudgetCategoriesYearly is SQL string to get budget values vs actual transactions value on category granularity
 // for given year.
 //
 // Parameters
@@ -387,6 +451,6 @@ from
 	(select distinct currency from budgets where currency<>upper(?)) uc
 	left join (select currency_from from currencies where currency_to=upper(?)) ac on uc.currency=ac.currency_from
 where
-	ac.currency_from is null;
-
+	ac.currency_from is null
+;
 `

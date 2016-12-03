@@ -209,6 +209,11 @@ SUBCOMMANDS:
 		},
 		{Name: CmdReport, Aliases: []string{CmdReportAlias}, Usage: "Prints report.",
 			Subcommands: []cli.Command{
+				{Name: ObjReportTransactionBalance,
+					Aliases: []string{ObjReportTransactionBalanceAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagCategory, flagMainCategory},
+					Usage:   "Transactions balance for given criteria.",
+					Action:  RepTransactionBalance},
 				{Name: ObjReportAccountBalance,
 					Aliases: []string{ObjReportAccountBalanceAlias},
 					Flags:   []cli.Flag{flagFile, flagDate},
@@ -262,10 +267,10 @@ SUBCOMMANDS:
 //DONE: report budget main categories
 //TODO: report categories balance
 //TODO: report main categories balance
-//TODO: report transaction balance
+//DONE: report transaction balance
 //TODO: report net value
 //
-//DONE: 28/33 (84%)
+//DONE: 29/33 (87%)
 
 // IDEAS
 //TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
@@ -274,6 +279,8 @@ SUBCOMMANDS:
 //TODO: add automatic keeping number of backup copies (the number specified in config file)
 //TODO: add export to csv any list and report
 //TODO: add transaction split when transaction is equally split into two categories
+//TODO: add transaction 'transfer' to have it in one shot (check currencies!)
+//TODO: add transaction 'saving' which is cost (minus) on first account and transfer (plus) on the second one (it's for credit payment and amortization)
 
 //FIXME: make all object private (requires 'ObjectNew' functions)
 //FIXME: check if all 'list' functions respect flag --all

@@ -88,6 +88,80 @@ ORDER BY
 	//TODO: add test
 }
 
+type TransactionBalanceReportEntry struct {
+	Transaction *Transaction
+	Balance     float64
+}
+
+func TransactionBalanceReportEntryNew() *TransactionBalanceReportEntry {
+	e := new(TransactionBalanceReportEntry)
+	e.Transaction = TransactionNew()
+
+	return e
+}
+
+func ReportTransactionBalance(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time, a *Account, c *Category, m *MainCategory) (f func() *TransactionBalanceReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Check input parameters
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	df := noStringParamForSQL
+	if !dateFrom.IsZero() {
+		df = dateFrom.Format(DateFormat)
+	}
+	dt := noStringParamForSQL
+	if !dateTo.IsZero() {
+		dt = dateTo.Format(DateFormat)
+	}
+	aId := int64(noIntParamForSQL)
+	if a != nil {
+		aId = a.Id
+	}
+	cId := int64(noIntParamForSQL)
+	if c != nil {
+		cId = c.Id
+	}
+	mId := int64(noIntParamForSQL)
+	if m != nil {
+		mId = m.Id
+	}
+
+	// Execute main query
+	if stmt, err = db.Handler.Prepare(sqlReportTransactionsBalance); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(currency, currency, df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, aId, aId, noIntParamForSQL, cId, cId, noIntParamForSQL, mId, mId, noIntParamForSQL); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *TransactionBalanceReportEntry {
+		if rows.Next() {
+			e := TransactionBalanceReportEntryNew()
+			var tDate string
+			rows.Scan(&e.Transaction.Id, &tDate, &e.Transaction.Description, &e.Transaction.Value, &e.Transaction.Account.Id, &e.Transaction.Account.Name, &e.Transaction.Account.Description, &e.Transaction.Account.Institution, &e.Transaction.Account.Currency, &e.Transaction.Account.AType, &e.Transaction.Account.Status, &e.Transaction.Category.Id, &e.Transaction.Category.Name, &e.Transaction.Category.Status, &e.Transaction.Category.Main.Id, &e.Transaction.Category.Main.Name, &e.Transaction.Category.Main.Status, &e.Transaction.Category.Main.MType.Id, &e.Transaction.Category.Main.MType.Name, &e.Transaction.Category.Main.MType.Factor, &e.Balance)
+			if e.Transaction.Date, err = time.Parse(DateFormat, tDate); err != nil {
+				e.Transaction.Date = time.Time{}
+			}
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
 // BudgetCategoryEntry represents one line of the report
 type BudgetCategoriesReportEntry struct {
 	Category   *Category
