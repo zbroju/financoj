@@ -232,6 +232,72 @@ func ReportCategoryBalance(db *gsqlitehandler.SqliteDB, currency string, dateFro
 	//TODO: add test
 }
 
+type MainCategoryBalanceReportEntry struct {
+	MainCategory *MainCategory
+	Balance      float64
+}
+
+func MainCategoryBalanceReportEntryNew() *MainCategoryBalanceReportEntry {
+	e := new(MainCategoryBalanceReportEntry)
+	e.MainCategory = MainCategoryNew()
+
+	return e
+}
+
+func ReportMainCategoryBalance(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time, a *Account, m *MainCategory) (f func() *MainCategoryBalanceReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Check input parameters
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	df := noStringParamForSQL
+	if !dateFrom.IsZero() {
+		df = dateFrom.Format(DateFormat)
+	}
+	dt := noStringParamForSQL
+	if !dateTo.IsZero() {
+		dt = dateTo.Format(DateFormat)
+	}
+	aId := int64(noIntParamForSQL)
+	if a != nil {
+		aId = a.Id
+	}
+	mId := int64(noIntParamForSQL)
+	if m != nil {
+		mId = m.Id
+	}
+
+	// Execute main query
+	if stmt, err = db.Handler.Prepare(sqlReportMainCategoriesBalance); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(MCTTransfer, currency, currency, df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, aId, aId, noIntParamForSQL, mId, mId, noIntParamForSQL); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *MainCategoryBalanceReportEntry {
+		if rows.Next() {
+			e := MainCategoryBalanceReportEntryNew()
+			rows.Scan(&e.MainCategory.Id, &e.MainCategory.Name, &e.MainCategory.Status, &e.MainCategory.MType.Id, &e.MainCategory.MType.Name, &e.MainCategory.MType.Factor, &e.Balance)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
 // BudgetCategoryEntry represents one line of the report
 type BudgetCategoriesReportEntry struct {
 	Category   *Category

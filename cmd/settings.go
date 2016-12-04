@@ -124,4 +124,6 @@ const (
 	ObjReportTransactionBalanceAlias   = "tb"
 	ObjReportCategoryBalance           = "category-balance"
 	ObjReportCategoryBalanceAlias      = "cb"
+	ObjReportMainCategoryBalance       = "main-category-balance"
+	ObjReportMainCategoryBalanceAlias  = "mcb"
 )

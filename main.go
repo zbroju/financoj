@@ -209,6 +209,11 @@ SUBCOMMANDS:
 		},
 		{Name: CmdReport, Aliases: []string{CmdReportAlias}, Usage: "Prints report.",
 			Subcommands: []cli.Command{
+				{Name: ObjReportAccountBalance,
+					Aliases: []string{ObjReportAccountBalanceAlias},
+					Flags:   []cli.Flag{flagFile, flagDate},
+					Usage:   "Accounts balance on given date (or today if date flag missing).",
+					Action:  RepAccountBalance},
 				{Name: ObjReportTransactionBalance,
 					Aliases: []string{ObjReportTransactionBalanceAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagCategory, flagMainCategory},
@@ -219,11 +224,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagCategory, flagMainCategory},
 					Usage:   "Categories balance for given criteria.",
 					Action:  RepCategoryBalance},
-				{Name: ObjReportAccountBalance,
-					Aliases: []string{ObjReportAccountBalanceAlias},
-					Flags:   []cli.Flag{flagFile, flagDate},
-					Usage:   "Accounts balance on given date (or today if date flag missing).",
-					Action:  RepAccountBalance},
+				{Name: ObjReportMainCategoryBalance,
+					Aliases: []string{ObjReportMainCategoryBalanceAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagMainCategory},
+					Usage:   "Main categories balance for given criteria.",
+					Action:  RepMainCategoryBalance},
 				{Name: ObjReportBudgetCategories,
 					Aliases: []string{ObjReportBudgetCategoriesAlias},
 					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
@@ -270,27 +275,26 @@ SUBCOMMANDS:
 //DONE: report budget categories
 //TODO: report assets summary (wt)
 //DONE: report budget main categories
-//TODO: report categories balance (nd)
+//DONE: report categories balance
 //TODO: report main categories balance (pn)
 //DONE: report transaction balance
 //TODO: report net value (sro)
 //
-//DONE: 29/33 (87%)
+//DONE: 30/33 (90%)
 
 // NEW IDEAS
-//TODO: add transaction split when transaction is equally split into two categories
 //TODO: add transaction 'transfer' to have it in one shot (check currencies!, add attribute 'ownership system' for special category: transfer, add special category to file during creation, prevent delete by user)
+//TODO: add transaction split when transaction is equally split into two categories
 //TODO: add transaction 'saving' which is cost (minus) on first account and transfer (plus) on the second one (it's for credit payment and amortization)
-//TODO: add 'tag' or 'cost center' to transactions attribute (as a separate object)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
-//TODO: add automatic keeping number of backup copies (the number specified in config file)
 //TODO: add export to csv any list and report
-//FIXME: make all object private (requires 'ObjectNew' functions)
-//FIXME: check if all 'list' functions respect flag --all
+//TODO: import csv
+//TODO: make all object private (requires 'ObjectNew' functions)
+//TODO: check if all 'list' functions respect flag --all
 //TODO: review all comments inside function bodies and make them more verbose
 //TODO: complete function descriptions for godoc
 //TODO: add default account (especially to add transaction, but think about others)
-//FIXME: change 'errMissing*Flag' to map and create function to easily check missing flags
-//FIXME: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
-//FIXME: move all sql queries to separate file and format them so that they are readable
+//TODO: change 'errMissing*Flag' to map and create function to easily check missing flags
+//TODO: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
+//TODO: move all sql queries to separate file and format them so that they are readable

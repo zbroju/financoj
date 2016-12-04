@@ -110,7 +110,7 @@ func RepTransactionBalance(c *cli.Context) error {
 		df = time.Time{}
 	}
 	var dt time.Time
-	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+	if ds := c.String(OptDateTo); ds != NotSetStringValue {
 		if dt, err = time.Parse(DateFormat, ds); err != nil {
 			printError.Fatalln(err)
 		}
@@ -209,7 +209,7 @@ func RepCategoryBalance(c *cli.Context) error {
 		df = time.Time{}
 	}
 	var dt time.Time
-	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+	if ds := c.String(OptDateTo); ds != NotSetStringValue {
 		if dt, err = time.Parse(DateFormat, ds); err != nil {
 			printError.Fatalln(err)
 		}
@@ -285,6 +285,117 @@ func RepCategoryBalance(c *cli.Context) error {
 			subtotalValue = NotSetFloatValue
 		}
 		fmt.Fprintf(os.Stdout, lineD, e.Category.Main.Name, e.Category.Name, e.Balance)
+		subtotalValue += e.Balance
+		totalValue += e.Balance
+	}
+	fmt.Fprintf(os.Stdout, lineS, currentType, subtotalValue)
+	fmt.Fprint(os.Stdout, "\n")
+	fmt.Fprintf(os.Stdout, lineS, "TOTAL", totalValue)
+
+	return nil
+}
+
+func RepMainCategoryBalance(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	cur := c.String(OptCurrency)
+	if cur == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create filters
+	var df time.Time
+	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+		if df, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		df = time.Time{}
+	}
+	var dt time.Time
+	if ds := c.String(OptDateTo); ds != NotSetStringValue {
+		if dt, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dt = time.Time{}
+	}
+	var a *Account
+	if as := c.String(ObjAccount); as != NotSetStringValue {
+		if a, err = AccountForName(fh, as); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	var mcat *MainCategory
+	if ms := c.String(ObjMainCategory); ms != NotSetStringValue {
+		if mcat, err = MainCategoryForName(fh, ms); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+
+	// Build formatting strings
+	var getNextEntry func() *MainCategoryBalanceReportEntry
+	if getNextEntry, err = ReportMainCategoryBalance(fh, cur, df, dt, a, mcat); err != nil {
+		printError.Fatalln(err)
+	}
+	lMT := utf8.RuneCountInString(HMCType)
+	lM := utf8.RuneCountInString(HMCName)
+	lV := utf8.RuneCountInString(HTValue)
+	var sumValue float64
+	var currentType string
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		lMT = MaxLen(e.MainCategory.MType.Name, lMT)
+		lM = MaxLen(e.MainCategory.Name, lM)
+		if currentType != e.MainCategory.MType.Name {
+			lV = MaxLen(strconv.FormatFloat(sumValue, 'f', 2, 64), lV)
+			sumValue = 0
+			currentType = e.MainCategory.MType.Name
+		}
+		sumValue += e.Balance
+	}
+	lV = MaxLen(strconv.FormatFloat(sumValue, 'f', 2, 64), lV)
+
+	lineH := LineFor(NotSetStringValue, HFSForText(lM), HFSForNumeric(lV))
+	lineD := LineFor(NotSetStringValue, DFSForText(lM), DFSForValue(lV))
+	lineS := LineFor(DFSForText(utf8.RuneCountInString(FSSeparator)+lM), DFSForValue(lV))
+
+	// Print report
+	fmt.Fprintf(os.Stdout, "Categories balance (in %s):\n", strings.ToUpper(cur))
+
+	if getNextEntry, err = ReportMainCategoryBalance(fh, cur, df, dt, a, mcat); err != nil {
+		printError.Fatalln(err)
+	}
+	currentType = NotSetStringValue
+	var subtotalValue, totalValue float64
+	beginning := true
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		if currentType != e.MainCategory.MType.Name {
+			if !beginning {
+				fmt.Fprintf(os.Stdout, lineS, currentType, subtotalValue)
+			}
+			currentType = e.MainCategory.MType.Name
+			fmt.Fprintf(os.Stdout, "\n%s\n", currentType)
+			fmt.Fprintf(os.Stdout, lineH, HMCName, HTValue)
+
+			beginning = false
+			subtotalValue = NotSetFloatValue
+		}
+		fmt.Fprintf(os.Stdout, lineD, e.MainCategory.Name, e.Balance)
 		subtotalValue += e.Balance
 		totalValue += e.Balance
 	}
