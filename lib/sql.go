@@ -68,6 +68,69 @@ order by
 ;
 `
 
+// sqlReportCategoriesBalance is SQL string to get categories values recalculated to one currency.
+//
+// Parameters
+// 1 - MCTypeTransfer
+// 2 - currency_to (string)
+// 3 - currency_to (string)
+// 4 - date_from (string)
+// 5 - date_from (string)
+// 6 - NoStringParamForSQL
+// 7 - date_to (string)
+// 8 - date_to (string)
+// 9 - NoStringParamForSQL
+// 10 - account_id (int)
+// 11 - account_id (int)
+// 12 - NoIntParamForSQL
+// 13 - category_id (int)
+// 14 - category_id (int)
+// 15 - NoIntParamForSQL
+// 16 - main_category_id (int)
+// 17 - main_category_id (int)
+// 18 - NoIntParamForSQL
+const sqlReportCategoriesBalance string = `
+select
+    m.id
+    ,m.name
+    ,m.status
+    ,mt.id
+    ,mt.name
+    ,mt.factor
+    ,c.id
+    ,c.name
+    ,c.status
+    ,sum(mt.factor * t.value * cur.exchange_rate) as balance
+from
+    transactions t
+    inner join accounts a on t.account_id=a.id
+    inner join categories c on t.category_id=c.id
+    inner join main_categories m on c.main_category_id=m.id
+    inner join (select * from main_categories_types where id<>?) mt on m.type_id=mt.id
+    inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+where 1=1
+    and (t.date>=? or ?=?)
+    and (t.date<=? or ?=?)
+    and (a.id=? or ?=?)
+    and (c.id=? or ?=?)
+    and (m.id=? or ?=?)
+group by
+    m.id
+    ,m.name
+    ,m.status
+    ,mt.id
+    ,mt.name
+    ,mt.factor
+    ,c.id
+    ,c.name
+    ,c.status
+order by
+    mt.id desc
+    ,m.name asc
+    ,c.name asc
+;
+`
+
 // sqlReportBudgetCategoriesMonthly is SQL string to get budget values vs actual transactions value on category granularity
 // for given month.
 //

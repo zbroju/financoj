@@ -162,6 +162,76 @@ func ReportTransactionBalance(db *gsqlitehandler.SqliteDB, currency string, date
 	//TODO: add test
 }
 
+type CategoryBalanceReportEntry struct {
+	Category *Category
+	Balance  float64
+}
+
+func CategoryBalanceReportBalanceNew() *CategoryBalanceReportEntry {
+	e := new(CategoryBalanceReportEntry)
+	e.Category = CategoryNew()
+
+	return e
+}
+
+func ReportCategoryBalance(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time, a *Account, c *Category, m *MainCategory) (f func() *CategoryBalanceReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Check input parameters
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	df := noStringParamForSQL
+	if !dateFrom.IsZero() {
+		df = dateFrom.Format(DateFormat)
+	}
+	dt := noStringParamForSQL
+	if !dateTo.IsZero() {
+		dt = dateTo.Format(DateFormat)
+	}
+	aId := int64(noIntParamForSQL)
+	if a != nil {
+		aId = a.Id
+	}
+	cId := int64(noIntParamForSQL)
+	if c != nil {
+		cId = c.Id
+	}
+	mId := int64(noIntParamForSQL)
+	if m != nil {
+		mId = m.Id
+	}
+
+	// Execute main query
+	if stmt, err = db.Handler.Prepare(sqlReportCategoriesBalance); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(MCTTransfer, currency, currency, df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, aId, aId, noIntParamForSQL, cId, cId, noIntParamForSQL, mId, mId, noIntParamForSQL); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *CategoryBalanceReportEntry {
+		if rows.Next() {
+			e := CategoryBalanceReportBalanceNew()
+			rows.Scan(&e.Category.Main.Id, &e.Category.Main.Name, &e.Category.Main.Status, &e.Category.Main.MType.Id, &e.Category.Main.MType.Name, &e.Category.Main.MType.Factor, &e.Category.Id, &e.Category.Name, &e.Category.Status, &e.Balance)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
 // BudgetCategoryEntry represents one line of the report
 type BudgetCategoriesReportEntry struct {
 	Category   *Category
