@@ -229,6 +229,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagMainCategory},
 					Usage:   "Main categories balance for given criteria.",
 					Action:  RepMainCategoryBalance},
+				{Name: ObjReportAssetsSummary,
+					Aliases: []string{ObjReportAssetsSummaryAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDate},
+					Usage:   "Summary of all assets.",
+					Action:  RepAssetsSummary},
 				{Name: ObjReportBudgetCategories,
 					Aliases: []string{ObjReportBudgetCategoriesAlias},
 					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
@@ -273,17 +278,17 @@ SUBCOMMANDS:
 //DONE: budget list
 //DONE: report accounts balance
 //DONE: report budget categories
-//TODO: report assets summary (wt)
+//DONE: report assets summary (pn)
 //DONE: report budget main categories
 //DONE: report categories balance
-//TODO: report main categories balance (pn)
+//DONE: report main categories balance
 //DONE: report transaction balance
-//TODO: report net value (sro)
+//TODO: report net value (wto)
 //
-//DONE: 30/33 (90%)
+//DONE: 31/33 (93%)
 
 // NEW IDEAS
-//TODO: add transaction 'transfer' to have it in one shot (check currencies!, add attribute 'ownership system' for special category: transfer, add special category to file during creation, prevent delete by user)
+//TODO: add transaction 'transfer' to have it in one shot (check currencies between accounts and use current if available, add attribute 'ownership system' for special category: transfer, add special category to file during creation, prevent delete and showing it by user by user)
 //TODO: add transaction split when transaction is equally split into two categories
 //TODO: add transaction 'saving' which is cost (minus) on first account and transfer (plus) on the second one (it's for credit payment and amortization)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely

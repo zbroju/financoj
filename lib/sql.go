@@ -183,6 +183,47 @@ order by
 ;
 `
 
+// sqlReportAssetsSummary is SQL string to get assets values recalculated to one currency
+//
+// Parameters
+// 1 - currency_to (string)
+// 2 - currency_to (string)
+// 3 - date_to (string)
+// 4 - itemStatusClosed (int)
+const sqlReportAssetsSummary string = `
+select
+    a.id
+    ,a.name
+    ,a.description
+    ,a.institution
+    ,a.currency
+    ,a.type
+    ,a.status
+    ,sum(mt.factor * t.value * cur.exchange_rate) as balance
+from
+    transactions t
+    inner join categories c on t.category_id=c.id
+    inner join main_categories mc on c.main_category_id=mc.id
+    inner join main_categories_types mt on mc.type_id=mt.id
+    inner join accounts a on t.account_id=a.id
+    inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+where 1=1
+    and t.date<=?
+    and a.status<>?
+group by
+    a.id
+    ,a.name
+    ,a.description
+    ,a.institution
+    ,a.currency
+    ,a.type
+    ,a.status
+order by
+    a.type
+    ,a.name
+;
+`
+
 // sqlReportBudgetCategoriesMonthly is SQL string to get budget values vs actual transactions value on category granularity
 // for given month.
 //

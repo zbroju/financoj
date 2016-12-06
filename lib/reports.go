@@ -298,6 +298,62 @@ func ReportMainCategoryBalance(db *gsqlitehandler.SqliteDB, currency string, dat
 	//TODO: add test
 }
 
+type AssetsSummaryReportEntry struct {
+	Account *Account
+	Balance float64
+}
+
+func AssetsSummaryReportEntryNew() *AssetsSummaryReportEntry {
+	e := new(AssetsSummaryReportEntry)
+	e.Account = new(Account)
+
+	return e
+}
+
+func ReportAssetsSummary(db *gsqlitehandler.SqliteDB, currency string, onDate time.Time) (f func() *AssetsSummaryReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Check input parameters
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	dt := noStringParamForSQL
+	if onDate.IsZero() {
+		dt = time.Now().Format(DateFormat)
+	} else {
+		dt = onDate.Format(DateFormat)
+	}
+
+	// Execute main query
+	if stmt, err = db.Handler.Prepare(sqlReportAssetsSummary); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(currency, currency, dt, ISClose); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *AssetsSummaryReportEntry {
+		if rows.Next() {
+			e := AssetsSummaryReportEntryNew()
+			rows.Scan(&e.Account.Id, &e.Account.Name, &e.Account.Description, &e.Account.Institution, &e.Account.Currency, &e.Account.AType, &e.Account.Status, &e.Balance)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
 // BudgetCategoryEntry represents one line of the report
 type BudgetCategoriesReportEntry struct {
 	Category   *Category

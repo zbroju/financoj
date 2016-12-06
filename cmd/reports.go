@@ -356,19 +356,21 @@ func RepMainCategoryBalance(c *cli.Context) error {
 	lMT := utf8.RuneCountInString(HMCType)
 	lM := utf8.RuneCountInString(HMCName)
 	lV := utf8.RuneCountInString(HTValue)
-	var sumValue float64
+	var subtotalValue, totalValue float64
 	var currentType string
 	for e := getNextEntry(); e != nil; e = getNextEntry() {
 		lMT = MaxLen(e.MainCategory.MType.Name, lMT)
 		lM = MaxLen(e.MainCategory.Name, lM)
+		lV = MaxLen(strconv.FormatFloat(e.Balance, 'f', 2, 64), lV)
 		if currentType != e.MainCategory.MType.Name {
-			lV = MaxLen(strconv.FormatFloat(sumValue, 'f', 2, 64), lV)
-			sumValue = 0
+			lV = MaxLen(strconv.FormatFloat(subtotalValue, 'f', 2, 64), lV)
+			subtotalValue = 0
 			currentType = e.MainCategory.MType.Name
 		}
-		sumValue += e.Balance
+		subtotalValue += e.Balance
+		totalValue += e.Balance
 	}
-	lV = MaxLen(strconv.FormatFloat(sumValue, 'f', 2, 64), lV)
+	lV = MaxLen(strconv.FormatFloat(totalValue, 'f', 2, 64), lV)
 
 	lineH := LineFor(NotSetStringValue, HFSForText(lM), HFSForNumeric(lV))
 	lineD := LineFor(NotSetStringValue, DFSForText(lM), DFSForValue(lV))
@@ -381,7 +383,7 @@ func RepMainCategoryBalance(c *cli.Context) error {
 		printError.Fatalln(err)
 	}
 	currentType = NotSetStringValue
-	var subtotalValue, totalValue float64
+	subtotalValue, totalValue = NotSetFloatValue, NotSetFloatValue
 	beginning := true
 	for e := getNextEntry(); e != nil; e = getNextEntry() {
 		if currentType != e.MainCategory.MType.Name {
@@ -396,6 +398,94 @@ func RepMainCategoryBalance(c *cli.Context) error {
 			subtotalValue = NotSetFloatValue
 		}
 		fmt.Fprintf(os.Stdout, lineD, e.MainCategory.Name, e.Balance)
+		subtotalValue += e.Balance
+		totalValue += e.Balance
+	}
+	fmt.Fprintf(os.Stdout, lineS, currentType, subtotalValue)
+	fmt.Fprint(os.Stdout, "\n")
+	fmt.Fprintf(os.Stdout, lineS, "TOTAL", totalValue)
+
+	return nil
+}
+
+func RepAssetsSummary(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	cur := c.String(OptCurrency)
+	if cur == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create filters
+	var onDate time.Time
+	if ds := c.String(OptDate); ds != NotSetStringValue {
+		if onDate, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		onDate = time.Now()
+	}
+
+	// Build formatting strings
+	var getNextEntry func() *AssetsSummaryReportEntry
+	if getNextEntry, err = ReportAssetsSummary(fh, cur, onDate); err != nil {
+		printError.Fatalln(err)
+	}
+	lA := utf8.RuneCountInString(HAName)
+	lV := utf8.RuneCountInString(HTValue)
+	var subtotalValue, totalValue float64
+	var currentType string
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		lA = MaxLen(e.Account.Name, lA)
+		lV = MaxLen(strconv.FormatFloat(e.Balance, 'f', 2, 64), lV)
+		if currentType != e.Account.AType.String() {
+			lV = MaxLen(strconv.FormatFloat(subtotalValue, 'f', 2, 64), lV)
+			subtotalValue = 0
+			currentType = e.Account.AType.String()
+		}
+		subtotalValue += e.Balance
+		totalValue += e.Balance
+	}
+	lV = MaxLen(strconv.FormatFloat(totalValue, 'f', 2, 64), lV)
+	lineD := LineFor(NotSetStringValue, DFSForText(lA), DFSForValue(lV))
+	lineS := LineFor(DFSForText(utf8.RuneCountInString(FSSeparator)+lA), DFSForValue(lV))
+
+	// Print report
+	fmt.Fprintf(os.Stdout, "Assets summary on %s (in %s):\n", onDate.Format(DateFormat), strings.ToUpper(cur))
+
+	if getNextEntry, err = ReportAssetsSummary(fh, cur, onDate); err != nil {
+		printError.Fatalln(err)
+	}
+	currentType = NotSetStringValue
+	subtotalValue, totalValue = NotSetFloatValue, NotSetFloatValue
+	beginning := true
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		if currentType != e.Account.AType.String() {
+			if !beginning {
+				fmt.Fprintf(os.Stdout, lineS, currentType, subtotalValue)
+			}
+			currentType = e.Account.AType.String()
+			fmt.Fprintf(os.Stdout, "\n%s\n", currentType)
+
+			beginning = false
+			subtotalValue = NotSetFloatValue
+		}
+		fmt.Fprintf(os.Stdout, lineD, e.Account.Name, e.Balance)
 		subtotalValue += e.Balance
 		totalValue += e.Balance
 	}
