@@ -41,6 +41,8 @@ const (
 	HBLimit      = "LIMIT"
 	HBCurrency   = "CUR"
 	HBDifference = "DIFFERENCE"
+
+	HNV = "NET VALUE"
 )
 
 // Errors
@@ -128,4 +130,6 @@ const (
 	ObjReportMainCategoryBalanceAlias  = "mcb"
 	ObjReportAssetsSummary             = "assets-summary"
 	ObjReportAssetsSummaryAlias        = "as"
+	ObjReportNetValueMonthly           = "net-value"
+	ObjReportNetValueMonthlyAlias      = "nv"
 )

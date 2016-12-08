@@ -713,3 +713,79 @@ func RepBudgetMainCategories(c *cli.Context) error {
 
 	return nil
 }
+
+func RepNetValueMonthly(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	cur := c.String(OptCurrency)
+	if cur == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create filters
+	var dateFrom, dateTo time.Time
+	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+		if dateFrom, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dateFrom = time.Time{}
+	}
+	if ds := c.String(OptDateTo); ds != NotSetStringValue {
+		if dateTo, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dateTo = time.Now()
+	}
+
+	// Build formatting strings
+	var getNextEntry func() *NetValueMonthlyReportEntry
+	if getNextEntry, err = ReportNetValueMonthly(fh, cur, dateFrom, dateTo); err != nil {
+		printError.Fatalln(err)
+	}
+	lP := utf8.RuneCountInString(HBPeriod)
+	lV := utf8.RuneCountInString(HNV)
+	var totalValue float64
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		lP = MaxLen(e.Period.String(), lP)
+		totalValue += e.Value
+		lV = MaxLen(strconv.FormatFloat(totalValue, 'f', 2, 64), lV)
+	}
+	LineH := LineFor(HFSForText(lP), HFSForNumeric(lV))
+	LineD := LineFor(DFSForText(lP), DFSForValue(lV))
+
+	// Print report
+	if dateFrom.IsZero() {
+		fmt.Fprintf(os.Stdout, "Net value until %s (in %s):\n", dateTo.Format(DateFormat), cur)
+	} else {
+		fmt.Fprintf(os.Stdout, "Net value between %s and %s (in %s):\n", dateFrom.Format(DateFormat), dateTo.Format(DateFormat), cur)
+	}
+	fmt.Fprintf(os.Stdout, LineH, HBPeriod, HNV)
+
+	if getNextEntry, err = ReportNetValueMonthly(fh, cur, dateFrom, dateTo); err != nil {
+		printError.Fatalln(err)
+	}
+	totalValue = NotSetFloatValue
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		totalValue += e.Value
+		fmt.Fprintf(os.Stdout, LineD, e.Period.String(), totalValue)
+	}
+
+	return nil
+}

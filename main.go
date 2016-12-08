@@ -244,6 +244,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
 					Usage:   "Budget main categories for given year or year-month (or current month if period flag is missing).",
 					Action:  RepBudgetMainCategories},
+				{Name: ObjReportNetValueMonthly,
+					Aliases: []string{ObjReportNetValueMonthlyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo},
+					Usage:   "Net value over time.",
+					Action:  RepNetValueMonthly},
 			},
 		},
 	}
@@ -251,43 +256,6 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//DONE: init file
-//DONE: account add
-//DONE: account edit
-//DONE: account close
-//DONE: account list
-//DONE: category add
-//DONE: category edit
-//DONE: category remove
-//DONE: category list
-//DONE: currency add
-//DONE: currency edit
-//DONE: currency remove
-//DONE: currency list
-//DONE: main category add
-//DONE: main category edit
-//DONE: main category remove
-//DONE: main category list
-//DONE: transaction add
-//DONE: transaction edit
-//DONE: transaction remove
-//DONE: transaction list
-//DONE: budget add
-//DONE: budget edit
-//DONE: budget remove
-//DONE: budget list
-//DONE: report accounts balance
-//DONE: report budget categories
-//DONE: report assets summary (pn)
-//DONE: report budget main categories
-//DONE: report categories balance
-//DONE: report main categories balance
-//DONE: report transaction balance
-//TODO: report net value (wto)
-//
-//DONE: 31/33 (93%)
-
-// NEW IDEAS
 //TODO: add transaction 'transfer' to have it in one shot (check currencies between accounts and use current if available, add attribute 'ownership system' for special category: transfer, add special category to file during creation, prevent delete and showing it by user by user)
 //TODO: add transaction split when transaction is equally split into two categories
 //TODO: add transaction 'saving' which is cost (minus) on first account and transfer (plus) on the second one (it's for credit payment and amortization)
