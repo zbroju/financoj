@@ -55,14 +55,14 @@ func MainCategoryForID(db *gsqlitehandler.SqliteDB, i int) (m *MainCategory, err
 
 	sqlQuery := "SELECT m.id, m.name, m.status, t.id, t.name, t.factor " +
 		"FROM main_categories m INNER JOIN main_categories_types t ON m.type_id=t.id " +
-		"WHERE m.id=? AND m.status=?;"
+		"WHERE m.id=? AND m.status<>?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
 	m = MainCategoryNew()
-	if err = stmt.QueryRow(i, ISOpen).Scan(&m.Id, &m.Name, &m.Status, &m.MType.Id, &m.MType.Name, &m.MType.Factor); err != nil {
+	if err = stmt.QueryRow(i, ISClose).Scan(&m.Id, &m.Name, &m.Status, &m.MType.Id, &m.MType.Name, &m.MType.Factor); err != nil {
 		return nil, errors.New(errMainCategoryWithIDNone)
 	}
 
@@ -81,14 +81,14 @@ func MainCategoryForName(db *gsqlitehandler.SqliteDB, n string) (m *MainCategory
 
 	sqlQuery := "SELECT m.id, m.name, m.status, t.id, t.name, t.factor " +
 		"FROM main_categories m INNER JOIN main_categories_types t ON m.type_id=t.id " +
-		"WHERE m.name LIKE ? AND m.status=?;"
+		"WHERE m.name LIKE ? AND m.status<>?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
 	m = MainCategoryNew()
-	if rows, err = stmt.Query(n, ISOpen); err != nil {
+	if rows, err = stmt.Query(n, ISClose); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer rows.Close()

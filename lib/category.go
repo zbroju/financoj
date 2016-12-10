@@ -50,14 +50,14 @@ func CategoryForID(db *gsqlitehandler.SqliteDB, i int) (c *Category, err error) 
 
 	sqlQuery := "SELECT c.id, c.name, c.status, m.id, m.name, m.status, t.id, t.name, t.factor " +
 		"FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types t ON m.type_id=t.id " +
-		"WHERE c.id=? AND c.status=?;"
+		"WHERE c.id=? AND c.status<>?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
 	c = CategoryNew()
-	if err = stmt.QueryRow(i, ISOpen).Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.Name, &c.Main.Status, &c.Main.MType.Id, &c.Main.MType.Name, &c.Main.MType.Factor); err != nil {
+	if err = stmt.QueryRow(i, ISClose).Scan(&c.Id, &c.Name, &c.Status, &c.Main.Id, &c.Main.Name, &c.Main.Status, &c.Main.MType.Id, &c.Main.MType.Name, &c.Main.MType.Factor); err != nil {
 		return nil, errors.New(errCategoryWithIDNone)
 	}
 	return c, nil
@@ -72,14 +72,14 @@ func CategoryForName(db *gsqlitehandler.SqliteDB, n string) (c *Category, err er
 	n = "%" + n + "%"
 	sqlQuery := "SELECT c.id, c.name, c.status, m.id, m.name, m.status, t.id, t.name, t.factor " +
 		"FROM categories c INNER JOIN main_categories m ON c.main_category_id=m.id INNER JOIN main_categories_types t ON m.type_id=t.id " +
-		"WHERE c.name LIKE ? AND c.status=?;"
+		"WHERE c.name LIKE ? AND c.status<>?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
 	c = CategoryNew()
-	if rows, err = stmt.Query(n, ISOpen); err != nil {
+	if rows, err = stmt.Query(n, ISClose); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer rows.Close()
