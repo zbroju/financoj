@@ -121,6 +121,8 @@ const (
 
 	ObjCompoundTransfer              = "transfer"
 	ObjCompoundTransferAlias         = "T"
+	ObjCompoundInternalCost          = "internal-cost"
+	ObjCompoundInternalCostAlias     = "C"
 	ObjCompoundTransactionSplit      = "transaction-split"
 	ObjCompoundTransactionSplitAlias = "S"
 

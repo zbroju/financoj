@@ -204,7 +204,7 @@ func TransactionRemove(db *gsqlitehandler.SqliteDB, t *Transaction) error {
 	//TODO: add test
 }
 
-// CompundTransferAdd adds two transactions with NonBudgetary category 'transfer'.
+// CompoundTransferAdd adds two transactions with NonBudgetary category 'transfer'.
 // It should be used to transfer money between accounts.
 func CompoundTransferAdd(db *gsqlitehandler.SqliteDB, date time.Time, accFrom, accTo *Account, value float64, description string, e *ExchangeRate) error {
 	var err error
@@ -214,17 +214,11 @@ func CompoundTransferAdd(db *gsqlitehandler.SqliteDB, date time.Time, accFrom, a
 	// Create two separate transactions
 	tMinus, tPlus := TransactionNew(), TransactionNew()
 
-	tMinus.Date = date
-	tMinus.Category.Id = SOCategoryTransferID
-	tMinus.Account = accFrom
-	tMinus.Value = -value
-	tMinus.Description = description
-
-	tPlus.Date = date
-	tPlus.Category.Id = SOCategoryTransferID
-	tPlus.Account = accTo
-	tPlus.Value = value * e.Rate
-	tPlus.Description = description
+	tMinus.Date, tPlus.Date = date, date
+	tMinus.Category.Id, tPlus.Category.Id = SOCategoryTransferID, SOCategoryTransferID
+	tMinus.Account, tPlus.Account = accFrom, accTo
+	tMinus.Value, tPlus.Value = -value, value*e.Rate
+	tMinus.Description, tPlus.Description = description, description
 
 	// Save transactions to DB
 	if tx, err = db.Handler.Begin(); err != nil {
@@ -250,8 +244,48 @@ func CompoundTransferAdd(db *gsqlitehandler.SqliteDB, date time.Time, accFrom, a
 	//TODO: add test
 }
 
+// CompoundInternalCostAdd adds two transactions with NonBudgetary category 'transfer'.
+// It should be used to transfer money between accounts.
+func CompoundInternalCostAdd(db *gsqlitehandler.SqliteDB, date time.Time, c *Category, accCost, accTransfer *Account, value float64, description string, e *ExchangeRate) error {
+	var err error
+	var tx *sql.Tx
+	var stmt *sql.Stmt
+
+	// Create two separate transactions
+	tCost, tTransfer := TransactionNew(), TransactionNew()
+
+	tCost.Date, tTransfer.Date = date, date
+	tCost.Category.Id, tTransfer.Category.Id = c.Id, SOCategoryTransferID
+	tCost.Account, tTransfer.Account = accCost, accTransfer
+	tCost.Value, tTransfer.Value = value, float64(-1)*float64(c.Main.MType.Factor)*value*e.Rate
+	tCost.Description, tTransfer.Description = description, description
+
+	// Save transactions to DB
+	if tx, err = db.Handler.Begin(); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	if stmt, err = tx.Prepare(sqlTransactionAdd); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(tCost.Date.Format(DateFormat), tCost.Account.Id, tCost.Description, tCost.Value, tCost.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	if _, err = stmt.Exec(tTransfer.Date.Format(DateFormat), tTransfer.Account.Id, tTransfer.Description, tTransfer.Value, tTransfer.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	tx.Commit()
+
+	return nil
+
+	//TODO: add test
+}
+
 // CompountSplitAdd adds two transactions for two different categories with half of the value each.
-func CompountSplitAdd(db *gsqlitehandler.SqliteDB, d time.Time, a *Account, value float64, description string, c1, c2 *Category) error {
+func CompoundSplitAdd(db *gsqlitehandler.SqliteDB, d time.Time, a *Account, value float64, description string, c1, c2 *Category) error {
 	var err error
 	var tx *sql.Tx
 	var stmt *sql.Stmt

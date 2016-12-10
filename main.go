@@ -110,10 +110,15 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagAccount, flagAccountTo, flagValue, flagDescription, flagDate, flagExchangeRate},
 					Usage:   "Add transfer between accounts.",
 					Action:  CmdCompoundTransferAdd},
+				{Name: ObjCompoundInternalCost,
+					Aliases: []string{ObjCompoundInternalCostAlias},
+					Flags:   []cli.Flag{flagFile, flagCategory, flagAccount, flagAccountTo, flagValue, flagDescription, flagDate, flagExchangeRate},
+					Usage:   "Add two transactions: budgetable on first account and non-budgetable on the other.",
+					Action:  CmdCompoundInternalCostAdd},
 				{Name: ObjCompoundTransactionSplit,
 					Aliases: []string{ObjCompoundTransactionSplitAlias},
 					Flags:   []cli.Flag{flagFile, flagAccount, flagValue, flagDescription, flagCategory, flagCategorySplit, flagDate},
-					Usage:   "Add split transaction between two categories.",
+					Usage:   "Add transaction split between two categories.",
 					Action:  CmdCompoundTransactionSplit},
 			},
 		},
@@ -268,7 +273,6 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//TODO: add transaction 'saving' which is cost (minus) on first account and transfer (plus) on the second one (it's for credit payment and amortization)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add export to csv any list and report
@@ -281,6 +285,3 @@ SUBCOMMANDS:
 //TODO: change 'errMissing*Flag' to map and create function to easily check missing flags
 //TODO: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
 //TODO: move all sql queries to separate file and format them so that they are readable
-
-// TRANSFER
-// - modify main

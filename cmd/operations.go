@@ -1417,6 +1417,87 @@ func CmdCompoundTransferAdd(c *cli.Context) error {
 	return nil
 }
 
+// CmdCompoundInternalCostAdd adds two transactions: cost in first account and non-budgetable category 'Transfer' into the other
+func CmdCompoundInternalCostAdd(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	cs := c.String(ObjCategory)
+	if cs == NotSetStringValue {
+		printError.Fatalln(errMissingCategoryFlag)
+	}
+	ac := c.String(ObjAccount)
+	if ac == NotSetStringValue {
+		printError.Fatalln(errMissingAccountFlag)
+	}
+	at := c.String(OptAccountTo)
+	if at == NotSetStringValue {
+		printError.Fatalln(errMissingAccountFlag)
+	}
+	v := c.Float64(OptValue)
+	if v == NotSetFloatValue {
+		printError.Fatalln(errMissingValueFlag)
+	}
+	desc := c.String(OptDescription)
+	if desc == NotSetStringValue {
+		printError.Fatalln(errMissingDescriptionFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Parse necessary parameters
+	d := time.Now()
+	if td := c.String(OptDate); td != NotSetStringValue {
+		if d, err = time.Parse(DateFormat, td); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	var cat *Category
+	if cat, err = CategoryForName(fh, cs); err != nil {
+		printError.Fatalln(err)
+	}
+	var accCost, accTransfer *Account
+	if accCost, err = AccountForName(fh, ac); err != nil {
+		printError.Fatalln(err)
+	}
+	if accTransfer, err = AccountForName(fh, at); err != nil {
+		printError.Fatalln(err)
+	}
+	var er *ExchangeRate
+	if r := c.Float64(ObjExchangeRate); r == NotSetFloatValue {
+		if er, err = ExchangeRateForCurrencies(fh, accCost.Currency, accTransfer.Currency); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		er = new(ExchangeRate)
+		er.CurrencyFrom = accCost.Currency
+		er.CurrencyTo = accTransfer.Currency
+		er.Rate = r
+	}
+
+	// Add transaction
+	if err = CompoundInternalCostAdd(fh, d, cat, accCost, accTransfer, v, desc, er); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("add new internal cost\n")
+
+	return nil
+}
+
 // CmdCompoundTransactionSplit adds two transactions for two different categories with half of the original value
 func CmdCompoundTransactionSplit(c *cli.Context) error {
 	var err error
@@ -1477,7 +1558,7 @@ func CmdCompoundTransactionSplit(c *cli.Context) error {
 	}
 
 	// Add transaction
-	if err = CompountSplitAdd(fh, d, acc, v, desc, cat1, cat2); err != nil {
+	if err = CompoundSplitAdd(fh, d, acc, v, desc, cat1, cat2); err != nil {
 		printError.Fatalln(err)
 	}
 
