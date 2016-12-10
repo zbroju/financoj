@@ -60,12 +60,18 @@ func CreateNewDataFile(db *gsqlitehandler.SqliteDB) error {
 		"CREATE TABLE categories (id INTEGER PRIMARY KEY, main_category_id INTEGER, name TEXT, status INTEGER);" +
 		"CREATE TABLE main_categories (id INTEGER PRIMARY KEY, type_id INTEGER, name TEXT, status INTEGER);" +
 		"CREATE TABLE main_categories_types (id INTEGER PRIMARY KEY, name TEXT, factor INTEGER);"
+
 	sqlInsertMainCategoryTypes := fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Unknown', 0);", MCTUnknown)
 	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Not set', 0);", MCTUnset)
 	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Cost', -1);", MCTCost)
 	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Transfer', 1);", MCTTransfer)
 	sqlInsertMainCategoryTypes += fmt.Sprintf("INSERT INTO main_categories_types VALUES (%d, 'Income', 1);", MCTIncome)
-	err := db.CreateNew(sqlCreateTables + sqlInsertMainCategoryTypes)
+
+	sqlInsertMainCategories := fmt.Sprintf("INSERT INTO main_categories VALUES (%d, %d, '%s',%d);", SOMCNonBudgetaryID, MCTTransfer, "NonBudgetary", ISSystem)
+
+	sqlInsertCategories := fmt.Sprintf("INSERT INTO categories VALUES(%d, %d, '%s', %d);", SOCategoryTransferID, SOMCNonBudgetaryID, "Transfer", ISSystem)
+
+	err := db.CreateNew(sqlCreateTables + sqlInsertMainCategoryTypes + sqlInsertMainCategories + sqlInsertCategories)
 
 	return err
 	//TODO: add test

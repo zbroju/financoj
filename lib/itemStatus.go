@@ -8,9 +8,10 @@ package engine
 type ItemStatus int
 
 const (
-	ISUnset ItemStatus = -1
-	ISClose ItemStatus = 0
-	ISOpen  ItemStatus = 1
+	ISUnset  ItemStatus = -1
+	ISClose  ItemStatus = 0
+	ISOpen   ItemStatus = 1
+	ISSystem ItemStatus = 2
 )
 
 // String satisfies fmt.Stringer interface in order to get human readable names
@@ -24,6 +25,8 @@ func (is ItemStatus) String() string {
 		s = "active"
 	case ISClose:
 		s = "inactive"
+	case ISSystem:
+		s = "system"
 	}
 
 	return s

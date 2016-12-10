@@ -92,6 +92,7 @@ const (
 	OptDescriptionAlias      = "s"
 	OptInstitution           = "bank"
 	OptInstitutionAlias      = "b"
+	OptAccountTo             = "account-to"
 	OptAccountType           = "accout-type"
 	OptAccountTypeAlias      = "p"
 	OptValue                 = "value"
@@ -115,6 +116,9 @@ const (
 	ObjTransactionAlias  = "t"
 	ObjBudget            = "budget"
 	ObjBudgetAlias       = "b"
+
+	ObjCompoundTransfer      = "transfer"
+	ObjCompoundTransferAlias = "T"
 
 	ObjReportAccountBalance            = "account-balance"
 	ObjReportAccountBalanceAlias       = "ab"

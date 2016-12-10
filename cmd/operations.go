@@ -456,7 +456,7 @@ func CmdExchangeRateAdd(c *cli.Context) error {
 	if curTo == NotSetStringValue {
 		printError.Fatalln(errMissingCurrencyToFlag)
 	}
-	rate := c.Float64(ObjExchangeRateAlias)
+	rate := c.Float64(ObjExchangeRate)
 	if rate == NotSetFloatValue {
 		printError.Fatalln(errMissingExchangeRateFlag)
 	}
@@ -1340,6 +1340,79 @@ func CmdBudgetList(c *cli.Context) error {
 	for b := getNextBudget(); b != nil; b = getNextBudget() {
 		fmt.Fprintf(os.Stdout, LineD, b.Period, b.Category.Main.MType.Name, b.Category.Main.Name, b.Category.Name, b.Value, b.Currency)
 	}
+
+	return nil
+}
+
+// CmdCompoundTransferAdd adds two transactions with non-budgetable category 'Transfer'
+func CmdCompundTransferAdd(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	af := c.String(ObjAccount)
+	if af == NotSetStringValue {
+		printError.Fatalln(errMissingAccountFlag)
+	}
+	at := c.String(OptAccountTo)
+	if at == NotSetStringValue {
+		printError.Fatalln(errMissingAccountFlag)
+	}
+	v := c.Float64(OptValue)
+	if v == NotSetFloatValue {
+		printError.Fatalln(errMissingValueFlag)
+	}
+	desc := c.String(OptDescription)
+	if desc == NotSetStringValue {
+		printError.Fatalln(errMissingDescriptionFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Parse necessary parameters
+	d := time.Now()
+	if td := c.String(OptDate); td != NotSetStringValue {
+		if d, err = time.Parse(DateFormat, td); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	var accFrom, accTo *Account
+	if accFrom, err = AccountForName(fh, af); err != nil {
+		printError.Fatalln(err)
+	}
+	if accTo, err = AccountForName(fh, at); err != nil {
+		printError.Fatalln(err)
+	}
+	var er *ExchangeRate
+	if r := c.Float64(ObjExchangeRate); r == NotSetFloatValue {
+		if er, err = ExchangeRateForCurrencies(fh, accFrom.Currency, accTo.Currency); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		er = new(ExchangeRate)
+		er.CurrencyFrom = accFrom.Currency
+		er.CurrencyTo = accTo.Currency
+		er.Rate = r
+	}
+
+	// Add transaction
+	if err = CompoundTransferAdd(fh, d, accFrom, accTo, v, desc, er); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("add new transfer\n")
 
 	return nil
 }

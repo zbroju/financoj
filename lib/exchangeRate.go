@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/zbroju/gsqlitehandler"
+	"strings"
 )
 
 // Currency represents the object of currencies exchange rate
@@ -63,13 +64,21 @@ func ExchangeRateEdit(db *gsqlitehandler.SqliteDB, e *ExchangeRate) error {
 func ExchangeRateForCurrencies(db *gsqlitehandler.SqliteDB, cf string, ct string) (e *ExchangeRate, err error) {
 	var stmt *sql.Stmt
 
-	if stmt, err = db.Handler.Prepare("SELECT currency_from, currency_to, exchange_rate FROM currencies WHERE currency_from=upper(?) AND currency_to=upper(?);"); err != nil {
+	e = new(ExchangeRate)
+	e.CurrencyFrom = strings.ToUpper(cf)
+	e.CurrencyTo = strings.ToUpper(ct)
+
+	if e.CurrencyFrom == e.CurrencyTo {
+		e.Rate = float64(1)
+		return e, nil
+	}
+
+	if stmt, err = db.Handler.Prepare("SELECT exchange_rate FROM currencies WHERE currency_from=upper(?) AND currency_to=upper(?);"); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 	defer stmt.Close()
 
-	e = new(ExchangeRate)
-	if err = stmt.QueryRow(cf, ct).Scan(&e.CurrencyFrom, &e.CurrencyTo, &e.Rate); err != nil {
+	if err = stmt.QueryRow(e.CurrencyFrom, e.CurrencyTo).Scan(&e.Rate); err != nil {
 		return nil, errors.New(errExchangeRateNone)
 	}
 

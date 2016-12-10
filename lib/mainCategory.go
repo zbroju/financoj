@@ -117,6 +117,11 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 	var err error
 	var stmt *sql.Stmt
 
+	// Check if it is not a system object
+	if m.Status == ISSystem {
+		return errors.New(errSystemObject)
+	}
+
 	sqlQuery := "UPDATE main_categories SET type_id=?, name=?, status=? WHERE id=?;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return errors.New(errWritingToFile)
@@ -135,6 +140,11 @@ func MainCategoryEdit(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 func MainCategoryRemove(db *gsqlitehandler.SqliteDB, m *MainCategory) error {
 	var err error
 	var stmt *sql.Stmt
+
+	// Check if it is not a system object
+	if m.Status == ISSystem {
+		return errors.New(errSystemObject)
+	}
 
 	// Set correct status (ISClose)
 	if stmt, err = db.Handler.Prepare("UPDATE main_categories SET status=? WHERE id=?;"); err != nil {

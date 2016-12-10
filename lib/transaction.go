@@ -198,3 +198,50 @@ func TransactionRemove(db *gsqlitehandler.SqliteDB, t *Transaction) error {
 	return nil
 	//TODO: add test
 }
+
+// CompundTransferAdd adds two transactions with NonBudgetary category 'transfer'.
+// It should be used to transfer money between accounts.
+func CompoundTransferAdd(db *gsqlitehandler.SqliteDB, date time.Time, accFrom, accTo *Account, value float64, description string, e *ExchangeRate) error {
+	var err error
+	var tx *sql.Tx
+	var stmt *sql.Stmt
+
+	// Create two separate transactions
+	tMinus, tPlus := TransactionNew(), TransactionNew()
+
+	tMinus.Date = date
+	tMinus.Category.Id = SOCategoryTransferID
+	tMinus.Account = accFrom
+	tMinus.Value = -value
+	tMinus.Description = description
+
+	tPlus.Date = date
+	tPlus.Category.Id = SOCategoryTransferID
+	tPlus.Account = accTo
+	tPlus.Value = value * e.Rate
+	tPlus.Description = description
+
+	// Save transactions to DB
+	if tx, err = db.Handler.Begin(); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	sqlQuery := "INSERT INTO transactions VALUES(NULL, ?, ?, ?, ?, ?);"
+	if stmt, err = tx.Prepare(sqlQuery); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(tMinus.Date.Format(DateFormat), tMinus.Account.Id, tMinus.Description, tMinus.Value, tMinus.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	if _, err = stmt.Exec(tPlus.Date.Format(DateFormat), tPlus.Account.Id, tPlus.Description, tPlus.Value, tPlus.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+
+	tx.Commit()
+
+	return nil
+
+	//TODO: add test
+}

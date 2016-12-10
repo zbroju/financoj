@@ -16,6 +16,15 @@ const (
 	DateSeparator = "-"
 )
 
+// Special objects
+const (
+	// SOMCNonBudgetaryID is a special main category for transfers
+	SOMCNonBudgetaryID int64 = 10
+
+	// SOCategoryTransferID is a special category for transfers
+	SOCategoryTransferID int64 = 10
+)
+
 // Error messages
 const (
 	errMainCategoryWithIDNone    = "no main category with given ID"
@@ -41,6 +50,8 @@ const (
 	errReadingFromFile = "error reading from file"
 
 	errReportMissingCurrencies string = "missing currency exchange rate(s) for: "
+
+	errSystemObject = "this is system object and cannot be changed or removed"
 )
 
 // Other constants

@@ -49,6 +49,7 @@ SUBCOMMANDS:
 	flagID := cli.IntFlag{Name: OptID + "," + OptIDAlias, Value: NotSetIntValue, Usage: "ID"}
 	flagAll := cli.BoolFlag{Name: OptAll, Usage: "show all elements, including removed"}
 	flagAccount := cli.StringFlag{Name: ObjAccount + "," + ObjAccountAlias, Value: NotSetStringValue, Usage: "account name"}
+	flagAccountTo := cli.StringFlag{Name: OptAccountTo, Value: NotSetStringValue, Usage: "destination account for transfers"}
 	flagDescription := cli.StringFlag{Name: OptDescription + "," + OptDescriptionAlias, Value: NotSetStringValue, Usage: "description of the object"}
 	flagInstitution := cli.StringFlag{Name: OptInstitution + "," + OptInstitutionAlias, Value: NotSetStringValue, Usage: "institution (bank) where the account is located"}
 	flagAccountType := cli.StringFlag{Name: OptAccountType + "," + OptAccountTypeAlias, Value: NotSetStringValue, Usage: "type of account: operational/o, savings/s, properties/p, investments/i, loans/l"}
@@ -103,6 +104,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagPeriod, flagCategory, flagValue, flagCurrencyWithDefault},
 					Usage:   "Add new budget.",
 					Action:  CmdBudgetAdd},
+				{Name: ObjCompoundTransfer,
+					Aliases: []string{ObjCompoundTransferAlias},
+					Flags:   []cli.Flag{flagFile, flagAccount, flagAccountTo, flagValue, flagDescription, flagDate, flagExchangeRate},
+					Usage:   "Add transfer between accounts.",
+					Action:  CmdCompundTransferAdd},
 			},
 		},
 		{Name: CmdEdit, Aliases: []string{CmdEditAlias}, Usage: "Edit an object.",
@@ -256,7 +262,6 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//TODO: add transaction 'transfer' to have it in one shot (check currencies between accounts and use current if available, add attribute 'ownership system' for special category: transfer, add special category to file during creation, prevent delete and showing it by user by user)
 //TODO: add transaction split when transaction is equally split into two categories
 //TODO: add transaction 'saving' which is cost (minus) on first account and transfer (plus) on the second one (it's for credit payment and amortization)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
@@ -271,3 +276,6 @@ SUBCOMMANDS:
 //TODO: change 'errMissing*Flag' to map and create function to easily check missing flags
 //TODO: for each function objectForID and objectForName, change returned error depending on the status of the object: if open -> return the object, if closed or system -> return respective error
 //TODO: move all sql queries to separate file and format them so that they are readable
+
+// TRANSFER
+// - modify main
