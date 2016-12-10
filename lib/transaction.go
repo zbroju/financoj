@@ -8,7 +8,13 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/zbroju/gsqlitehandler"
+	"math"
 	"time"
+)
+
+// SQL queries
+const (
+	sqlTransactionAdd string = "INSERT INTO transactions VALUES(NULL, ?, ?, ?, ?, ?);"
 )
 
 // Transaction represents the basic object for transaction
@@ -46,8 +52,7 @@ func TransactionAdd(db *gsqlitehandler.SqliteDB, t *Transaction) error {
 	var err error
 	var stmt *sql.Stmt
 
-	sqlQuery := "INSERT INTO transactions VALUES(NULL, ?, ?, ?, ?, ?);"
-	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
+	if stmt, err = db.Handler.Prepare(sqlTransactionAdd); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
@@ -226,8 +231,7 @@ func CompoundTransferAdd(db *gsqlitehandler.SqliteDB, date time.Time, accFrom, a
 		return errors.New(errWritingToFile)
 	}
 
-	sqlQuery := "INSERT INTO transactions VALUES(NULL, ?, ?, ?, ?, ?);"
-	if stmt, err = tx.Prepare(sqlQuery); err != nil {
+	if stmt, err = tx.Prepare(sqlTransactionAdd); err != nil {
 		return errors.New(errWritingToFile)
 	}
 	defer stmt.Close()
@@ -242,6 +246,66 @@ func CompoundTransferAdd(db *gsqlitehandler.SqliteDB, date time.Time, accFrom, a
 	tx.Commit()
 
 	return nil
+
+	//TODO: add test
+}
+
+// CompountSplitAdd adds two transactions for two different categories with half of the value each.
+func CompountSplitAdd(db *gsqlitehandler.SqliteDB, d time.Time, a *Account, value float64, description string, c1, c2 *Category) error {
+	var err error
+	var tx *sql.Tx
+	var stmt *sql.Stmt
+
+	// Create two separate transactions
+	t1, t2 := TransactionNew(), TransactionNew()
+	if !d.IsZero() {
+		t1.Date, t2.Date = d, d
+	}
+	t1.Account, t2.Account = a, a
+	t1.Description, t2.Description = description, description
+	t1.Value, t2.Value = splitValue(value)
+	t1.Category, t2.Category = c1, c2
+
+	// Save transactions to DB
+	if tx, err = db.Handler.Begin(); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	if stmt, err = tx.Prepare(sqlTransactionAdd); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(t1.Date.Format(DateFormat), t1.Account.Id, t1.Description, t1.Value, t1.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	if _, err = stmt.Exec(t2.Date.Format(DateFormat), t2.Account.Id, t2.Description, t2.Value, t2.Category.Id); err != nil {
+		return errors.New(errWritingToFile)
+	}
+	tx.Commit()
+
+	return nil
+
+	//TODO: add test
+}
+
+// splitValue splits given value into two values without reminder
+func splitValue(value float64) (v1, v2 float64) {
+	var tmpTotV, tmpV1, tmpV2 int64
+
+	tmpTotV = int64(math.Floor(value * 100))
+	if tmpTotV%2 == 0 {
+		tmpV1 = tmpTotV / 2
+		tmpV2 = tmpV1
+	} else {
+		tmpTotV -= 1
+		tmpV1 = tmpTotV / 2
+		tmpV2 = tmpV1 + 1
+	}
+
+	v1 = float64(tmpV1) / 100
+	v2 = float64(tmpV2) / 100
+
+	return v1, v2
 
 	//TODO: add test
 }

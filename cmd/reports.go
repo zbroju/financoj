@@ -786,6 +786,6 @@ func RepNetValueMonthly(c *cli.Context) error {
 		totalValue += e.Value
 		fmt.Fprintf(os.Stdout, LineD, e.Period.String(), totalValue)
 	}
-
+	//FIXME: wrong net value if date_from is given
 	return nil
 }

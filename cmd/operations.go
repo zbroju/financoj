@@ -1345,7 +1345,7 @@ func CmdBudgetList(c *cli.Context) error {
 }
 
 // CmdCompoundTransferAdd adds two transactions with non-budgetable category 'Transfer'
-func CmdCompundTransferAdd(c *cli.Context) error {
+func CmdCompoundTransferAdd(c *cli.Context) error {
 	var err error
 
 	// Get loggers
@@ -1413,6 +1413,76 @@ func CmdCompundTransferAdd(c *cli.Context) error {
 
 	// Show summary
 	printUserMsg.Printf("add new transfer\n")
+
+	return nil
+}
+
+// CmdCompoundTransactionSplit adds two transactions for two different categories with half of the original value
+func CmdCompoundTransactionSplit(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	printUserMsg, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	a := c.String(ObjAccount)
+	if a == NotSetStringValue {
+		printError.Fatalln(errMissingAccountFlag)
+	}
+	v := c.Float64(OptValue)
+	if v == NotSetFloatValue {
+		printError.Fatalln(errMissingValueFlag)
+	}
+	desc := c.String(OptDescription)
+	if desc == NotSetStringValue {
+		printError.Fatalln(errMissingDescriptionFlag)
+	}
+	c1 := c.String(ObjCategory)
+	if c1 == NotSetStringValue {
+		printError.Fatalln(errMissingCategoryFlag)
+	}
+	c2 := c.String(OptCategorySplit)
+	if c2 == NotSetStringValue {
+		printError.Fatalln(errmissingCategorySplitFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err := fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Parse necessary parameters
+	d := time.Now()
+	if td := c.String(OptDate); td != NotSetStringValue {
+		if d, err = time.Parse(DateFormat, td); err != nil {
+			printError.Fatalln(err)
+		}
+	}
+	var acc *Account
+	if acc, err = AccountForName(fh, a); err != nil {
+		printError.Fatalln(err)
+	}
+	var cat1, cat2 *Category
+	if cat1, err = CategoryForName(fh, c1); err != nil {
+		printError.Fatalln(err)
+	}
+	if cat2, err = CategoryForName(fh, c2); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Add transaction
+	if err = CompountSplitAdd(fh, d, acc, v, desc, cat1, cat2); err != nil {
+		printError.Fatalln(err)
+	}
+
+	// Show summary
+	printUserMsg.Printf("add split transaction\n")
 
 	return nil
 }

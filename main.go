@@ -54,6 +54,7 @@ SUBCOMMANDS:
 	flagInstitution := cli.StringFlag{Name: OptInstitution + "," + OptInstitutionAlias, Value: NotSetStringValue, Usage: "institution (bank) where the account is located"}
 	flagAccountType := cli.StringFlag{Name: OptAccountType + "," + OptAccountTypeAlias, Value: NotSetStringValue, Usage: "type of account: operational/o, savings/s, properties/p, investments/i, loans/l"}
 	flagCategory := cli.StringFlag{Name: ObjCategory + "," + ObjCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
+	flagCategorySplit := cli.StringFlag{Name: OptCategorySplit, Value: NotSetStringValue, Usage: "second category name for split transaction"}
 	flagMainCategory := cli.StringFlag{Name: ObjMainCategory + "," + ObjMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: OptMainCategoryType + "," + OptMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (cost, transfer, income)"}
 	flagCurrency := cli.StringFlag{Name: OptCurrency + "," + OptCurrencyAlias, Value: NotSetStringValue, Usage: "currency"}
@@ -108,7 +109,12 @@ SUBCOMMANDS:
 					Aliases: []string{ObjCompoundTransferAlias},
 					Flags:   []cli.Flag{flagFile, flagAccount, flagAccountTo, flagValue, flagDescription, flagDate, flagExchangeRate},
 					Usage:   "Add transfer between accounts.",
-					Action:  CmdCompundTransferAdd},
+					Action:  CmdCompoundTransferAdd},
+				{Name: ObjCompoundTransactionSplit,
+					Aliases: []string{ObjCompoundTransactionSplitAlias},
+					Flags:   []cli.Flag{flagFile, flagAccount, flagValue, flagDescription, flagCategory, flagCategorySplit, flagDate},
+					Usage:   "Add split transaction between two categories.",
+					Action:  CmdCompoundTransactionSplit},
 			},
 		},
 		{Name: CmdEdit, Aliases: []string{CmdEditAlias}, Usage: "Edit an object.",
@@ -262,7 +268,6 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//TODO: add transaction split when transaction is equally split into two categories
 //TODO: add transaction 'saving' which is cost (minus) on first account and transfer (plus) on the second one (it's for credit payment and amortization)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)

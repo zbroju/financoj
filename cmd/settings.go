@@ -50,6 +50,7 @@ const (
 	errMissingFileFlag           = "missing information about data file"
 	errMissingIDFlag             = "missing ID"
 	errMissingCategoryFlag       = "missing category name"
+	errmissingCategorySplitFlag  = "missing category split name"
 	errMissingMainCategoryFlag   = "missing main category name"
 	errIncorrectMainCategoryType = "incorrect main category type"
 	errMissingCurrencyFlag       = "missing currency (from) name"
@@ -93,6 +94,7 @@ const (
 	OptInstitution           = "bank"
 	OptInstitutionAlias      = "b"
 	OptAccountTo             = "account-to"
+	OptCategorySplit         = "category-split"
 	OptAccountType           = "accout-type"
 	OptAccountTypeAlias      = "p"
 	OptValue                 = "value"
@@ -117,8 +119,10 @@ const (
 	ObjBudget            = "budget"
 	ObjBudgetAlias       = "b"
 
-	ObjCompoundTransfer      = "transfer"
-	ObjCompoundTransferAlias = "T"
+	ObjCompoundTransfer              = "transfer"
+	ObjCompoundTransferAlias         = "T"
+	ObjCompoundTransactionSplit      = "transaction-split"
+	ObjCompoundTransactionSplitAlias = "S"
 
 	ObjReportAccountBalance            = "account-balance"
 	ObjReportAccountBalanceAlias       = "ab"
