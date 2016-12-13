@@ -56,6 +56,16 @@ func (p *BPeriod) String() string {
 
 }
 
+func (p *BPeriod) GetStrings() (y, m string) {
+	y = fmt.Sprintf("%04d", p.Year)
+	if p.Month == int64(NotSetIntValue) {
+		m = NotSetStringValue
+	} else {
+		m = fmt.Sprintf("%02d", p.Month)
+	}
+	return y, m
+}
+
 // Set verifies if year y and month m are within their ranges and assigns it to the budgeting period fields.
 func (p *BPeriod) Set(y, m int64) error {
 	if err := incorrectYear(y); err != nil {

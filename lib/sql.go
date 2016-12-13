@@ -645,3 +645,40 @@ where
 	ac.currency_from is null
 ;
 `
+
+// sqlReportCurrenciesBalanceMonthly is SQL string to get selected category balance over time (monthly).
+//
+// Parameters
+// 1 - currency (string)
+// 2 - currency (string)
+// 3 - category_id (int)
+// 4 - date_from (string)
+// 5 - date_from (string)
+// 6 - NoStringParamForSQL
+// 7 - date_to (string)
+// 8 - date_to (string)
+// 9 - NoStringParamForSQL
+const sqlReportCurrenciesBalanceMonthly string = `
+select
+	strftime('%Y',date) as y
+    	,strftime('%m',date) as m
+	,sum(t.value * mt.factor * cur.exchange_rate) as balance
+from
+	transactions t
+	inner join accounts a on t.account_id=a.id
+	inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+	inner join categories c on t.category_id=c.id
+	inner join main_categories m on c.main_category_id=m.id
+	inner join main_categories_types mt on m.type_id=mt.id
+where 1=1
+	and c.id=?
+	and (t.date>=? or ?=?)
+	and (t.date<=? or ?=?)
+group by
+	1
+	,2
+order by
+	1
+	,2
+;
+`

@@ -8,7 +8,6 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/zbroju/gsqlitehandler"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -375,18 +374,19 @@ func ReportBudgetCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currency st
 
 	y := int(p.Year)
 	m := int(p.Month)
+	ys, ms := p.GetStrings()
 	if m == NotSetIntValue {
 		if stmt, err = db.Handler.Prepare(sqlReportBudgetCategoriesYearly); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
-		if rows, err = stmt.Query(strconv.Itoa(y), y, MCTTransfer, currency, currency, y, currency, currency, strconv.Itoa(y)); err != nil {
+		if rows, err = stmt.Query(ys, y, MCTTransfer, currency, currency, y, currency, currency, ys); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 	} else {
 		if stmt, err = db.Handler.Prepare(sqlReportBudgetCategoriesMonthly); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
-		if rows, err = stmt.Query(strconv.Itoa(y), strconv.Itoa(m), y, m, MCTTransfer, currency, currency, y, m, currency, currency, strconv.Itoa(y), strconv.Itoa(m)); err != nil {
+		if rows, err = stmt.Query(ys, ms, y, m, MCTTransfer, currency, currency, y, m, currency, currency, ys, ms); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 	}
@@ -445,18 +445,19 @@ func ReportBudgetMainCategories(db *gsqlitehandler.SqliteDB, p *BPeriod, currenc
 
 	y := int(p.Year)
 	m := int(p.Month)
+	ys, ms := p.GetStrings()
 	if m == NotSetIntValue {
 		if stmt, err = db.Handler.Prepare(sqlReportBudgetMainCategoriesYearly); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
-		if rows, err = stmt.Query(strconv.Itoa(y), y, MCTTransfer, currency, currency, y, strconv.Itoa(y), currency, currency); err != nil {
+		if rows, err = stmt.Query(ys, y, MCTTransfer, currency, currency, y, ys, currency, currency); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 	} else {
 		if stmt, err = db.Handler.Prepare(sqlReportBudgetMainCategoriesMonthly); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
-		if rows, err = stmt.Query(strconv.Itoa(y), strconv.Itoa(m), y, m, MCTTransfer, currency, currency, y, m, strconv.Itoa(y), strconv.Itoa(m), currency, currency); err != nil {
+		if rows, err = stmt.Query(ys, ms, y, m, MCTTransfer, currency, currency, y, m, ys, ms, currency, currency); err != nil {
 			return nil, errors.New(errReadingFromFile)
 		}
 	}
