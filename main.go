@@ -273,6 +273,9 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
+//TODO: add categories over time (monthly and yearly)
+//TODO: add main categories over time (monthly and yearly)
+//TODO: add income vs cost over time (monthly and yearly)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add export to csv any list and report

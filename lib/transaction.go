@@ -326,7 +326,7 @@ func CompoundSplitAdd(db *gsqlitehandler.SqliteDB, d time.Time, a *Account, valu
 func splitValue(value float64) (v1, v2 float64) {
 	var tmpTotV, tmpV1, tmpV2 int64
 
-	tmpTotV = int64(math.Floor(value * 100))
+	tmpTotV = int64(math.Ceil(value * 100))
 	if tmpTotV%2 == 0 {
 		tmpV1 = tmpTotV / 2
 		tmpV2 = tmpV1
