@@ -34,6 +34,7 @@ const (
 	errCategoryWithIDNone        = "no category with given ID"
 	errCategoryWithNameNone      = "no category with given name"
 	errCategoryWithNameAmbiguous = "given category name is ambiguous"
+	errCategoryMissing           = "category missing"
 
 	errExchangeRateNone          = "no exchange rate for given currencies"
 	errExchangeRateAlreadyExists = "exchange rate for given currencies already exists"

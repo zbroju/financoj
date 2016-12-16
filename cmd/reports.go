@@ -295,6 +295,82 @@ func RepCategoryBalance(c *cli.Context) error {
 	return nil
 }
 
+func RepCategoryBalanceMonthly(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	cur := c.String(OptCurrency)
+	if cur == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+	cs := c.String(ObjCategory)
+	if cs == NotSetStringValue {
+		printError.Fatalln(errMissingCategoryFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create filters
+	var cat *Category
+	if cat, err = CategoryForName(fh, cs); err != nil {
+		printError.Fatalln(err)
+	}
+	var df time.Time
+	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+		if df, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		df = time.Time{}
+	}
+	var dt time.Time
+	if ds := c.String(OptDateTo); ds != NotSetStringValue {
+		if dt, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dt = time.Time{}
+	}
+
+	// Build formatting strings
+	var getNextEntry func() *BalanceMonthlyReportEntry
+	if getNextEntry, err = ReportCategoriesBalanceMonthly(fh, cur, cat, df, dt); err != nil {
+		printError.Fatalln(err)
+	}
+	lP := utf8.RuneCountInString(HBPeriod)
+	lV := utf8.RuneCountInString(HTValue)
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		lP = MaxLen(e.Period.String(), lP)
+		lV = MaxLen(strconv.FormatFloat(e.Value, 'f', 2, 64), lV)
+	}
+	lineH := LineFor(HFSForNumeric(lP), HFSForNumeric(lV))
+	lineD := LineFor(DFSForText(lP), DFSForValue(lV))
+
+	// Print report
+	fmt.Fprintf(os.Stdout, "Category '%s' balance monthly (in %s):\n\n", cat.Name, strings.ToUpper(cur))
+	fmt.Fprintf(os.Stdout, lineH, HBPeriod, HTValue)
+	if getNextEntry, err = ReportCategoriesBalanceMonthly(fh, cur, cat, df, dt); err != nil {
+		printError.Fatalln(err)
+	}
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		fmt.Fprintf(os.Stdout, lineD, e.Period, e.Value)
+	}
+
+	return nil
+}
+
 func RepMainCategoryBalance(c *cli.Context) error {
 	var err error
 

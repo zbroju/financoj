@@ -646,7 +646,7 @@ where
 ;
 `
 
-// sqlReportCurrenciesBalanceMonthly is SQL string to get selected category balance over time (monthly).
+// sqlReportCategoriesBalanceMonthly is SQL string to get selected category balance over time (monthly).
 //
 // Parameters
 // 1 - currency (string)
@@ -658,7 +658,7 @@ where
 // 7 - date_to (string)
 // 8 - date_to (string)
 // 9 - NoStringParamForSQL
-const sqlReportCurrenciesBalanceMonthly string = `
+const sqlReportCategoriesBalanceMonthly string = `
 select
 	strftime('%Y',date) as y
     	,strftime('%m',date) as m

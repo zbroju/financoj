@@ -54,7 +54,7 @@ SUBCOMMANDS:
 	flagInstitution := cli.StringFlag{Name: OptInstitution + "," + OptInstitutionAlias, Value: NotSetStringValue, Usage: "institution (bank) where the account is located"}
 	flagAccountType := cli.StringFlag{Name: OptAccountType + "," + OptAccountTypeAlias, Value: NotSetStringValue, Usage: "type of account: operational/o, savings/s, properties/p, investments/i, loans/l"}
 	flagCategory := cli.StringFlag{Name: ObjCategory + "," + ObjCategoryAlias, Value: NotSetStringValue, Usage: "category name"}
-	flagCategorySplit := cli.StringFlag{Name: OptCategorySplit, Value: NotSetStringValue, Usage: "second category name for split transaction"}
+	flagCategorySplit := cli.StringFlag{Name: OptCategorySplit + "," + OptCategorySplitAlias, Value: NotSetStringValue, Usage: "second category name for split transaction"}
 	flagMainCategory := cli.StringFlag{Name: ObjMainCategory + "," + ObjMainCategoryAlias, Value: NotSetStringValue, Usage: "main category name"}
 	flagMainCategoryType := cli.StringFlag{Name: OptMainCategoryType + "," + OptMainCategoryTypeAlias, Value: NotSetStringValue, Usage: "main category type (cost, transfer, income)"}
 	flagCurrency := cli.StringFlag{Name: OptCurrency + "," + OptCurrencyAlias, Value: NotSetStringValue, Usage: "currency"}
@@ -241,6 +241,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagCategory, flagMainCategory},
 					Usage:   "Categories balance for given criteria.",
 					Action:  RepCategoryBalance},
+				{Name: ObjReportCategoryBalanceMonthly,
+					Aliases: []string{ObjReportCategoryBalanceMonthlyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCategory, flagDateFrom, flagDateTo},
+					Usage:   "Categories balance monthly.",
+					Action:  RepCategoryBalanceMonthly},
 				{Name: ObjReportMainCategoryBalance,
 					Aliases: []string{ObjReportMainCategoryBalanceAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagMainCategory},
@@ -273,9 +278,10 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//TODO: add categories over time (monthly and yearly)
-//TODO: add main categories over time (monthly and yearly)
-//TODO: add income vs cost over time (monthly and yearly)
+//TODO: add report categories over time (yearly)
+//TODO: add report main categories over time (monthly and yearly)
+//TODO: add report income vs cost over time (monthly and yearly)
+//FIXME: change package name in lib
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add export to csv any list and report
