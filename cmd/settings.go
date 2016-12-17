@@ -139,6 +139,8 @@ const (
 	ObjReportCategoryBalanceAlias        = "cb"
 	ObjReportCategoryBalanceMonthly      = "category-balance-monthly"
 	ObjReportCategoryBalanceMonthlyAlias = "cbm"
+	ObjReportCategoryBalanceYearly       = "category-balance-yearly"
+	ObjReportCategoryBalanceYearlyAlias  = "cby"
 	ObjReportMainCategoryBalance         = "main-category-balance"
 	ObjReportMainCategoryBalanceAlias    = "mcb"
 	ObjReportAssetsSummary               = "assets-summary"

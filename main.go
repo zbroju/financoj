@@ -246,6 +246,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCategory, flagDateFrom, flagDateTo},
 					Usage:   "Categories balance monthly.",
 					Action:  RepCategoryBalanceMonthly},
+				{Name: ObjReportCategoryBalanceYearly,
+					Aliases: []string{ObjReportCategoryBalanceYearlyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagCategory, flagDateFrom, flagDateTo},
+					Usage:   "Categories balance yearly.",
+					Action:  RepCategoryBalanceYearly},
 				{Name: ObjReportMainCategoryBalance,
 					Aliases: []string{ObjReportMainCategoryBalanceAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagMainCategory},
@@ -278,7 +283,6 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//TODO: add report categories over time (yearly)
 //TODO: add report main categories over time (monthly and yearly)
 //TODO: add report income vs cost over time (monthly and yearly)
 //FIXME: change package name in lib
