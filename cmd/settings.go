@@ -145,6 +145,8 @@ const (
 	ObjReportMainCategoryBalanceAlias        = "mcb"
 	ObjReportMainCategoryBalanceMonthly      = "main-category-balance-monthly"
 	ObjReportMainCategoryBalanceMonthlyAlias = "mcbm"
+	ObjReportMainCategoryBalanceYearly       = "main-category-balance-yearly"
+	ObjReportMainCategoryBalanceYearlyAlias  = "mcby"
 	ObjReportAssetsSummary                   = "assets-summary"
 	ObjReportAssetsSummaryAlias              = "as"
 	ObjReportNetValueMonthly                 = "net-value"

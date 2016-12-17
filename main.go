@@ -266,6 +266,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagMainCategory, flagDateFrom, flagDateTo},
 					Usage:   "Main categories balance monthly.",
 					Action:  RepMainCategoryBalanceMonthly},
+				{Name: ObjReportMainCategoryBalanceYearly,
+					Aliases: []string{ObjReportMainCategoryBalanceYearlyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagMainCategory, flagDateFrom, flagDateTo},
+					Usage:   "Main categories balance yearly.",
+					Action:  RepMainCategoryBalanceYearly},
 				{Name: ObjReportBudgetCategories,
 					Aliases: []string{ObjReportBudgetCategoriesAlias},
 					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
@@ -288,7 +293,6 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//TODO: add report main categories over time (yearly)
 //TODO: add report income vs cost over time (monthly and yearly)
 //FIXME: change package name in lib
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely

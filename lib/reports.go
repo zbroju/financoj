@@ -712,6 +712,55 @@ func ReportMainCategoriesBalanceMonthly(db *gsqlitehandler.SqliteDB, currency st
 	//TODO: add test
 }
 
+func ReportMainCategoriesBalanceYearly(db *gsqlitehandler.SqliteDB, currency string, m *MainCategory, dateFrom, dateTo time.Time) (f func() *BalanceTimeReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Check input parameters
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	if m == nil {
+		return nil, errors.New(errMainCategoryMissing)
+	}
+	df := noStringParamForSQL
+	if !dateFrom.IsZero() {
+		df = dateFrom.Format(DateFormat)
+	}
+	dt := noStringParamForSQL
+	if !dateTo.IsZero() {
+		dt = dateTo.Format(DateFormat)
+	}
+
+	// Execute main query
+	if stmt, err = db.Handler.Prepare(sqlReportMainCategoriesBalanceYearly); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(currency, currency, m.Id, df, df, noStringParamForSQL, dt, dt, noStringParamForSQL); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *BalanceTimeReportEntry {
+		if rows.Next() {
+			e := BalanceTimeReportEntryNew()
+			rows.Scan(&e.Period.Year, &e.Value)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
 // missingCurrenciesForTransactions returns list of missing currency exchange rates for transactions
 // or empty slice if all the currencies exist
 func missingCurrenciesForTransactions(db *gsqlitehandler.SqliteDB, c string) (l []string, err error) {
