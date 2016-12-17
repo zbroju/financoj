@@ -30,6 +30,7 @@ const (
 	errMainCategoryWithIDNone    = "no main category with given ID"
 	errMainCategoryWithNameNone  = "no main category with given name"
 	errMainCategoryNameAmbiguous = "given main category name is ambiguous"
+	errMainCategoryMissing       = "main category missing"
 
 	errCategoryWithIDNone        = "no category with given ID"
 	errCategoryWithNameNone      = "no category with given name"

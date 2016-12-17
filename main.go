@@ -231,6 +231,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagDate},
 					Usage:   "Accounts balance on given date (or today if date flag missing).",
 					Action:  RepAccountBalance},
+				{Name: ObjReportAssetsSummary,
+					Aliases: []string{ObjReportAssetsSummaryAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDate},
+					Usage:   "Summary of all assets.",
+					Action:  RepAssetsSummary},
 				{Name: ObjReportTransactionBalance,
 					Aliases: []string{ObjReportTransactionBalanceAlias},
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagCategory, flagMainCategory},
@@ -256,11 +261,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagMainCategory},
 					Usage:   "Main categories balance for given criteria.",
 					Action:  RepMainCategoryBalance},
-				{Name: ObjReportAssetsSummary,
-					Aliases: []string{ObjReportAssetsSummaryAlias},
-					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDate},
-					Usage:   "Summary of all assets.",
-					Action:  RepAssetsSummary},
+				{Name: ObjReportMainCategoryBalanceMonthly,
+					Aliases: []string{ObjReportMainCategoryBalanceMonthlyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagMainCategory, flagDateFrom, flagDateTo},
+					Usage:   "Main categories balance monthly.",
+					Action:  RepMainCategoryBalanceMonthly},
 				{Name: ObjReportBudgetCategories,
 					Aliases: []string{ObjReportBudgetCategoriesAlias},
 					Flags:   []cli.Flag{flagFile, flagPeriod, flagCurrencyWithDefault},
@@ -283,7 +288,7 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//TODO: add report main categories over time (monthly and yearly)
+//TODO: add report main categories over time (yearly)
 //TODO: add report income vs cost over time (monthly and yearly)
 //FIXME: change package name in lib
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
