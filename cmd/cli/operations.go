@@ -1528,7 +1528,7 @@ func CmdCompoundTransactionSplit(c *cli.Context) error {
 	}
 	c2 := c.String(OptCategorySplit)
 	if c2 == NotSetStringValue {
-		printError.Fatalln(errmissingCategorySplitFlag)
+		printError.Fatalln(errMissingCategorySplitFlag)
 	}
 
 	// Open data file

@@ -6,7 +6,7 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	. "github.com/zbroju/financoj/cmd"
+	. "github.com/zbroju/financoj/cmd/cli"
 	. "github.com/zbroju/financoj/lib"
 	"os"
 )
@@ -294,7 +294,6 @@ SUBCOMMANDS:
 }
 
 //TODO: add report income vs cost over time (monthly and yearly)
-//FIXME: change package name in lib
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add export to csv any list and report

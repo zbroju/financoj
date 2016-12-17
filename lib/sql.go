@@ -2,7 +2,7 @@
 // Use of this source code is governed by a GNU General Public License
 // that can be found in the LICENSE file.
 
-package engine
+package lib
 
 // sqlReportTransactionsBalance is SQL string to get transactions values recalculated to one currency.
 //
