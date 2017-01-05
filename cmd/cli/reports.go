@@ -135,10 +135,11 @@ func RepTransactionBalance(c *cli.Context) error {
 			printError.Fatalln(err)
 		}
 	}
+	desc := c.String(OptDescription)
 
 	// Build formatting strings
 	var getNextEntry func() *TransactionBalanceReportEntry
-	if getNextEntry, err = ReportTransactionBalance(fh, cur, df, dt, a, cat, mcat); err != nil {
+	if getNextEntry, err = ReportTransactionBalance(fh, cur, df, dt, a, cat, mcat, desc); err != nil {
 		printError.Fatalln(err)
 	}
 	lD := utf8.RuneCountInString(HTDate)
@@ -164,7 +165,7 @@ func RepTransactionBalance(c *cli.Context) error {
 	fmt.Fprintf(os.Stdout, "Transactions balance (in %s):\n", strings.ToUpper(cur))
 	fmt.Fprint(os.Stdout, "\n")
 	fmt.Fprintf(os.Stdout, lineH, HTDate, HMCName, HCName, HAName, HTValue, HTDescription)
-	if getNextEntry, err = ReportTransactionBalance(fh, cur, df, dt, a, cat, mcat); err != nil {
+	if getNextEntry, err = ReportTransactionBalance(fh, cur, df, dt, a, cat, mcat, desc); err != nil {
 		printError.Fatalln(err)
 	}
 	for e := getNextEntry(); e != nil; e = getNextEntry() {

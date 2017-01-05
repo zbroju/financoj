@@ -63,6 +63,7 @@ where 1=1
     and (a.id=? or ?=?)
     and (c.id=? or ?=?)
     and (m.id=? or ?=?)
+    and (t.description like ? or ?=?)
 order by
     t.date
 ;

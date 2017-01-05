@@ -99,8 +99,7 @@ func TransactionBalanceReportEntryNew() *TransactionBalanceReportEntry {
 	return e
 }
 
-func ReportTransactionBalance(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time, a *Account, c *Category, m *MainCategory) (f func() *TransactionBalanceReportEntry, err error) {
-	//TODO: add 'description' as filtering criterion
+func ReportTransactionBalance(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time, a *Account, c *Category, m *MainCategory, description string) (f func() *TransactionBalanceReportEntry, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
@@ -132,12 +131,17 @@ func ReportTransactionBalance(db *gsqlitehandler.SqliteDB, currency string, date
 	if m != nil {
 		mId = m.Id
 	}
+	if description == NotSetStringValue {
+		description = noStringParamForSQL
+	} else {
+		description = "%" + description + "%"
+	}
 
 	// Execute main query
 	if stmt, err = db.Handler.Prepare(sqlReportTransactionsBalance); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-	if rows, err = stmt.Query(currency, currency, df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, aId, aId, noIntParamForSQL, cId, cId, noIntParamForSQL, mId, mId, noIntParamForSQL); err != nil {
+	if rows, err = stmt.Query(currency, currency, df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, aId, aId, noIntParamForSQL, cId, cId, noIntParamForSQL, mId, mId, noIntParamForSQL, description, description, noStringParamForSQL); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 

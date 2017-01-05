@@ -238,7 +238,7 @@ SUBCOMMANDS:
 					Action:  RepAssetsSummary},
 				{Name: ObjReportTransactionBalance,
 					Aliases: []string{ObjReportTransactionBalanceAlias},
-					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagCategory, flagMainCategory},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo, flagAccount, flagCategory, flagMainCategory, flagDescription},
 					Usage:   "Transactions balance for given criteria.",
 					Action:  RepTransactionBalance},
 				{Name: ObjReportCategoryBalance,
@@ -303,7 +303,6 @@ SUBCOMMANDS:
 	app.Run(os.Args)
 }
 
-//FIXME: add filter (like) to report transactions balance for 'description'
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add export to csv any list and report
