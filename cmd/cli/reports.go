@@ -1093,3 +1093,80 @@ func RepNetValueMonthly(c *cli.Context) error {
 	//FIXME: wrong net value if date_from is given
 	return nil
 }
+
+func RepIncomeVsCostMonthly(c *cli.Context) error {
+	var err error
+
+	// Get loggers
+	_, printError := GetLoggers()
+
+	// Check obligatory flags
+	f := c.String(OptFile)
+	if f == NotSetStringValue {
+		printError.Fatalln(errMissingFileFlag)
+	}
+	cur := c.String(OptCurrency)
+	if cur == NotSetStringValue {
+		printError.Fatalln(errMissingCurrencyFlag)
+	}
+
+	// Open data file
+	fh := GetDataFileHandler(f)
+	if err = fh.Open(); err != nil {
+		printError.Fatalln(err)
+	}
+	defer fh.Close()
+
+	// Create filters
+	var df time.Time
+	if ds := c.String(OptDateFrom); ds != NotSetStringValue {
+		if df, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		df = time.Time{}
+	}
+	var dt time.Time
+	if ds := c.String(OptDateTo); ds != NotSetStringValue {
+		if dt, err = time.Parse(DateFormat, ds); err != nil {
+			printError.Fatalln(err)
+		}
+	} else {
+		dt = time.Time{}
+	}
+
+	// Build formatting strings
+	var getNextEntry func() *IncomeVsCostReportEntry
+	if getNextEntry, err = ReportIncomeVsCostMonthly(fh, cur, df, dt); err != nil {
+		printError.Fatalln(err)
+	}
+	lP := utf8.RuneCountInString(HBPeriod)
+	lI := utf8.RuneCountInString(HIncome)
+	lC := utf8.RuneCountInString(HCost)
+	lD := utf8.RuneCountInString(HDifference)
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		lP = MaxLen(e.Period.String(), lP)
+		lI = MaxLen(strconv.FormatFloat(e.Income, 'f', 2, 64), lI)
+		lC = MaxLen(strconv.FormatFloat(e.Cost, 'f', 2, 64), lC)
+		lD = MaxLen(strconv.FormatFloat(e.Income+e.Cost, 'f', 2, 64), lD)
+	}
+	lineH := LineFor(HFSForText(lP), HFSForNumeric(lI), HFSForNumeric(lC), HFSForNumeric(lD))
+	lineD := LineFor(DFSForText(lP), DFSForValue(lI), DFSForValue(lC), DFSForValue(lD))
+
+	// Print report
+	fmt.Fprintf(os.Stdout, "Income vs Cost monthly (in %s):\n\n", strings.ToUpper(cur))
+	fmt.Fprintf(os.Stdout, lineH, HBPeriod, HIncome, HCost, HDifference)
+	if getNextEntry, err = ReportIncomeVsCostMonthly(fh, cur, df, dt); err != nil {
+		printError.Fatalln(err)
+	}
+	for e := getNextEntry(); e != nil; e = getNextEntry() {
+		fmt.Fprintf(os.Stdout, lineD, e.Period, e.Income, e.Cost, e.Income+e.Cost)
+	}
+
+	return nil
+}
+
+/*
+func RepIncomeVsCostYearly(c *cli.Context)error{
+
+}*/

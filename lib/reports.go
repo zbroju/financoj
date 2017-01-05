@@ -100,6 +100,7 @@ func TransactionBalanceReportEntryNew() *TransactionBalanceReportEntry {
 }
 
 func ReportTransactionBalance(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time, a *Account, c *Category, m *MainCategory) (f func() *TransactionBalanceReportEntry, err error) {
+	//TODO: add 'description' as filtering criterion
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 
@@ -760,6 +761,113 @@ func ReportMainCategoriesBalanceYearly(db *gsqlitehandler.SqliteDB, currency str
 	return f, nil
 	//TODO: add test
 }
+
+type IncomeVsCostReportEntry struct {
+	Period *BPeriod
+	Income float64
+	Cost   float64
+}
+
+func IncomeVsCostReportEntryNew() *IncomeVsCostReportEntry {
+	e := new(IncomeVsCostReportEntry)
+	e.Period = new(BPeriod)
+
+	return e
+}
+
+func ReportIncomeVsCostMonthly(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time) (f func() *IncomeVsCostReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Check input parameters
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	df := noStringParamForSQL
+	if !dateFrom.IsZero() {
+		df = dateFrom.Format(DateFormat)
+	}
+	dt := noStringParamForSQL
+	if !dateTo.IsZero() {
+		dt = dateTo.Format(DateFormat)
+	}
+
+	// Execute main query
+	if stmt, err = db.Handler.Prepare(sqlReportIncomeAndCostMonthly); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, currency, currency, MCTIncome, currency, currency, MCTCost); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *IncomeVsCostReportEntry {
+		if rows.Next() {
+			e := IncomeVsCostReportEntryNew()
+			rows.Scan(&e.Period.Year, &e.Period.Month, &e.Income, &e.Cost)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+
+/*
+func ReportIncomeVsCostYearly(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time) (f func() *IncomeVsCostReportEntry, err error) {
+	var stmt *sql.Stmt
+	var rows *sql.Rows
+
+	// Check input parameters
+	if s, err := missingCurrenciesForTransactions(db, currency); err == nil {
+		if s != nil {
+			return nil, errors.New(errReportMissingCurrencies + strings.Join(s, ", "))
+		}
+	} else {
+		return nil, err
+	}
+	df := noStringParamForSQL
+	if !dateFrom.IsZero() {
+		df = dateFrom.Format(DateFormat)
+	}
+	dt := noStringParamForSQL
+	if !dateTo.IsZero() {
+		dt = dateTo.Format(DateFormat)
+	}
+
+	// Execute main query
+	if stmt, err = db.Handler.Prepare(sqlReportIncomeAndCostYearly); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+	if rows, err = stmt.Query(df,df,noStringParamForSQL,dt,dt,noStringParamForSQL,currency,currency,MCTIncome,currency,currency,MCTCost); err != nil {
+		return nil, errors.New(errReadingFromFile)
+	}
+
+	// Create closure
+	f = func() *IncomeVsCostReportEntry {
+		if rows.Next() {
+			e := IncomeVsCostReportEntryNew()
+			rows.Scan(&e.Period.Year, &e.Income,&e.Cost)
+			return e
+		}
+		rows.Close()
+		stmt.Close()
+
+		return nil
+	}
+
+	return f, nil
+	//TODO: add test
+}
+*/
 
 // missingCurrenciesForTransactions returns list of missing currency exchange rates for transactions
 // or empty slice if all the currencies exist

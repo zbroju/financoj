@@ -42,24 +42,28 @@ const (
 	HBCurrency   = "CUR"
 	HBDifference = "DIFFERENCE"
 
+	HIncome     = "INCOME"
+	HCost       = "COST"
+	HDifference = "DIFFERENCE"
+
 	HNV = "NET VALUE"
 )
 
 // Errors
 const (
-	errMissingFileFlag           = "missing information about data file"
-	errMissingIDFlag             = "missing ID"
-	errMissingCategoryFlag       = "missing category name"
+	errMissingFileFlag          = "missing information about data file"
+	errMissingIDFlag            = "missing ID"
+	errMissingCategoryFlag      = "missing category name"
 	errMissingCategorySplitFlag = "missing category split name"
-	errMissingMainCategoryFlag   = "missing main category name"
-	errMissingCurrencyFlag       = "missing currency (from) name"
-	errMissingCurrencyToFlag     = "missing currency_to name"
-	errMissingExchangeRateFlag   = "missing exchange rate"
-	errMissingAccountFlag        = "missing account name"
-	errIncorrectAccountType      = "incorrect account type"
-	errMissingDescriptionFlag    = "missing description"
-	errMissingValueFlag          = "missing value"
-	errMissingPeriodFlag         = "missing period"
+	errMissingMainCategoryFlag  = "missing main category name"
+	errMissingCurrencyFlag      = "missing currency (from) name"
+	errMissingCurrencyToFlag    = "missing currency_to name"
+	errMissingExchangeRateFlag  = "missing exchange rate"
+	errMissingAccountFlag       = "missing account name"
+	errIncorrectAccountType     = "incorrect account type"
+	errMissingDescriptionFlag   = "missing description"
+	errMissingValueFlag         = "missing value"
+	errMissingPeriodFlag        = "missing period"
 )
 
 // Commands, objects and options
@@ -150,4 +154,6 @@ const (
 	ObjReportAssetsSummaryAlias              = "as"
 	ObjReportNetValueMonthly                 = "net-value"
 	ObjReportNetValueMonthlyAlias            = "nv"
+	ObjReportIncomeVsCostMonthly             = "income-cost-monthly"
+	ObjReportIncomeVsCostMonthlyAlias        = "icm"
 )

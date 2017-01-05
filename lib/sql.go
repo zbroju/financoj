@@ -787,3 +787,141 @@ order by
 	1
 ;
 `
+
+// sqlReportIncomeAndCostMonthly is SQL string to get sum of income and cost per month
+//
+// Parameters
+// 1 - date_from (string)
+// 2 - date_from (string)
+// 3 - NoStringParamForSQL
+// 4 - date_to (string)
+// 5 - date_to (string
+// 6 - NoStringParamForSQL
+// 7 - currency (string)
+// 8 - currency (string)
+// 9 - MainCategoryTypeIncome (int)
+// 10 - currency (string)
+// 11 - currency (string)
+// 12 - MainCategoryTypeCost (int)
+const sqlReportIncomeAndCostMonthly string = `
+-- PERIODS
+select
+	periods.year
+	,periods.month
+	,coalesce(income.balance, 0.0) as income
+	,coalesce(cost.balance, 0.0) as cost
+from
+	(select
+		strftime('%Y', t.date) as year
+		,strftime('%m', t.date) as month
+	from
+		transactions t
+	where 1=1
+		and (t.date>=? or ?=?)
+		and (t.date<=? or ?=?)
+	group by 1,2
+	order by 1,2) periods
+	left join
+	-- INCOME
+	(select
+		strftime('%Y',t.date) as year
+		,strftime('%m',t.date) as month
+		,sum(mt.factor * t.value * cur.exchange_rate) as balance
+	from
+		transactions t
+		inner join accounts a on t.account_id=a.id
+		inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+		inner join categories c on t.category_id=c.id
+		inner join main_categories m on c.main_category_id=m.id
+		inner join main_categories_types mt on m.type_id=mt.id
+	where
+		mt.id=?
+	group by
+		1
+		,2) income on periods.year=income.year and periods.month=income.month
+	left join
+	-- COST
+	(select
+		strftime('%Y',t.date) as year
+		,strftime('%m',t.date) as month
+		,sum(mt.factor * t.value * cur.exchange_rate) as balance
+	from
+		transactions t
+		inner join accounts a on t.account_id=a.id
+		inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+		inner join categories c on t.category_id=c.id
+		inner join main_categories m on c.main_category_id=m.id
+		inner join main_categories_types mt on m.type_id=mt.id
+	where
+		mt.id=?
+	group by
+		1
+		,2) cost on periods.year=cost.year and periods.month=cost.month
+;
+`
+
+// sqlReportIncomeAndCostYearly is SQL string to get sum of income and cost per year
+//
+// Parameters
+// 1 - date_from (string)
+// 2 - date_from (string)
+// 3 - NoStringParamForSQL
+// 4 - date_to (string)
+// 5 - date_to (string
+// 6 - NoStringParamForSQL
+// 7 - currency (string)
+// 8 - currency (string)
+// 9 - MainCategoryTypeIncome (int)
+// 10 - currency (string)
+// 11 - currency (string)
+// 12 - MainCategoryTypeCost (int)
+const sqlReportIncomeAndCostYearly string = `
+-- PERIODS
+select
+	periods.year
+	,coalesce(income.balance, 0.0) as income
+	,coalesce(cost.balance, 0.0) as cost
+from
+	(select
+		strftime('%Y', t.date) as year
+	from
+		transactions t
+	where 1=1
+		and (t.date>=? or ?=?)
+		and (t.date<=? or ?=?)
+	group by 1
+	order by 1) periods
+	left join
+	-- INCOME
+	(select
+		strftime('%Y',t.date) as year
+		,sum(mt.factor * t.value * cur.exchange_rate) as balance
+	from
+		transactions t
+		inner join accounts a on t.account_id=a.id
+		inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+		inner join categories c on t.category_id=c.id
+		inner join main_categories m on c.main_category_id=m.id
+		inner join main_categories_types mt on m.type_id=mt.id
+	where
+		mt.id=?
+	group by
+		1) income on periods.year=income.year and periods.month=income.month
+	left join
+	-- COST
+	(select
+		strftime('%Y',t.date) as year
+		,sum(mt.factor * t.value * cur.exchange_rate) as balance
+	from
+		transactions t
+		inner join accounts a on t.account_id=a.id
+		inner join (select currency_from, exchange_rate from currencies where currency_to=upper(?) union select upper(?), 1) cur on a.currency=cur.currency_from
+		inner join categories c on t.category_id=c.id
+		inner join main_categories m on c.main_category_id=m.id
+		inner join main_categories_types mt on m.type_id=mt.id
+	where
+		mt.id=?
+	group by
+		1) cost on periods.year=cost.year and periods.month=cost.month
+;
+`
