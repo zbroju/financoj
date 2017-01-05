@@ -853,6 +853,9 @@ func RepBudgetCategories(c *cli.Context) error {
 		lMT = MaxLen(e.Category.Main.MType.Name, lMT)
 		lMN = MaxLen(e.Category.Main.Name, lMN)
 		lCN = MaxLen(e.Category.Name, lCN)
+		lBL = MaxLen(strconv.FormatFloat(e.Limit, 'f', 2, 64), lBL)
+		lTV = MaxLen(strconv.FormatFloat(e.Actual, 'f', 2, 64), lTV)
+		lD = MaxLen(strconv.FormatFloat(e.Difference, 'f', 2, 64), lD)
 		if currentType != e.Category.Main.MType.Name {
 			lBL = MaxLen(strconv.FormatFloat(sumLimit, 'f', 2, 64), lBL)
 			lTV = MaxLen(strconv.FormatFloat(sumActual, 'f', 2, 64), lTV)
@@ -962,6 +965,9 @@ func RepBudgetMainCategories(c *cli.Context) error {
 	for e := getNextEntry(); e != nil; e = getNextEntry() {
 		lMT = MaxLen(e.MainCategory.MType.Name, lMT)
 		lMN = MaxLen(e.MainCategory.Name, lMN)
+		lBL = MaxLen(strconv.FormatFloat(e.Limit, 'f', 2, 64), lBL)
+		lTV = MaxLen(strconv.FormatFloat(e.Actual, 'f', 2, 64), lTV)
+		lD = MaxLen(strconv.FormatFloat(e.Difference, 'f', 2, 64), lD)
 		if currentType != e.MainCategory.MType.Name {
 			lBL = MaxLen(strconv.FormatFloat(sumLimit, 'f', 2, 64), lBL)
 			lTV = MaxLen(strconv.FormatFloat(sumActual, 'f', 2, 64), lTV)
