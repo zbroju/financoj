@@ -156,4 +156,6 @@ const (
 	ObjReportNetValueMonthlyAlias            = "nv"
 	ObjReportIncomeVsCostMonthly             = "income-cost-monthly"
 	ObjReportIncomeVsCostMonthlyAlias        = "icm"
+	ObjReportIncomeVsCostYearly              = "income-cost-yearly"
+	ObjReportIncomeVsCostYearlyAlias         = "icy"
 )

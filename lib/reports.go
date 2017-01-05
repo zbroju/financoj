@@ -821,7 +821,6 @@ func ReportIncomeVsCostMonthly(db *gsqlitehandler.SqliteDB, currency string, dat
 	//TODO: add test
 }
 
-/*
 func ReportIncomeVsCostYearly(db *gsqlitehandler.SqliteDB, currency string, dateFrom, dateTo time.Time) (f func() *IncomeVsCostReportEntry, err error) {
 	var stmt *sql.Stmt
 	var rows *sql.Rows
@@ -847,7 +846,7 @@ func ReportIncomeVsCostYearly(db *gsqlitehandler.SqliteDB, currency string, date
 	if stmt, err = db.Handler.Prepare(sqlReportIncomeAndCostYearly); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
-	if rows, err = stmt.Query(df,df,noStringParamForSQL,dt,dt,noStringParamForSQL,currency,currency,MCTIncome,currency,currency,MCTCost); err != nil {
+	if rows, err = stmt.Query(df, df, noStringParamForSQL, dt, dt, noStringParamForSQL, currency, currency, MCTIncome, currency, currency, MCTCost); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
 
@@ -855,7 +854,7 @@ func ReportIncomeVsCostYearly(db *gsqlitehandler.SqliteDB, currency string, date
 	f = func() *IncomeVsCostReportEntry {
 		if rows.Next() {
 			e := IncomeVsCostReportEntryNew()
-			rows.Scan(&e.Period.Year, &e.Income,&e.Cost)
+			rows.Scan(&e.Period.Year, &e.Income, &e.Cost)
 			return e
 		}
 		rows.Close()
@@ -867,7 +866,6 @@ func ReportIncomeVsCostYearly(db *gsqlitehandler.SqliteDB, currency string, date
 	return f, nil
 	//TODO: add test
 }
-*/
 
 // missingCurrenciesForTransactions returns list of missing currency exchange rates for transactions
 // or empty slice if all the currencies exist

@@ -906,7 +906,7 @@ from
 	where
 		mt.id=?
 	group by
-		1) income on periods.year=income.year and periods.month=income.month
+		1) income on periods.year=income.year
 	left join
 	-- COST
 	(select
@@ -922,6 +922,6 @@ from
 	where
 		mt.id=?
 	group by
-		1) cost on periods.year=cost.year and periods.month=cost.month
+		1) cost on periods.year=cost.year
 ;
 `

@@ -291,6 +291,11 @@ SUBCOMMANDS:
 					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo},
 					Usage:   "Income, cost and difference (monthly)",
 					Action:  RepIncomeVsCostMonthly},
+				{Name: ObjReportIncomeVsCostYearly,
+					Aliases: []string{ObjReportIncomeVsCostYearlyAlias},
+					Flags:   []cli.Flag{flagFile, flagCurrencyWithDefault, flagDateFrom, flagDateTo},
+					Usage:   "Income, cost and difference (yearly)",
+					Action:  RepIncomeVsCostYearly},
 			},
 		},
 	}
@@ -299,7 +304,6 @@ SUBCOMMANDS:
 }
 
 //FIXME: add filter (like) to report transactions balance for 'description'
-//TODO: add report income vs cost over time (yearly)
 //TODO: add condition to mainCategoryRemove checking if there are any transactions/categories connected and if not, remove it completely
 //TODO: check all operations to see if there is checking if given object exists (e.g. before removing or updating an object)
 //TODO: add export to csv any list and report
