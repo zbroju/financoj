@@ -111,7 +111,7 @@ func AccountList(db *gsqlitehandler.SqliteDB, n string, d string, i string, c st
 		"AND (currency LIKE ? OR ?=?) " +
 		"AND (type=? OR ?=?) " +
 		"AND (status=? OR ?=?) " +
-		"ORDER BY name ASC;"
+		"ORDER BY type ASC, name ASC;"
 	if stmt, err = db.Handler.Prepare(sqlQuery); err != nil {
 		return nil, errors.New(errReadingFromFile)
 	}
